@@ -13,19 +13,26 @@ type FieldProps = {
 export default function Field({ label, icon, error, children, className = "" }: FieldProps) {
   return (
     <label className={cn("grid gap-2", className)}>
-      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">{label}</span>
       <span
         className={cn(
-          "flex min-h-14 items-center gap-3 rounded-2xl border px-4 transition",
+          "group flex min-h-14 items-center gap-3 rounded-xl border px-4 shadow-sm shadow-slate-950/5 transition",
           error
-            ? "border-red-300 bg-red-50/70 ring-1 ring-red-100"
-            : "border-slate-200 bg-slate-50/80 focus-within:border-violet-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-violet-100",
+            ? "border-red-300 bg-red-50/80 ring-4 ring-red-100"
+            : "border-slate-200 bg-white hover:border-slate-300 focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-100",
         )}
       >
-        {icon ? <Icon name={icon} size={20} color="#9ca3af" /> : null}
+        {icon ? (
+          <span className={cn(
+            "grid h-9 w-9 place-items-center rounded-lg transition",
+            error ? "bg-red-100 text-red-500" : "bg-slate-100 text-slate-400 group-focus-within:bg-violet-50 group-focus-within:text-[var(--primary)]",
+          )}>
+            <Icon name={icon} size={18} />
+          </span>
+        ) : null}
         {children}
       </span>
-      {error ? <span className="text-xs font-medium text-red-600">{error}</span> : null}
+      {error ? <span className="text-xs font-bold text-red-600">{error}</span> : null}
     </label>
   );
 }

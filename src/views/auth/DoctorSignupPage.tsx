@@ -3,40 +3,23 @@
 import { useState } from "react";
 import Icon from "../../components/common/Icon";
 import Card from "../../components/common/Card";
+import DateField from "../../components/auth/DateField";
 import AuthProfileHeader from "../../components/auth/AuthProfileHeader";
 import AuthRoleCard from "../../components/auth/AuthRoleCard";
 import ErrorBanner from "../../components/auth/ErrorBanner";
 import PasswordField from "../../components/auth/PasswordField";
+import SegmentedChoiceField from "../../components/auth/SegmentedChoiceField";
 import SelectField from "../../components/auth/SelectField";
 import SubmitButton from "../../components/auth/SubmitButton";
 import TextField from "../../components/auth/TextField";
+import { doctorSpecializations, genderChoices } from "../../data/authFormData";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
-import { validatePatient } from "./SignupPage";
+import { validateDoctorSignup } from "../../utils/authValidation";
+import type { FormEvent } from "react";
+import type { DoctorSignupForm } from "../../utils/authValidation";
 
-const specializations = [
-  "Psychiatry",
-  "Clinical Psychology",
-  "Counseling Psychology",
-  "Neuropsychology",
-  "Child & Adolescent Psychology",
-  "Health Psychology",
-  "Behavioral Medicine",
-  "Addiction Medicine",
-  "Sleep Medicine",
-  "Geriatric Psychiatry",
-  "Forensic Psychology",
-  "Sports Psychology",
-  "Occupational Therapy",
-  "Social Work",
-  "Marriage & Family Therapy",
-  "General Practice",
-  "Internal Medicine",
-  "Neurology",
-  "Other",
-];
-
-const initialForm = {
+const initialForm: DoctorSignupForm = {
   firstName: "",
   lastName: "",
   dateOfBirth: "",
@@ -55,13 +38,13 @@ export default function DoctorSignupPage() {
   const { register, authLoading } = useAuth();
   const { navigate } = useRouter();
 
-  function update(key, value) {
+  function update<Key extends keyof DoctorSignupForm>(key: Key, value: DoctorSignupForm[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  async function onSubmit(event) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validation = validateDoctor(form);
+    const validation = validateDoctorSignup(form);
     if (validation) {
       setError(validation);
       return;
@@ -121,26 +104,21 @@ export default function DoctorSignupPage() {
                 disabled={authLoading}
               />
             </div>
-            <TextField
+            <DateField
               label="Date of Birth"
-              icon="calendar"
-              type="date"
               value={form.dateOfBirth}
               onChange={(value) => update("dateOfBirth", value)}
               autoComplete="bday"
               disabled={authLoading}
             />
-            <SelectField
+            <SegmentedChoiceField
               label="Gender"
-              icon="user"
               value={form.gender}
-              placeholder="Select gender"
+              choices={genderChoices}
               onChange={(value) => update("gender", value)}
               disabled={authLoading}
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </SelectField>
+              tone="emerald"
+            />
             <SelectField
               label="Specialization"
               icon="brain"
@@ -149,7 +127,7 @@ export default function DoctorSignupPage() {
               onChange={(value) => update("specialization", value)}
               disabled={authLoading}
             >
-              {specializations.map((item) => <option key={item} value={item}>{item}</option>)}
+              {doctorSpecializations.map((item) => <option key={item} value={item}>{item}</option>)}
             </SelectField>
             <TextField
               label="License Number"
@@ -218,13 +196,4 @@ export default function DoctorSignupPage() {
       </section>
     </main>
   );
-}
-
-function validateDoctor(form) {
-  const base = validatePatient(form);
-  if (base) return base;
-  if (!form.specialization) return "Please select your specialization";
-  if (!form.licenseNumber.trim()) return "License number is required";
-  if (!form.yearsOfExperience || Number.isNaN(Number(form.yearsOfExperience))) return "Enter a valid number";
-  return "";
 }

@@ -3,17 +3,22 @@
 import { useState } from "react";
 import Icon from "../../components/common/Icon";
 import Card from "../../components/common/Card";
+import DateField from "../../components/auth/DateField";
 import AuthProfileHeader from "../../components/auth/AuthProfileHeader";
 import AuthRoleCard from "../../components/auth/AuthRoleCard";
 import ErrorBanner from "../../components/auth/ErrorBanner";
 import PasswordField from "../../components/auth/PasswordField";
-import SelectField from "../../components/auth/SelectField";
+import SegmentedChoiceField from "../../components/auth/SegmentedChoiceField";
 import SubmitButton from "../../components/auth/SubmitButton";
 import TextField from "../../components/auth/TextField";
+import { genderChoices } from "../../data/authFormData";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
+import { validatePatientSignup } from "../../utils/authValidation";
+import type { FormEvent } from "react";
+import type { PatientSignupForm } from "../../utils/authValidation";
 
-const initialForm = {
+const initialForm: PatientSignupForm = {
   firstName: "",
   lastName: "",
   dateOfBirth: "",
@@ -29,13 +34,13 @@ export default function SignupPage() {
   const { register, authLoading } = useAuth();
   const { navigate } = useRouter();
 
-  function update(key, value) {
+  function update<Key extends keyof PatientSignupForm>(key: Key, value: PatientSignupForm[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  async function onSubmit(event) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validation = validatePatient(form);
+    const validation = validatePatientSignup(form);
     if (validation) {
       setError(validation);
       return;
@@ -95,10 +100,8 @@ export default function SignupPage() {
                 disabled={authLoading}
               />
             </div>
-            <TextField
+            <DateField
               label="Date of Birth"
-              icon="calendar"
-              type="date"
               name="bday"
               value={form.dateOfBirth}
               onChange={(value) => update("dateOfBirth", value)}
@@ -116,17 +119,13 @@ export default function SignupPage() {
               autoComplete="email"
               disabled={authLoading}
             />
-            <SelectField
+            <SegmentedChoiceField
               label="Gender"
-              icon="user"
               value={form.gender}
-              placeholder="Select gender"
+              choices={genderChoices}
               onChange={(value) => update("gender", value)}
               disabled={authLoading}
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </SelectField>
+            />
             <PasswordField
               label="Password"
               value={form.password}
@@ -165,14 +164,4 @@ export default function SignupPage() {
       </section>
     </main>
   );
-}
-
-export function validatePatient(form) {
-  if (form.firstName.trim().length < 2 || form.lastName.trim().length < 2) return "First and last name are required";
-  if (!form.dateOfBirth) return "Please select your date of birth";
-  if (!form.email.includes("@")) return "Please enter a valid email";
-  if (!form.gender) return "Please select gender";
-  if (form.password.length < 6) return "Password must be at least 6 characters";
-  if (form.password !== form.confirmPassword) return "Passwords do not match";
-  return "";
 }

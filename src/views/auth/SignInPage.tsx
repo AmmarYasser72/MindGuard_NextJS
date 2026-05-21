@@ -11,27 +11,39 @@ import TextField from "../../components/auth/TextField";
 import { isDemoMode } from "../../config/demoMode";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
+import type { FormEvent } from "react";
+import type { AuthUser } from "../../types/auth";
 
-const demoAccounts = [
+type SignInCredentials = {
+  email: string;
+  password: string;
+};
+
+type DemoAccount = SignInCredentials & {
+  icon: string;
+  title: string;
+};
+
+const demoAccounts: DemoAccount[] = [
   { title: "Patient Account", email: "patient@demo.com", password: "demo123", icon: "user" },
   { title: "Doctor Account", email: "doctor@demo.com", password: "demo123", icon: "stethoscope" },
 ];
 
-function dashboardPath(user) {
+function dashboardPath(user: AuthUser) {
   return user.role === "doctor" ? "/doctor-dashboard" : "/patient-dashboard";
 }
 
 export default function SignInPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState<SignInCredentials>({ email: "", password: "" });
   const [error, setError] = useState("");
   const { signIn, authLoading } = useAuth();
   const { navigate } = useRouter();
 
-  function update(key, value) {
+  function update<Key extends keyof SignInCredentials>(key: Key, value: SignInCredentials[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  async function submitCredentials(credentials) {
+  async function submitCredentials(credentials: SignInCredentials) {
     setError("");
     const cleanEmail = credentials.email.trim();
     if (!cleanEmail.includes("@")) {
@@ -50,12 +62,12 @@ export default function SignInPage() {
     }
   }
 
-  function onSubmit(event) {
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     submitCredentials(form);
   }
 
-  function selectDemoAccount(account) {
+  function selectDemoAccount(account: DemoAccount) {
     const credentials = { email: account.email, password: account.password };
     setForm(credentials);
     submitCredentials(credentials);
