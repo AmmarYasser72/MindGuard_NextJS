@@ -1,9 +1,13 @@
 import { ensureArrayRecords, ensureObjectData, ensureRecordHasAnyField, shortId } from "./apiResponse";
 import { request } from "./apiClient";
+import { isDemoMode } from "../config/demoMode";
+import { patients as demoPatients, sessions as demoSessions } from "../data/doctorData";
+import { storage } from "./storage";
 import type { ApiRecord } from "../types/api";
 import type { DoctorSession } from "../types/doctor";
 
 const slotFields = ["_id", "id", "doctor", "patient", "startTime", "endTime", "from", "to", "status"];
+const DEMO_SLOTS_KEY = "demo_slots";
 
 function queryString(params: Record<string, unknown> = {}) {
   const query = new URLSearchParams();
@@ -23,7 +27,13 @@ function safeDate(value: unknown) {
 
 function patientLabel(patient: unknown) {
   if (!patient) return "Unassigned";
-  if (typeof patient === "string") return `Patient ${shortId(patient)}`;
+  if (typeof patient === "string") {
+    const matchedPatient = demoPatients.find((item) => item.id === patient);
+    if (matchedPatient) {
+      return `${matchedPatient.firstName} ${matchedPatient.lastName}`.trim();
+    }
+    return `Patient ${shortId(patient)}`;
+  }
   if (typeof patient !== "object" || Array.isArray(patient)) return "Unassigned";
   const record = patient as ApiRecord;
   const id = record._id || record.id;
@@ -54,8 +64,47 @@ export function normalizeSlotRecord(record: ApiRecord, index = 0): DoctorSession
   };
 }
 
+function demoSlotRecord(session: DoctorSession): ApiRecord {
+  const endAt = new Date(session.scheduledAt.getTime() + (session.duration || 60) * 60000);
+  return {
+    id: session.id,
+    patient: session.patientId
+      ? {
+        id: session.patientId,
+        name: session.patientName,
+      }
+      : null,
+    startTime: session.scheduledAt.toISOString(),
+    endTime: endAt.toISOString(),
+    status: session.status || "scheduled",
+  };
+}
+
+function readDemoSlots() {
+  const stored = storage.get<ApiRecord[]>(DEMO_SLOTS_KEY, []);
+  if (stored.length) return stored;
+  const seed = demoSessions.map(demoSlotRecord);
+  storage.set(DEMO_SLOTS_KEY, seed);
+  return seed;
+}
+
+function writeDemoSlots(slots: ApiRecord[]) {
+  storage.set(DEMO_SLOTS_KEY, slots);
+}
+
 export const slotService = {
   async createSlot(slot: ApiRecord) {
+    if (isDemoMode) {
+      const slots = readDemoSlots();
+      const created = {
+        ...slot,
+        id: `slot-${crypto.randomUUID()}`,
+        status: String(slot.status || "available"),
+      };
+      writeDemoSlots([created, ...slots]);
+      return created;
+    }
+
     const response = await request("/slot", {
       auth: true,
       method: "POST",
@@ -65,16 +114,46 @@ export const slotService = {
   },
 
   async getDoctorSlots(params: Record<string, unknown> = {}) {
+    if (isDemoMode) {
+      const slots = readDemoSlots()
+        .map(normalizeSlotRecord)
+        .sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime());
+      return slots;
+    }
+
     const response = await request(`/slot/my${queryString(params)}`, { auth: true });
     return ensureArrayRecords(response, "Doctor slots", slotFields).map(normalizeSlotRecord);
   },
 
   async getSlot(slotId: string) {
+    if (isDemoMode) {
+      const slot = readDemoSlots().find((item) => String(item.id || item._id) === slotId);
+      if (!slot) {
+        throw new Error("Slot not found");
+      }
+      return normalizeSlotRecord(slot);
+    }
+
     const response = await request(`/slot/${slotId}`, { auth: true });
     return normalizeSlotRecord(ensureRecordHasAnyField(ensureObjectData(response, "Slot"), "Slot", slotFields));
   },
 
   async updateSlot(slotId: string, updates: ApiRecord) {
+    if (isDemoMode) {
+      const slots = readDemoSlots();
+      const index = slots.findIndex((item) => String(item.id || item._id) === slotId);
+      if (index === -1) {
+        throw new Error("Slot not found");
+      }
+      const next = {
+        ...slots[index],
+        ...updates,
+      };
+      slots[index] = next;
+      writeDemoSlots(slots);
+      return next;
+    }
+
     const response = await request(`/slot/${slotId}`, {
       auth: true,
       method: "PATCH",
@@ -84,6 +163,13 @@ export const slotService = {
   },
 
   async deleteSlot(slotId: string) {
+    if (isDemoMode) {
+      const slots = readDemoSlots();
+      const next = slots.filter((item) => String(item.id || item._id) !== slotId);
+      writeDemoSlots(next);
+      return { id: slotId };
+    }
+
     const response = await request(`/slot/${slotId}`, {
       auth: true,
       method: "DELETE",

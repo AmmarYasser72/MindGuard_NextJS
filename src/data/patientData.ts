@@ -6,11 +6,11 @@ export const wellnessMetrics = [
 ];
 
 export const moodOptions = [
-  { emoji: "😢", label: "Low" },
-  { emoji: "😔", label: "Low" },
-  { emoji: "😐", label: "Neutral" },
-  { emoji: "🙂", label: "Good" },
-  { emoji: "😊", label: "Excellent" },
+  { emoji: "😠", label: "Very Low", color: "#ef4444", bg: "#fee2e2" },
+  { emoji: "😢", label: "Low", color: "#f59e0b", bg: "#fef3c7" },
+  { emoji: "😐", label: "Balanced", color: "#6366f1", bg: "#e0e7ff" },
+  { emoji: "😊", label: "Good", color: "#10b981", bg: "#d1fae5" },
+  { emoji: "😍", label: "Excellent", color: "#8b5cf6", bg: "#f3e8ff" },
 ];
 
 export const quickActions = [

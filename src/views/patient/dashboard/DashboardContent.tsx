@@ -8,6 +8,7 @@ import { useToast } from "../../../components/common/Toast";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "../../../hooks/useRouter";
 import { readingService } from "../../../services/readingService";
+import { getTodayMoodSnapshot, recordMoodForToday } from "../../../services/moodCalendarService";
 import {
   dailyGoals,
   moodOptions,
@@ -21,7 +22,7 @@ import DashboardPanel from "./DashboardPanel";
 import GoalRow from "./GoalRow";
 import MetricTile from "./MetricTile";
 
-const iconButtonClass = "grid h-10 w-10 place-items-center rounded-lg border border-white/15 bg-white/10 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60";
+const iconButtonClass = "grid h-10 w-10 place-items-center rounded-lg border border-white/15 bg-white/10 text-white transition hover:-translate-y-0.5 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:hover:translate-y-0";
 
 export default function DashboardContent({ email }: { email: string }) {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
@@ -32,11 +33,15 @@ export default function DashboardContent({ email }: { email: string }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState(patientNotifications);
   const { navigate } = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { showToast } = useToast();
+  const patientKey = user?.uid || user?.email || email || "guest-patient";
+  const [currentStreak, setCurrentStreak] = useState(0);
   const average = useMemo(() => Math.round((weeklyMood.reduce((sum, item) => sum + item.value, 0) / weeklyMood.length) * 100), []);
   const completedGoals = dailyGoals.filter((goal) => goal.progress >= 0.7).length;
   const unreadCount = notifications.filter((notification) => notification.unread).length;
+  const nextGoal = dailyGoals.find((goal) => goal.progress < 0.7) || dailyGoals[0];
+  const bestMoodDay = weeklyMood.reduce((best, item) => (item.value > best.value ? item : best), weeklyMood[0]);
 
   useEffect(() => {
     if (!isNotificationsOpen) return undefined;
@@ -50,6 +55,18 @@ export default function DashboardContent({ email }: { email: string }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isNotificationsOpen]);
+
+  useEffect(() => {
+    window.queueMicrotask(() => {
+      const snapshot = getTodayMoodSnapshot(patientKey);
+      setCurrentStreak(snapshot.currentStreak);
+
+      if (snapshot.todayEntry?.recorded) {
+        setSelectedMood(snapshot.todayEntry.mood - 1);
+        setRecordedMood(snapshot.todayEntry.label);
+      }
+    });
+  }, [patientKey]);
 
   function greeting() {
     const hour = new Date().getHours();
@@ -89,8 +106,11 @@ export default function DashboardContent({ email }: { email: string }) {
 
     try {
       await readingService.savePatientMood(moodValue);
-      setRecordedMood(moodOptions[selectedMood].label);
-      showToast(`Mood "${moodOptions[selectedMood].label}" recorded!`, "success");
+      const moodSnapshot = recordMoodForToday(patientKey, moodValue);
+      const label = moodSnapshot.todayEntry?.label || moodOptions[selectedMood].label;
+      setRecordedMood(label);
+      setCurrentStreak(moodSnapshot.currentStreak);
+      showToast(`Mood "${label}" recorded. ${moodSnapshot.currentStreak} day streak.`, "success");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to save mood right now.";
       setMoodSaveError(message);
@@ -101,7 +121,7 @@ export default function DashboardContent({ email }: { email: string }) {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-5">
+    <section className="mx-auto w-full max-w-7xl space-y-6">
       {isNotificationsOpen ? (
         <NotificationPanel
           notifications={notifications}
@@ -111,15 +131,18 @@ export default function DashboardContent({ email }: { email: string }) {
         />
       ) : null}
 
-      <header className="overflow-hidden rounded-lg text-white shadow-sm shadow-indigo-950/10" style={{ background: "linear-gradient(135deg, #4a3b8c 0%, #6366f1 58%, #8b5cf6 100%)" }}>
-        <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-end">
-          <div className="space-y-5">
+      <header className="overflow-hidden rounded-lg border border-white/30 text-white shadow-lg shadow-indigo-950/10" style={{ background: "linear-gradient(135deg, #4a3b8c 0%, #6366f1 58%, #8b5cf6 100%)" }}>
+        <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,430px)] lg:p-7">
+          <div className="grid content-between gap-8">
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <span className="text-sm font-semibold uppercase text-violet-100">{greeting()}</span>
-                <h1 className="mt-1 text-3xl font-bold tracking-normal sm:text-4xl">{firstName()}</h1>
+              <div className="min-w-0">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-violet-100">Patient dashboard</span>
+                <h1 className="mt-3 text-3xl font-bold tracking-normal sm:text-4xl">{greeting()}, {firstName()}</h1>
+                <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-violet-100 sm:text-base">
+                  Your care plan is steady today. Keep the next step small, visible, and easy to finish.
+                </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 <button type="button" className={iconButtonClass} aria-label="Logout" title="Logout" onClick={() => { signOut(); navigate("/login"); }}>
                   <Icon name="log-out" size={20} color="#fff" />
                 </button>
@@ -129,56 +152,86 @@ export default function DashboardContent({ email }: { email: string }) {
                 <button type="button" className={`${iconButtonClass} relative`} aria-label="Notifications" title="Notifications" onClick={handleOpenNotifications}>
                   <Icon name="bell" size={20} color="#fff" />
                   {unreadCount > 0 ? (
-                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-indigo-500">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   ) : null}
                 </button>
               </div>
             </div>
-            <div className="max-w-2xl space-y-2">
-              <p className="text-sm font-medium text-violet-100">Your care plan is steady today. Keep the next step small and visible.</p>
-              <div className="flex flex-wrap gap-2 text-xs font-semibold text-violet-50">
-                <span className="rounded-lg border border-white/10 bg-white/10 px-3 py-2">Weekly mood {average}%</span>
-                <span className="rounded-lg border border-white/10 bg-white/10 px-3 py-2">{completedGoals}/{dailyGoals.length} goals on track</span>
-                <span className="rounded-lg border border-white/10 bg-white/10 px-3 py-2">Next check-in today</span>
-              </div>
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <HeaderStat icon="activity" label="Weekly mood" value={`${average}%`} />
+              <HeaderStat icon="check-circle" label="Goals on track" value={`${completedGoals}/${dailyGoals.length}`} />
+              <HeaderStat icon="flame" label="Mood streak" value={`${currentStreak} day${currentStreak === 1 ? "" : "s"}`} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {wellnessMetrics.slice(0, 3).map((metric) => (
-              <div className="rounded-lg border border-white/10 bg-white/10 p-3" key={metric.label}>
-                <span className="text-xs font-semibold text-violet-100">{metric.label}</span>
-                <strong className="mt-2 block text-2xl font-bold">{metric.value}</strong>
+
+          <div className="rounded-lg border border-white/15 bg-white/10 p-4 shadow-sm shadow-indigo-950/10 backdrop-blur">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-violet-100">Today</span>
+                <h2 className="mt-1 text-lg font-bold">Care snapshot</h2>
               </div>
-            ))}
+              <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold text-violet-50">On pace</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {wellnessMetrics.slice(0, 3).map((metric) => (
+                <div className="rounded-lg border border-white/10 bg-white/10 p-3" key={metric.label}>
+                  <span className="text-xs font-semibold text-violet-100">{metric.label}</span>
+                  <strong className="mt-2 block text-2xl font-bold">{metric.value}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 rounded-lg bg-white/10 p-3">
+              <span className="text-xs font-semibold text-violet-100">Next useful step</span>
+              <strong className="mt-1 block text-sm font-bold text-white">{nextGoal?.title || "Record today's mood"}</strong>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="space-y-5">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <div className="space-y-6">
           <DashboardPanel className="border-violet-100 bg-violet-50/80">
-            <div className="flex items-center gap-2">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-white text-[var(--primary)] shadow-sm">
-                <Icon name="heart" size={18} />
-              </span>
-              <div>
-                <h2 className="text-base font-bold text-slate-950">How are you feeling today?</h2>
-                <p className="text-sm text-slate-600">Choose the closest match for this moment.</p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[var(--primary)] shadow-sm shadow-violet-950/5">
+                  <Icon name="heart" size={19} />
+                </span>
+                <div>
+                  <h2 className="text-base font-bold text-slate-950">How are you feeling today?</h2>
+                  <p className="text-sm text-slate-600">Choose the closest match for this moment.</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="w-fit rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-500 shadow-sm shadow-violet-950/5">1 minute check-in</span>
+                <span className="inline-flex w-fit items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-amber-600 shadow-sm shadow-violet-950/5">
+                  <Icon name="flame" size={14} color="#f59e0b" />
+                  {currentStreak} day streak
+                </span>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
               {moodOptions.map((mood, index) => {
                 const active = selectedMood === index;
                 return (
-                  <button type="button" className={`min-h-24 rounded-lg border p-3 text-center transition focus:outline-none focus:ring-4 focus:ring-violet-200 ${active ? "border-[var(--primary)] bg-white shadow-sm shadow-violet-950/10" : "border-violet-100 bg-white/70 hover:border-violet-300 hover:bg-white"}`} key={`${mood.label}-${index}`} onClick={() => setSelectedMood(index)}>
-                    <span className="block text-3xl leading-none">{mood.emoji}</span>
-                    <small className={`mt-3 block text-xs font-bold ${active ? "text-[var(--primary)]" : "text-slate-500"}`}>{mood.label}</small>
+                  <button
+                    type="button"
+                    className={`grid min-h-28 content-center justify-items-center rounded-lg border p-3 text-center transition focus:outline-none focus:ring-4 focus:ring-violet-200 ${active ? "border-[var(--primary)] bg-white shadow-md shadow-violet-950/10" : "border-violet-100 bg-white/70 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-white hover:shadow-sm"}`}
+                    key={`${mood.label}-${index}`}
+                    onClick={() => setSelectedMood(index)}
+                  >
+                    <span className="grid h-12 w-12 place-items-center rounded-lg text-3xl leading-none" style={{ backgroundColor: mood.bg }}>
+                      {mood.emoji}
+                    </span>
+                    <small className={`mt-3 block text-xs font-bold ${active ? "text-[var(--primary)]" : "text-slate-600"}`}>{mood.label}</small>
                   </button>
                 );
               })}
             </div>
+
             {moodSaveError ? (
               <div className="mt-4">
                 <ErrorState title="Mood could not be saved" message={moodSaveError} actionLabel="Try again" onAction={handleRecordMood} />
@@ -191,36 +244,51 @@ export default function DashboardContent({ email }: { email: string }) {
             ) : null}
             <button
               type="button"
-              className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition hover:bg-[#4f46e5] disabled:bg-slate-300"
+              className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition hover:-translate-y-0.5 hover:bg-[#4f46e5] disabled:translate-y-0 disabled:bg-slate-300"
               disabled={selectedMood === null || isSavingMood}
               onClick={handleRecordMood}
             >
               <Icon name={isSavingMood ? "loader-circle" : "check-circle"} size={18} color="#fff" className={isSavingMood ? "animate-spin" : ""} />
-              {isSavingMood ? "Saving Mood..." : "Record Today's Mood"}
+              {isSavingMood ? "Saving mood..." : "Record today's mood"}
             </button>
           </DashboardPanel>
 
           <DashboardPanel>
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-base font-bold text-slate-950">Weekly Mood Journey</h2>
-                <p className="text-sm text-slate-500">Average mood this week: <strong className="text-[var(--primary)]">{average}%</strong></p>
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Mood trend</span>
+                <h2 className="mt-1 text-lg font-bold text-slate-950">Weekly Mood Journey</h2>
+                <p className="mt-1 text-sm text-slate-500">Average mood this week: <strong className="text-[var(--primary)]">{average}%</strong></p>
               </div>
-              <span className="rounded-lg bg-violet-50 px-3 py-2 text-xs font-bold text-[var(--primary)]">Stable</span>
+              <div className="grid grid-cols-2 gap-2 text-right sm:min-w-44">
+                <MiniStat label="Peak" value={`${Math.round(bestMoodDay.value * 100)}%`} />
+                <MiniStat label="Status" value="Stable" />
+              </div>
             </div>
             <LineChart data={weeklyMood.map((item) => item.value * 100)} color="#6366f1" labels={weeklyMood.map((item) => item.day)} />
           </DashboardPanel>
 
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-bold text-slate-950">Quick Actions</h2>
-              <span className="text-xs font-semibold text-slate-500">4 tools</span>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--primary)]">Tools</span>
+                <h2 className="mt-1 text-lg font-bold text-slate-950">Quick Actions</h2>
+              </div>
+              <span className="rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-500 shadow-sm shadow-violet-950/5">{quickActions.length} tools</span>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {quickActions.map((action) => (
-                <button type="button" className="group grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-violet-100" key={action.label} onClick={() => navigate(action.path)}>
-                  <span className="grid h-10 w-10 place-items-center rounded-lg" style={{ backgroundColor: action.bg }}>
-                    <Icon name={action.icon} size={20} color={action.color} />
+                <button
+                  type="button"
+                  className="group grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-violet-100"
+                  key={action.label}
+                  onClick={() => navigate(action.path)}
+                >
+                  <span className="flex items-start justify-between gap-3">
+                    <span className="grid h-10 w-10 place-items-center rounded-lg" style={{ backgroundColor: action.bg }}>
+                      <Icon name={action.icon} size={20} color={action.color} />
+                    </span>
+                    <Icon name="arrow-up-right" size={16} color="#94a3b8" className="transition group-hover:text-[var(--primary)]" />
                   </span>
                   <strong className="text-sm font-bold text-slate-900">{action.label}</strong>
                 </button>
@@ -229,13 +297,16 @@ export default function DashboardContent({ email }: { email: string }) {
           </section>
         </div>
 
-        <aside className="space-y-5">
+        <aside className="space-y-6">
           <DashboardPanel>
-            <div className="mb-4 flex items-center gap-2">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-violet-50 text-[var(--primary)]">
-                <Icon name="calendar" size={18} />
-              </span>
-              <h2 className="text-base font-bold text-slate-950">Today&apos;s Wellness Summary</h2>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-violet-50 text-[var(--primary)]">
+                  <Icon name="calendar" size={18} />
+                </span>
+                <h2 className="text-base font-bold text-slate-950">Wellness Summary</h2>
+              </div>
+              <span className="text-xs font-bold text-slate-400">Today</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {wellnessMetrics.map((metric) => (
@@ -246,22 +317,28 @@ export default function DashboardContent({ email }: { email: string }) {
 
           <DashboardPanel>
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-base font-bold text-slate-950">Daily Goals</h2>
+              <div>
+                <h2 className="text-base font-bold text-slate-950">Daily Goals</h2>
+                <p className="mt-1 text-sm text-slate-500">{completedGoals} of {dailyGoals.length} on track</p>
+              </div>
               <button type="button" className="rounded-lg px-2 py-1 text-sm font-bold text-[var(--primary)] hover:bg-violet-50" onClick={() => navigate("/daily-goals")}>View all</button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {dailyGoals.length ? dailyGoals.map((goal) => <GoalRow goal={goal} key={goal.title} />) : <EmptyState message="No daily goals yet." />}
             </div>
           </DashboardPanel>
 
           <DashboardPanel>
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-base font-bold text-slate-950">Recent Activity</h2>
+              <div>
+                <h2 className="text-base font-bold text-slate-950">Recent Activity</h2>
+                <p className="mt-1 text-sm text-slate-500">Your latest care actions</p>
+              </div>
               <button type="button" className="rounded-lg px-2 py-1 text-sm font-bold text-[var(--primary)] hover:bg-violet-50" onClick={() => navigate("/recent-activity")}>See all</button>
             </div>
             <div className="space-y-3">
               {recentActivities.length ? recentActivities.map((activity) => (
-                <div className="grid grid-cols-[auto_1fr] items-center gap-3" key={activity.title}>
+                <div className="grid grid-cols-[auto_1fr] items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3" key={activity.title}>
                   <span className="grid h-10 w-10 place-items-center rounded-lg" style={{ backgroundColor: `${activity.color}1a` }}>
                     <Icon name={activity.icon} size={20} color={activity.color} />
                   </span>
@@ -276,5 +353,28 @@ export default function DashboardContent({ email }: { email: string }) {
         </aside>
       </div>
     </section>
+  );
+}
+
+function HeaderStat({ icon, label, value }) {
+  return (
+    <div className="flex min-h-16 items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-3 py-2">
+      <span className="grid h-9 w-9 place-items-center rounded-lg bg-white/15">
+        <Icon name={icon} size={18} color="#fff" />
+      </span>
+      <span className="min-w-0">
+        <small className="block truncate text-xs font-semibold text-violet-100">{label}</small>
+        <strong className="block text-base font-bold text-white">{value}</strong>
+      </span>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <span className="rounded-lg bg-violet-50 px-3 py-2 text-left">
+      <small className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">{label}</small>
+      <strong className="mt-1 block text-sm font-bold text-slate-900">{value}</strong>
+    </span>
   );
 }

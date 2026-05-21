@@ -5,41 +5,24 @@ import { useAuth } from "../../../hooks/useAuth";
 import { moodBars, moodInsights } from "../../../data/analyticsData";
 import { readingService } from "../../../services/readingService";
 import { storage } from "../../../services/storage";
+import {
+  calendarLabels,
+  calculateCurrentStreak,
+  createCalendarCells,
+  formatCheckInTime,
+  getSevenDayStrip,
+  hydrateMonthEntries,
+  moodCalendarStorageKey,
+  moodColor,
+  moodEmojis,
+  moodHighlights,
+  moodLabels,
+  moodSummaries,
+} from "../../../services/moodCalendarService";
 import MoodCalendarModal from "./MoodCalendarModal";
 import MoodDaySpotlight from "./MoodDaySpotlight";
 import MoodSummaryCards from "./MoodSummaryCards";
 import MoodTrackerCard from "./MoodTrackerCard";
-
-const moodEmojis = ["\u{1F620}", "\u{1F622}", "\u{1F610}", "\u{1F60A}", "\u{1F60D}"];
-const moodLabels = ["Very low", "Low", "Balanced", "Good", "Excellent"];
-const calendarLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const moodSummaries = [
-  "Today felt heavy, so smaller goals and extra support matter most.",
-  "There were some difficult moments, but you still checked in and stayed aware.",
-  "Your mood stayed balanced and steady through most of the day.",
-  "You handled the day well and had a few uplifting moments.",
-  "You felt very positive today and your energy was noticeably better.",
-];
-const moodHighlights = [
-  "Try a short grounding exercise and keep the schedule light.",
-  "Take a breathing break and check in again later this evening.",
-  "A consistent routine is helping you stay emotionally steady.",
-  "Your healthy rhythm is showing up in sleep and motivation.",
-  "This is a strong day to repeat the habits that helped you feel good.",
-];
-const moodCheckInTimes = ["08:15 AM", "09:40 AM", "11:10 AM", "01:20 PM", "03:05 PM", "05:30 PM", "08:10 PM"];
-const moodPattern = [4, 5, 3, 4, 2, 3, 4, 5, 4, 3, 2, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 2, 3, 4, 5, 4, 3, 4, 5, 4];
-
-type MoodEntry = {
-  checkInTime: string;
-  day: number;
-  emoji: string;
-  highlight: string;
-  label: string;
-  mood: number;
-  recorded: boolean;
-  summary: string;
-};
 
 export default function MoodAnalytics() {
   const { showToast } = useToast();
@@ -60,7 +43,7 @@ export default function MoodAnalytics() {
   const monthLabel = today.toLocaleString("en-US", { month: "long" });
   const patientKey = user?.uid || user?.email || "guest-patient";
   const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
-  const moodStorageKey = `patient_mood_calendar_${patientKey}_${monthKey}`;
+  const moodStorageKey = moodCalendarStorageKey(patientKey, monthKey);
   const [monthEntries, setMonthEntries] = useState(() => hydrateMonthEntries(storage.get(moodStorageKey, null), monthDays, todayDay));
   const [selectedDay, setSelectedDay] = useState(todayDay);
   const [pendingMood, setPendingMood] = useState<number | null>(null);
@@ -75,7 +58,7 @@ export default function MoodAnalytics() {
   const viewMonthDays = new Date(viewYear, viewMonth + 1, 0).getDate();
   const viewMonthLabel = new Date(viewYear, viewMonth, 1).toLocaleString("en-US", { month: "long" });
   const viewMonthKey = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
-  const viewStorageKey = `patient_mood_calendar_${patientKey}_${viewMonthKey}`;
+  const viewStorageKey = moodCalendarStorageKey(patientKey, viewMonthKey);
   const isViewingCurrentMonth = viewYear === currentYear && viewMonth === currentMonth;
   const viewTodayLimit = isViewingCurrentMonth ? todayDay : viewMonthDays;
   const viewEntries = isViewingCurrentMonth
@@ -309,92 +292,4 @@ export default function MoodAnalytics() {
       <MoodTrackerCard bars={bars} cycle={cycle} moodColor={moodColor} moodInsights={moodInsights} moodLabels={moodLabels} />
     </div>
   );
-}
-
-function moodColor(mood) {
-  return ["#ef4444", "#f59e0b", "#6b7280", "#10b981", "#3b82f6"][mood - 1] || "#6b7280";
-}
-
-function getSevenDayStrip(entries: MoodEntry[], selectedDay: number, daysInMonth: number) {
-  const start = Math.min(Math.max(1, selectedDay - 3), Math.max(1, daysInMonth - 6));
-  return entries.slice(start - 1, start + 6);
-}
-
-function createMonthEntries(daysInMonth: number, todayDay: number): MoodEntry[] {
-  return Array.from({ length: daysInMonth }, (_, index) => {
-    const mood = moodPattern[index % moodPattern.length];
-    const day = index + 1;
-    const recorded = day < todayDay ? day % 6 !== 0 : false;
-    return {
-      day,
-      mood,
-      recorded,
-      emoji: moodEmojis[mood - 1],
-      label: moodLabels[mood - 1],
-      summary: moodSummaries[mood - 1],
-      highlight: moodHighlights[mood - 1],
-      checkInTime: moodCheckInTimes[index % moodCheckInTimes.length],
-    };
-  });
-}
-
-function hydrateMonthEntries(savedEntries: unknown, daysInMonth: number, todayDay: number): MoodEntry[] {
-  const defaultEntries = createMonthEntries(daysInMonth, todayDay);
-
-  if (!Array.isArray(savedEntries)) {
-    return defaultEntries;
-  }
-
-  return defaultEntries.map((entry) => {
-    const savedEntry = savedEntries.find((item) => item?.day === entry.day);
-
-    if (!savedEntry) {
-      return entry;
-    }
-
-    const mood = Number(savedEntry.mood);
-    const safeMood = Number.isInteger(mood) && mood >= 1 && mood <= 5 ? mood : entry.mood;
-    const isFutureDay = entry.day > todayDay;
-
-    return {
-      ...entry,
-      mood: safeMood,
-      recorded: isFutureDay ? false : Boolean(savedEntry.recorded),
-      emoji: moodEmojis[safeMood - 1],
-      label: moodLabels[safeMood - 1],
-      summary: moodSummaries[safeMood - 1],
-      highlight: moodHighlights[safeMood - 1],
-      checkInTime: typeof savedEntry.checkInTime === "string" && savedEntry.checkInTime ? savedEntry.checkInTime : entry.checkInTime,
-    };
-  });
-}
-
-function createCalendarCells(entries: MoodEntry[], firstDayOfMonth: number) {
-  const leadingPlaceholders = Array.from({ length: firstDayOfMonth }, () => null);
-  const cells = [...leadingPlaceholders, ...entries];
-  const trailingCount = (7 - (cells.length % 7)) % 7;
-  return [...cells, ...Array.from({ length: trailingCount }, () => null)];
-}
-
-function calculateCurrentStreak(entries: MoodEntry[], todayDay: number) {
-  let streak = 0;
-
-  for (let day = 1; day <= todayDay; day += 1) {
-    const entry = entries.find((item) => item.day === day);
-
-    if (entry?.recorded) {
-      streak += 1;
-    } else {
-      streak = 0;
-    }
-  }
-
-  return streak;
-}
-
-function formatCheckInTime(date: Date) {
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }

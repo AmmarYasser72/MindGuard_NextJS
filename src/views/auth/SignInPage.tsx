@@ -8,6 +8,7 @@ import AuthLogo from "../../components/auth/AuthLogo";
 import ErrorBanner from "../../components/auth/ErrorBanner";
 import PasswordField from "../../components/auth/PasswordField";
 import TextField from "../../components/auth/TextField";
+import { isDemoMode } from "../../config/demoMode";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
 
@@ -86,7 +87,9 @@ export default function SignInPage() {
               <div className="mb-1 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-[22px] font-bold text-slate-900">Sign in</h2>
-                  <p className="mt-1 text-sm text-slate-500">Enter your email and password</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {isDemoMode ? "Hosted demo mode is active. Use a demo account or create a local browser-only account." : "Enter your email and password"}
+                  </p>
                 </div>
               </div>
               <ErrorBanner error={error} />

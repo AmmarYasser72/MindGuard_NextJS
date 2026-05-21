@@ -1,5 +1,6 @@
 import { ensureObjectData, ensureRecordHasAnyField } from "./apiResponse";
 import { request } from "./apiClient";
+import { isDemoMode } from "../config/demoMode";
 
 const moodReadingFields = ["_id", "id", "patient", "type", "value", "mood"];
 
@@ -21,6 +22,15 @@ export function moodToApiValue(mood: number | string) {
 
 export const readingService = {
   async savePatientMood(mood: number | string) {
+    if (isDemoMode) {
+      return {
+        id: `demo-mood-${Date.now()}`,
+        mood: moodToApiValue(mood),
+        type: "mood",
+        value: Number(mood),
+      };
+    }
+
     const response = await request("/reading/patient/mood", {
       auth: true,
       method: "POST",

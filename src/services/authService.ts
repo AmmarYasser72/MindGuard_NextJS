@@ -1,6 +1,7 @@
 import { storage } from "./storage";
 import { request } from "./apiClient";
 import { clearSession, getSession, setSession } from "./session";
+import { isDemoMode } from "../config/demoMode";
 import type { ApiError, ApiRecord } from "../types/api";
 import type { AuthUser, RegisterProfile, UserRole } from "../types/auth";
 
@@ -224,6 +225,17 @@ export const authService = {
   async signIn(email: string, password: string) {
     const cleanEmail = email.trim().toLowerCase();
     const demoUser = findDemoUser(cleanEmail, password);
+    const fallbackUser = findLocalUser(cleanEmail, password);
+
+    if (isDemoMode) {
+      if (demoUser) {
+        return persistSession(removePassword(demoUser));
+      }
+      if (fallbackUser) {
+        return persistSession(removePassword(fallbackUser));
+      }
+      throw new Error("Invalid email or password");
+    }
 
     try {
       const auth = await request("/auth/login", {
@@ -246,7 +258,6 @@ export const authService = {
         }
       }
 
-      const fallbackUser = findLocalUser(cleanEmail, password);
       if (fallbackUser && isConnectionError(error)) {
         return persistSession(removePassword(fallbackUser));
       }
@@ -273,6 +284,14 @@ export const authService = {
         : undefined,
     };
     const fallback = { email: cleanEmail, displayName: body.name, role: profile.role };
+
+    if (isDemoMode) {
+      const users = savedUsers();
+      if (users.some((user) => user.email.toLowerCase() === cleanEmail)) {
+        throw new Error("Email already exists");
+      }
+      return persistSession(createLocalUser(profile, cleanEmail));
+    }
 
     try {
       const auth = await request("/auth/register", {
