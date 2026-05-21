@@ -16,6 +16,7 @@ export default function PatientDashboard() {
   const { user } = useAuth();
   const { navigate } = useRouter();
   const email = user?.email || "Patient";
+  const chatPath = `/patient-chat/${encodeURIComponent(email)}`;
 
   useEffect(() => {
     void import("./AnalyticsPage");
@@ -23,29 +24,64 @@ export default function PatientDashboard() {
 
   return (
     <main className="min-h-screen text-slate-950" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #f8fafc 42%, #ffffff 100%)" }}>
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-40 lg:pt-8">
         {tab === "dashboard" ? <DashboardContent email={email} /> : <AnalyticsPage />}
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-violet-100 bg-white/95 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-12px_30px_rgba(76,29,149,0.12)] backdrop-blur" aria-label="Patient navigation">
-        <div className="mx-auto grid max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-violet-100/80 bg-white/80 p-1 shadow-sm shadow-violet-950/5">
-          <button type="button" className={bottomNavClass(tab === "dashboard")} onClick={() => setTab("dashboard")} aria-current={tab === "dashboard" ? "page" : undefined}>
-            <Icon name="dashboard" size={22} color={tab === "dashboard" ? primaryPurple : "currentColor"} />
-            <span>Dashboard</span>
+      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-8" aria-label="Patient navigation">
+        <div className="pointer-events-auto mx-auto grid max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-violet-100/80 bg-white/90 p-2 shadow-[0_-16px_48px_rgba(76,29,149,0.16)] ring-1 ring-white/80 backdrop-blur-xl animate-[nav-rise_420ms_ease_both]">
+          <BottomNavButton
+            active={tab === "dashboard"}
+            icon="dashboard"
+            label="Dashboard"
+            onClick={() => setTab("dashboard")}
+          />
+
+          <button
+            type="button"
+            className="group relative -mt-8 grid h-20 w-20 place-items-center rounded-full bg-[linear-gradient(135deg,#6366f1_0%,#7c3aed_100%)] text-white shadow-[0_16px_34px_rgba(99,102,241,0.34)] ring-4 ring-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_rgba(99,102,241,0.42)] focus:outline-none focus:ring-violet-200"
+            onClick={() => navigate(chatPath)}
+            aria-label="Chat with NOVA"
+          >
+            <span className="absolute inset-0 rounded-full bg-violet-400/20 animate-[nova-pulse_2.4s_ease-in-out_infinite]" aria-hidden="true" />
+            <span className="relative grid h-12 w-12 place-items-center rounded-full bg-white/15 transition duration-300 group-hover:scale-105">
+              <Icon name="message-circle" size={28} color="#fff" />
+            </span>
+            <span className="absolute -bottom-7 rounded-lg border border-violet-100 bg-white px-2.5 py-1 text-[11px] font-black text-[var(--primary)] shadow-sm shadow-violet-950/5">NOVA</span>
           </button>
-          <button type="button" className="grid h-14 w-14 place-items-center rounded-full bg-[var(--primary)] text-white shadow-lg shadow-indigo-900/20 ring-4 ring-white transition hover:-translate-y-0.5 hover:bg-[#4f46e5] focus:outline-none focus:ring-violet-200" onClick={() => navigate(`/patient-chat/${encodeURIComponent(email)}`)} aria-label="Chat with NOVA">
-            <Icon name="message-circle" size={26} color="#fff" />
-          </button>
-          <button type="button" className={bottomNavClass(tab === "analytics")} onClick={() => setTab("analytics")} aria-current={tab === "analytics" ? "page" : undefined}>
-            <Icon name="analytics" size={22} color={tab === "analytics" ? primaryPurple : "currentColor"} />
-            <span>Analytics</span>
-          </button>
+
+          <BottomNavButton
+            active={tab === "analytics"}
+            icon="analytics"
+            label="Analytics"
+            onClick={() => setTab("analytics")}
+          />
         </div>
       </nav>
     </main>
   );
 }
 
-function bottomNavClass(active: boolean) {
-  return `grid min-h-14 min-w-0 justify-items-center gap-1 rounded-lg px-4 py-2 text-xs font-bold transition ${active ? "bg-[rgba(99,102,241,0.1)] text-[var(--primary)] shadow-sm shadow-violet-950/5" : "text-slate-500 hover:bg-violet-50 hover:text-[var(--primary)]"}`;
+type BottomNavButtonProps = {
+  active: boolean;
+  icon: string;
+  label: string;
+  onClick: () => void;
+};
+
+function BottomNavButton({ active, icon, label, onClick }: BottomNavButtonProps) {
+  return (
+    <button
+      type="button"
+      className={`group relative grid min-h-16 min-w-0 justify-items-center gap-1 overflow-hidden rounded-lg px-4 py-2 text-xs font-bold transition duration-300 focus:outline-none focus:ring-4 focus:ring-violet-100 ${active ? "bg-violet-50 text-[var(--primary)] shadow-sm shadow-violet-950/5 animate-[nav-item-pop_260ms_ease_both]" : "text-slate-500 hover:bg-violet-50 hover:text-[var(--primary)]"}`}
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+    >
+      <span className={`absolute inset-x-5 top-1 h-1 rounded-full transition duration-300 ${active ? "bg-[var(--primary)] opacity-100" : "bg-transparent opacity-0"}`} aria-hidden="true" />
+      <span className={`grid h-8 w-8 place-items-center rounded-lg transition duration-300 ${active ? "bg-white text-[var(--primary)] shadow-sm shadow-violet-950/5" : "group-hover:bg-white/80"}`}>
+        <Icon name={icon} size={22} color={active ? primaryPurple : "currentColor"} />
+      </span>
+      <span>{label}</span>
+    </button>
+  );
 }
