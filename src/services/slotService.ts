@@ -1,6 +1,6 @@
 import { ensureArrayRecords, ensureObjectData, ensureRecordHasAnyField, shortId } from "./apiResponse";
 import { request } from "./apiClient";
-import { isDemoMode } from "../config/demoMode";
+import { shouldUseDemoData } from "../config/demoMode";
 import { patients as demoPatients, sessions as demoSessions } from "../data/doctorData";
 import { storage } from "./storage";
 import type { ApiRecord } from "../types/api";
@@ -94,7 +94,7 @@ function writeDemoSlots(slots: ApiRecord[]) {
 
 export const slotService = {
   async createSlot(slot: ApiRecord) {
-    if (isDemoMode) {
+    if (shouldUseDemoData()) {
       const slots = readDemoSlots();
       const created = {
         ...slot,
@@ -114,7 +114,7 @@ export const slotService = {
   },
 
   async getDoctorSlots(params: Record<string, unknown> = {}) {
-    if (isDemoMode) {
+    if (shouldUseDemoData()) {
       const slots = readDemoSlots()
         .map(normalizeSlotRecord)
         .sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime());
@@ -126,7 +126,7 @@ export const slotService = {
   },
 
   async getSlot(slotId: string) {
-    if (isDemoMode) {
+    if (shouldUseDemoData()) {
       const slot = readDemoSlots().find((item) => String(item.id || item._id) === slotId);
       if (!slot) {
         throw new Error("Slot not found");
@@ -139,7 +139,7 @@ export const slotService = {
   },
 
   async updateSlot(slotId: string, updates: ApiRecord) {
-    if (isDemoMode) {
+    if (shouldUseDemoData()) {
       const slots = readDemoSlots();
       const index = slots.findIndex((item) => String(item.id || item._id) === slotId);
       if (index === -1) {
@@ -163,7 +163,7 @@ export const slotService = {
   },
 
   async deleteSlot(slotId: string) {
-    if (isDemoMode) {
+    if (shouldUseDemoData()) {
       const slots = readDemoSlots();
       const next = slots.filter((item) => String(item.id || item._id) !== slotId);
       writeDemoSlots(next);

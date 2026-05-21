@@ -1,6 +1,6 @@
 import { ensureArrayRecords, shortId } from "./apiResponse";
 import { request } from "./apiClient";
-import { isDemoMode } from "../config/demoMode";
+import { shouldUseDemoData } from "../config/demoMode";
 import { patients as demoPatients } from "../data/doctorData";
 import type { ApiRecord } from "../types/api";
 import type { DoctorPatient } from "../types/doctor";
@@ -64,7 +64,7 @@ export function normalizePatientRecord(record: ApiRecord, index = 0): DoctorPati
 
 export const patientService = {
   async getDoctorPatients(doctorId: string) {
-    if (isDemoMode) {
+    if (shouldUseDemoData()) {
       return demoPatients.map((patient) => ({
         ...patient,
         displayName: `${patient.firstName} ${patient.lastName}`.trim(),

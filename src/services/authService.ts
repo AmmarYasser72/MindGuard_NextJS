@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { request } from "./apiClient";
-import { clearSession, getSession, setSession } from "./session";
+import { LOCAL_DEMO_TOKEN, clearSession, getSession, setSession } from "./session";
 import { isDemoMode } from "../config/demoMode";
 import type { ApiError, ApiRecord } from "../types/api";
 import type { AuthUser, RegisterProfile, UserRole } from "../types/auth";
@@ -58,7 +58,7 @@ function findDemoUser(email: string, password: string) {
   );
 }
 
-function persistSession(user: AuthUser, token: string | null = "local-demo-token") {
+function persistSession(user: AuthUser, token: string | null = LOCAL_DEMO_TOKEN) {
   setSession({ token, user });
   return user;
 }
@@ -191,32 +191,6 @@ function isConnectionError(error: unknown): error is ApiError {
     || typedError.code === "REQUEST_TIMEOUT";
 }
 
-function demoRegisterBody(user: StoredUser) {
-  const role = normalizeRole(user.role);
-  const cleanName = (user.displayName || user.email).replace(/^Dr\.\s*/i, "");
-
-  return {
-    confirmPassword: user.password,
-    email: user.email,
-    gender: "male",
-    licenseNumber: role === "doctor" ? "DEMO-0001" : undefined,
-    name: cleanName,
-    password: user.password,
-    role,
-    specialization: role === "doctor" ? "Psychiatry" : undefined,
-    yearsOfExperience: role === "doctor" ? 5 : undefined,
-  };
-}
-
-async function registerDemoWithBackend(user: StoredUser) {
-  const auth = await request("/auth/register", {
-    method: "POST",
-    body: JSON.stringify(demoRegisterBody(user)),
-  });
-  const token = authToken(auth);
-  return persistSession(profileFromAuth(auth, user), token);
-}
-
 export const authService = {
   getCurrentUser() {
     return getSession()?.user || null;
@@ -227,10 +201,11 @@ export const authService = {
     const demoUser = findDemoUser(cleanEmail, password);
     const fallbackUser = findLocalUser(cleanEmail, password);
 
+    if (demoUser) {
+      return persistSession(removePassword(demoUser), LOCAL_DEMO_TOKEN);
+    }
+
     if (isDemoMode) {
-      if (demoUser) {
-        return persistSession(removePassword(demoUser));
-      }
       if (fallbackUser) {
         return persistSession(removePassword(fallbackUser));
       }
@@ -246,18 +221,6 @@ export const authService = {
       const fallback = { email: cleanEmail, role: roleFromEmail(cleanEmail) };
       return persistSession(profileFromAuth(auth, fallback), token);
     } catch (error) {
-      const typedError = error as ApiError;
-      if (demoUser && typedError.status === 401) {
-        try {
-          return await registerDemoWithBackend(demoUser);
-        } catch (registerError) {
-          if (isConnectionError(registerError)) {
-            return persistSession(removePassword(demoUser));
-          }
-          throw new Error(registerError instanceof Error ? registerError.message : "Unable to create the backend demo account");
-        }
-      }
-
       if (fallbackUser && isConnectionError(error)) {
         return persistSession(removePassword(fallbackUser));
       }

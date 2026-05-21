@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 import { getAuthToken, request } from "./apiClient";
 import { storage } from "./storage";
+import { shouldUseDemoData } from "../config/demoMode";
 import type { ApiError, ApiRecord } from "../types/api";
 import type { ChatClient, ChatMessage, ChatState } from "../types/chat";
 
@@ -208,6 +209,10 @@ async function loadRemoteMessages(chatId: string) {
 
 export async function loadChatState(userId: string): Promise<ChatState> {
   const localMessages = readLocalChatMessages(userId);
+
+  if (shouldUseDemoData()) {
+    return { chatId: getOrCreateChatThreadId(userId), messages: localMessages, mode: "local" };
+  }
 
   try {
     const thread = await ensureRemoteChat(userId);
