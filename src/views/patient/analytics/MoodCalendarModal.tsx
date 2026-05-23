@@ -162,7 +162,7 @@ export default function MoodCalendarModal({
                   <small className={`text-xs font-black ${isFuture ? "text-slate-300" : "text-slate-500"}`}>{entry.day}</small>
                   <strong className={`text-2xl leading-none ${isFuture ? "opacity-30" : ""}`}>{isFuture || !entry.recorded ? "" : entry.emoji}</strong>
                   <span className={`text-[10px] font-semibold leading-4 ${isFuture ? "text-slate-300" : "text-slate-500"}`}>
-                    {isFuture ? "Coming soon" : entry.recorded ? entry.label : "Not recorded"}
+                    {isFuture ? "Upcoming" : entry.recorded ? entry.label : "Not recorded"}
                   </span>
                 </button>
               );

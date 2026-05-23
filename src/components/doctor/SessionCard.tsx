@@ -1,4 +1,3 @@
-import { useToast } from "../common/Toast";
 import Icon from "../common/Icon";
 import {
   sessionTypeIcon,
@@ -8,8 +7,7 @@ import ConditionPill from "./ConditionPill";
 import SeverityPill from "./SeverityPill";
 import { formatTime, primaryButtonClass, secondaryButtonClass } from "./dashboardShared";
 
-export default function SessionCard({ session, isPast, onDelete, onEdit }) {
-  const { showToast } = useToast();
+export default function SessionCard({ session, isPast, onDelete, onEdit, onReview, onStart }) {
   const duration = session.duration ? `${session.duration} min` : "Duration unavailable";
 
   return (
@@ -17,7 +15,11 @@ export default function SessionCard({ session, isPast, onDelete, onEdit }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-3xl font-bold text-slate-950">{formatTime(session.scheduledAt)}</h2>
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-bold text-slate-700"><Icon name={sessionTypeIcon(session.type)} size={18} /> {session.patientName} <span className="rounded-lg bg-violet-50 px-2 py-1 text-xs text-[var(--primary)]">{shortReason(session.reason)}</span></p>
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-bold text-slate-700">
+            <Icon name={sessionTypeIcon(session.type)} size={18} />
+            {session.patientName}
+            <span className="rounded-lg bg-violet-50 px-2 py-1 text-xs text-[var(--primary)]">{shortReason(session.reason)}</span>
+          </p>
         </div>
         {session.severity ? <SeverityPill severity={session.severity} /> : null}
       </div>
@@ -26,7 +28,7 @@ export default function SessionCard({ session, isPast, onDelete, onEdit }) {
         <span className="inline-flex min-h-6 items-center rounded-lg bg-violet-50 px-2 text-xs font-bold text-[var(--primary)]">{duration}</span>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <button type="button" className={primaryButtonClass} onClick={() => showToast(isPast ? "Review - Coming soon" : "Session started")}>{isPast ? "Review" : "Start"}</button>
+        <button type="button" className={primaryButtonClass} onClick={isPast ? onReview : onStart}>{isPast ? "Review" : "Start"}</button>
         <button type="button" className={secondaryButtonClass} onClick={onEdit}>Edit</button>
         <button type="button" className={secondaryButtonClass} onClick={onDelete}>Delete</button>
       </div>

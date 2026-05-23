@@ -1,4 +1,4 @@
-export const wellnessMetrics = [
+﻿export const wellnessMetrics = [
   { icon: "heart", label: "Mental Health", value: "75%", color: "#ec4899", bg: "#fce7f3" },
   { icon: "moon", label: "Sleep", value: "7.5h", color: "#8b5cf6", bg: "#f3e8ff" },
   { icon: "dumbbell", label: "Exercise", value: "30m", color: "#10b981", bg: "#d1fae5" },
@@ -6,11 +6,11 @@ export const wellnessMetrics = [
 ];
 
 export const moodOptions = [
-  { emoji: "😠", label: "Very Low", color: "#ef4444", bg: "#fee2e2" },
-  { emoji: "😢", label: "Low", color: "#f59e0b", bg: "#fef3c7" },
-  { emoji: "😐", label: "Balanced", color: "#6366f1", bg: "#e0e7ff" },
-  { emoji: "😊", label: "Good", color: "#10b981", bg: "#d1fae5" },
-  { emoji: "😍", label: "Excellent", color: "#8b5cf6", bg: "#f3e8ff" },
+  { emoji: "\u{1F620}", label: "Very Low", color: "#ef4444", bg: "#fee2e2" },
+  { emoji: "\u{1F622}", label: "Low", color: "#f59e0b", bg: "#fef3c7" },
+  { emoji: "\u{1F610}", label: "Balanced", color: "#6366f1", bg: "#e0e7ff" },
+  { emoji: "\u{1F60A}", label: "Good", color: "#10b981", bg: "#d1fae5" },
+  { emoji: "\u{1F60D}", label: "Excellent", color: "#8b5cf6", bg: "#f3e8ff" },
 ];
 
 export const quickActions = [
@@ -106,9 +106,9 @@ export const toolPages = {
         title: "Choose an Exercise",
         type: "list",
         items: [
-          { title: "4-7-8 Breathing", subtitle: "Inhale for 4 seconds, hold for 7, exhale for 8", meta: "4 minutes", icon: "timer", toast: "4-7-8 Breathing exercise - Coming soon" },
-          { title: "Box Breathing", subtitle: "Equal time for inhale, hold, exhale, hold", meta: "5 minutes", icon: "square", toast: "Box Breathing exercise - Coming soon" },
-          { title: "Diaphragmatic Breathing", subtitle: "Deep belly breathing for relaxation", meta: "3 minutes", icon: "accessibility", toast: "Diaphragmatic Breathing exercise - Coming soon" },
+          { title: "4-7-8 Breathing", subtitle: "Inhale for 4 seconds, hold for 7, exhale for 8", meta: "4 minutes", icon: "timer" },
+          { title: "Box Breathing", subtitle: "Equal time for inhale, hold, exhale, hold", meta: "5 minutes", icon: "square" },
+          { title: "Diaphragmatic Breathing", subtitle: "Deep belly breathing for relaxation", meta: "3 minutes", icon: "accessibility" },
         ],
       },
       {
@@ -129,17 +129,17 @@ export const toolPages = {
     color: "#8b5cf6",
     bg: "#f3e8ff",
     actions: [
-      { title: "New Entry", icon: "edit", color: "#6366f1", toast: "New journal entry - Coming soon" },
-      { title: "Mood Check", icon: "smile", color: "#8b5cf6", toast: "Mood check-in - Coming soon" },
+      { title: "New Entry", icon: "edit", color: "#6366f1" },
+      { title: "Mood Check", icon: "smile", color: "#8b5cf6" },
     ],
     sections: [
       {
         title: "Recent Entries",
         type: "journal",
         items: [
-          { date: "Today", title: "A peaceful morning", preview: "Started the day with meditation and felt more centered...", mood: "😊" },
-          { date: "Yesterday", title: "Reflections on work", preview: "The meeting went well but I felt a bit anxious about...", mood: "😐" },
-          { date: "2 days ago", title: "Grateful moments", preview: "Counting my blessings today - good health, loving family...", mood: "😄" },
+          { date: "Today", title: "A peaceful morning", preview: "Started the day with meditation and felt more centered...", mood: "\u{1F60A}" },
+          { date: "Yesterday", title: "Reflections on work", preview: "The meeting went well but I felt a bit anxious about...", mood: "\u{1F610}" },
+          { date: "2 days ago", title: "Grateful moments", preview: "Counting my blessings today - good health, loving family...", mood: "\u{1F604}" },
         ],
       },
       {
@@ -162,18 +162,18 @@ export const toolPages = {
     color: "#10b981",
     bg: "#d1fae5",
     actions: [
-      { title: "Start Workout", icon: "play", color: "#10b981", toast: "Start workout - Coming soon" },
-      { title: "Log Activity", icon: "plus", color: "#6366f1", toast: "Log activity - Coming soon" },
+      { title: "Start Workout", icon: "play", color: "#10b981" },
+      { title: "Log Activity", icon: "plus", color: "#6366f1" },
     ],
     sections: [
       {
         title: "Exercise Categories",
         type: "list",
         items: [
-          { title: "Cardio", subtitle: "Running, cycling, swimming", meta: "5 exercises", icon: "footprints", toast: "Cardio exercises - Coming soon" },
-          { title: "Strength Training", subtitle: "Build muscle and strength", meta: "8 exercises", icon: "dumbbell", toast: "Strength training exercises - Coming soon" },
-          { title: "Yoga & Flexibility", subtitle: "Improve flexibility and mindfulness", meta: "6 exercises", icon: "sparkles", toast: "Yoga exercises - Coming soon" },
-          { title: "Walking", subtitle: "Simple daily walks for mental clarity", meta: "3 exercises", icon: "person-standing", toast: "Walking exercises - Coming soon" },
+          { title: "Cardio", subtitle: "Running, cycling, swimming", meta: "5 exercises", icon: "footprints" },
+          { title: "Strength Training", subtitle: "Build muscle and strength", meta: "8 exercises", icon: "dumbbell" },
+          { title: "Yoga & Flexibility", subtitle: "Improve flexibility and mindfulness", meta: "6 exercises", icon: "sparkles" },
+          { title: "Walking", subtitle: "Simple daily walks for mental clarity", meta: "3 exercises", icon: "person-standing" },
         ],
       },
       {
@@ -202,8 +202,8 @@ export const toolPages = {
     color: "#ec4899",
     bg: "#fce7f3",
     actions: [
-      { title: "Log Sleep", icon: "plus", color: "#6366f1", toast: "Log sleep entry - Coming soon" },
-      { title: "Sleep Tips", icon: "lightbulb", color: "#8b5cf6", toast: "Sleep tips - Coming soon" },
+      { title: "Log Sleep", icon: "plus", color: "#6366f1" },
+      { title: "Sleep Tips", icon: "lightbulb", color: "#8b5cf6" },
     ],
     sections: [
       {
@@ -301,7 +301,7 @@ export const toolPages = {
         type: "activity",
         items: [
           { title: "Completed Breathing Exercise", subtitle: "4-7-8 Breathing - 4 minutes", time: "2 hours ago", icon: "wind", color: "#6366f1" },
-          { title: "Journal Entry Added", subtitle: "Daily reflection - Mood: 😊", time: "5 hours ago", icon: "book-open", color: "#8b5cf6" },
+          { title: "Journal Entry Added", subtitle: "Daily reflection - Mood: \u{1F60A}", time: "5 hours ago", icon: "book-open", color: "#8b5cf6" },
           { title: "Exercise Session Completed", subtitle: "Evening walk - 30 minutes", time: "Yesterday", icon: "dumbbell", color: "#10b981" },
           { title: "Sleep Log Updated", subtitle: "7h 32m sleep - Quality: Good", time: "Yesterday", icon: "moon", color: "#ec4899" },
           { title: "Goal Achieved", subtitle: "Morning meditation completed", time: "2 days ago", icon: "check-circle", color: "#6366f1" },

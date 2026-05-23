@@ -26,7 +26,7 @@ export default function ToolSection({ section, color, onAction }) {
               type="button"
               className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4 text-left shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
               key={item.date}
-              onClick={() => onAction({ toast: "Sleep details - Coming soon" })}
+              onClick={() => onAction(item)}
             >
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-pink-50"><Icon name="moon" size={20} color="#ec4899" /></span>
               <span className="min-w-0">

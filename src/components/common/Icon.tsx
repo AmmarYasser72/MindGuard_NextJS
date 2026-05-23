@@ -3,9 +3,12 @@ import type { CSSProperties } from "react";
 const aliases: Record<string, string> = {
   dashboard: "layout-dashboard",
   analytics: "chart-no-axes-combined",
+  "check-circle": "circle-check",
   doctor: "stethoscope",
+  edit: "square-pen",
   exercise: "dumbbell",
   journal: "book-open-text",
+  "more-horizontal": "ellipsis",
   sleep: "moon",
   mood: "smile",
   monitor: "activity",
