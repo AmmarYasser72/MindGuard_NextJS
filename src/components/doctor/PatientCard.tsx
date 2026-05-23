@@ -22,7 +22,7 @@ export default function PatientCard({ patient, expanded, onToggle, onProfile, on
   const trendNote = patient.trend?.length ? `From ${Math.round(patient.trend.at(-1))} last week` : "Backend has no trend yet";
 
   return (
-    <article className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm shadow-violet-950/5">
+    <article className="doctor-surface overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm shadow-violet-950/5">
       <button type="button" className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 p-4 text-left transition hover:bg-violet-50/60" onClick={onToggle}>
         <span className="grid h-12 w-12 place-items-center rounded-lg bg-[var(--primary)] text-sm font-bold text-white shadow-sm shadow-violet-950/10">{initials(patient)}</span>
         <span className="min-w-0">
@@ -36,13 +36,13 @@ export default function PatientCard({ patient, expanded, onToggle, onProfile, on
         <Icon name={expanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
       </button>
       {expanded ? (
-        <div className="grid gap-4 border-t border-violet-100 bg-violet-50/50 p-4">
+        <div className="doctor-muted-panel grid gap-4 border-t border-violet-100 bg-violet-50/50 p-4">
           <div className="grid gap-3 md:grid-cols-3">
             <MetricBlock label="Latest mood" value={valueOrMissing(patient.mood, "/100")} note={trendNote} tone="violet" />
             <MetricBlock label="HRV" value={valueOrMissing(patient.hrv, "ms")} note={patient.hrvDeviation === null || patient.hrvDeviation === undefined ? "Backend has no HRV baseline yet" : `${Math.abs(patient.hrvDeviation).toFixed(0)}% from baseline`} tone="red" />
             <MetricBlock label="Sleep" value={patient.sleep === null || patient.sleep === undefined ? "No data yet" : `${Math.round(patient.sleep * 100)}%`} note="Efficiency last night" tone="emerald" />
           </div>
-          <p className="rounded-lg border border-violet-100 bg-white p-3 text-sm font-medium text-slate-600">
+          <p className="doctor-card-gradient rounded-lg border border-violet-100 bg-white p-3 text-sm font-medium text-slate-600">
             <strong className="text-slate-900">Last journal:</strong> {patient.journal ? `"${patient.journal.slice(0, 110)}..."` : "No recent entry"}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">

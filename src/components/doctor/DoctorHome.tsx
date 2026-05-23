@@ -62,8 +62,8 @@ export default function DoctorHome({ onNavigate, onRefresh, patientError, patien
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.65fr)]">
-        <section className="overflow-hidden rounded-lg border border-violet-100 bg-white shadow-sm shadow-violet-950/5">
-          <div className="flex flex-col gap-4 border-b border-slate-100 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_58%,#f5f3ff_100%)] p-5 sm:flex-row sm:items-start sm:justify-between">
+        <section className="doctor-surface dashboard-surface overflow-hidden rounded-lg border">
+          <div className="doctor-panel-head flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <span className="inline-flex min-h-7 items-center gap-2 rounded-lg bg-violet-50 px-2.5 text-xs font-black uppercase text-[var(--primary)] ring-1 ring-violet-100">
                 <Icon name="chart-no-axes-combined" size={14} />
@@ -72,7 +72,7 @@ export default function DoctorHome({ onNavigate, onRefresh, patientError, patien
               <h2 className="mt-3 text-xl font-black text-slate-950">Condition Distribution</h2>
               <p className="mt-1 max-w-2xl text-sm font-medium leading-6 text-slate-500">Current clinical mix across the assigned patient panel.</p>
             </div>
-            <button type="button" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-violet-100 bg-white px-3 text-sm font-bold text-[var(--primary)] shadow-sm shadow-violet-950/5 transition hover:border-violet-200 hover:bg-violet-50" onClick={onRefresh}>
+            <button type="button" className="dashboard-outline-btn inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-bold shadow-sm shadow-violet-950/5" onClick={onRefresh}>
               <Icon name="rotate-ccw" size={16} />
               Refresh
             </button>
@@ -80,17 +80,17 @@ export default function DoctorHome({ onNavigate, onRefresh, patientError, patien
 
           <div className="grid gap-5 p-5">
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div className="doctor-card-gradient rounded-lg border border-slate-100 bg-slate-50 p-4">
                 <small className="text-xs font-black uppercase text-slate-400">Panel total</small>
                 <strong className="mt-2 block text-2xl font-black text-slate-950">{totalPanel}</strong>
                 <span className="text-xs font-semibold text-slate-500">assigned patients</span>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div className="doctor-card-gradient rounded-lg border border-slate-100 bg-slate-50 p-4">
                 <small className="text-xs font-black uppercase text-slate-400">Largest group</small>
                 <strong className="mt-2 block truncate text-lg font-black text-slate-950">{leadingCondition.label}</strong>
                 <span className="text-xs font-semibold text-slate-500">{leadingPercent}% of the panel</span>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div className="doctor-card-gradient rounded-lg border border-slate-100 bg-slate-50 p-4">
                 <small className="text-xs font-black uppercase text-slate-400">Tracked categories</small>
                 <strong className="mt-2 block text-2xl font-black text-slate-950">{segments.length}</strong>
                 <span className="text-xs font-semibold text-slate-500">condition cohorts</span>
@@ -124,9 +124,9 @@ export default function DoctorHome({ onNavigate, onRefresh, patientError, patien
           <h2 className="text-lg font-bold text-slate-950">Quick Actions</h2>
         </div>
         <div className="grid gap-3 md:grid-cols-3">
-          <button type="button" className="grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md" onClick={() => onNavigate("patients")}><ActionIcon icon="users" color="#6366f1" bg="#eef2ff" /><strong className="text-base text-slate-950">View All Patients</strong></button>
-          <button type="button" className="grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md" onClick={() => onNavigate("monitor")}><ActionIcon icon="activity" color="#ec4899" bg="#fce7f3" /><strong className="text-base text-slate-950">Real-Time Monitor</strong></button>
-          <button type="button" className="grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md" onClick={() => onNavigate("sessions")}><ActionIcon icon="calendar-plus" color="#10b981" bg="#d1fae5" /><strong className="text-base text-slate-950">Schedule Session</strong></button>
+          <button type="button" className="doctor-action-card grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md" onClick={() => onNavigate("patients")}><ActionIcon icon="users" color="#6366f1" bg="#eef2ff" /><strong className="text-base text-slate-950">View All Patients</strong></button>
+          <button type="button" className="doctor-action-card grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md" onClick={() => onNavigate("monitor")}><ActionIcon icon="activity" color="#ec4899" bg="#fce7f3" /><strong className="text-base text-slate-950">Real-Time Monitor</strong></button>
+          <button type="button" className="doctor-action-card grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md" onClick={() => onNavigate("sessions")}><ActionIcon icon="calendar-plus" color="#10b981" bg="#d1fae5" /><strong className="text-base text-slate-950">Schedule Session</strong></button>
         </div>
       </section>
     </div>

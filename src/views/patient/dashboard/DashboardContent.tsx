@@ -4,6 +4,7 @@ import NotificationPanel from "../../../components/patient/NotificationPanel";
 import LineChart from "../../../components/common/LineChart";
 import EmptyState from "../../../components/common/EmptyState";
 import ErrorState from "../../../components/common/ErrorState";
+import ThemeToggle from "../../../components/common/ThemeToggle";
 import { useToast } from "../../../components/common/Toast";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "../../../hooks/useRouter";
@@ -131,7 +132,7 @@ export default function DashboardContent({ email }: { email: string }) {
         />
       ) : null}
 
-      <header className="overflow-hidden rounded-lg border border-white/30 text-white shadow-lg shadow-indigo-950/10" style={{ background: "linear-gradient(135deg, #4a3b8c 0%, #6366f1 58%, #8b5cf6 100%)" }}>
+      <header className="patient-hero overflow-hidden rounded-lg border text-white shadow-lg shadow-indigo-950/10">
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,430px)] lg:p-7">
           <div className="grid content-between gap-8">
             <div className="flex items-start justify-between gap-4">
@@ -142,7 +143,8 @@ export default function DashboardContent({ email }: { email: string }) {
                   Your care plan is steady today. Keep the next step small, visible, and easy to finish.
                 </p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="patient-hero-actions flex shrink-0 flex-wrap justify-end gap-2">
+                <ThemeToggle variant="patient" />
                 <button type="button" className={iconButtonClass} aria-label="Logout" title="Logout" onClick={() => { signOut(); navigate("/login"); }}>
                   <Icon name="log-out" size={20} color="#fff" />
                 </button>
@@ -193,7 +195,7 @@ export default function DashboardContent({ email }: { email: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
         <div className="space-y-6">
-          <DashboardPanel className="border-violet-100 bg-violet-50/80">
+          <DashboardPanel className="patient-checkin-panel">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[var(--primary)] shadow-sm shadow-violet-950/5">
@@ -219,7 +221,7 @@ export default function DashboardContent({ email }: { email: string }) {
                 return (
                   <button
                     type="button"
-                    className={`grid min-h-28 content-center justify-items-center rounded-lg border p-3 text-center transition focus:outline-none focus:ring-4 focus:ring-violet-200 ${active ? "border-[var(--primary)] bg-white shadow-md shadow-violet-950/10" : "border-violet-100 bg-white/70 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-white hover:shadow-sm"}`}
+                    className={`patient-mood-button grid min-h-28 content-center justify-items-center rounded-lg border p-3 text-center transition focus:outline-none focus:ring-4 focus:ring-violet-200 ${active ? "is-active border-[var(--primary)] bg-white shadow-md shadow-violet-950/10" : "border-violet-100 bg-white/70 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-white hover:shadow-sm"}`}
                     key={`${mood.label}-${index}`}
                     onClick={() => setSelectedMood(index)}
                   >
@@ -244,7 +246,7 @@ export default function DashboardContent({ email }: { email: string }) {
             ) : null}
             <button
               type="button"
-              className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition hover:-translate-y-0.5 hover:bg-[#4f46e5] disabled:translate-y-0 disabled:bg-slate-300"
+              className="dashboard-primary-btn mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:bg-slate-300"
               disabled={selectedMood === null || isSavingMood}
               onClick={handleRecordMood}
             >
@@ -280,7 +282,7 @@ export default function DashboardContent({ email }: { email: string }) {
               {quickActions.map((action) => (
                 <button
                   type="button"
-                  className="group grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-violet-100"
+                  className="patient-action-card group grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-violet-100"
                   key={action.label}
                   onClick={() => navigate(action.path)}
                 >
@@ -338,7 +340,7 @@ export default function DashboardContent({ email }: { email: string }) {
             </div>
             <div className="space-y-3">
               {recentActivities.length ? recentActivities.map((activity) => (
-                <div className="grid grid-cols-[auto_1fr] items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3" key={activity.title}>
+                <div className="patient-list-row grid grid-cols-[auto_1fr] items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3" key={activity.title}>
                   <span className="grid h-10 w-10 place-items-center rounded-lg" style={{ backgroundColor: `${activity.color}1a` }}>
                     <Icon name={activity.icon} size={20} color={activity.color} />
                   </span>
@@ -358,7 +360,7 @@ export default function DashboardContent({ email }: { email: string }) {
 
 function HeaderStat({ icon, label, value }) {
   return (
-    <div className="flex min-h-16 items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-3 py-2">
+    <div className="patient-hero-stat flex min-h-16 items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-3 py-2">
       <span className="grid h-9 w-9 place-items-center rounded-lg bg-white/15">
         <Icon name={icon} size={18} color="#fff" />
       </span>
@@ -372,7 +374,7 @@ function HeaderStat({ icon, label, value }) {
 
 function MiniStat({ label, value }) {
   return (
-    <span className="rounded-lg bg-violet-50 px-3 py-2 text-left">
+    <span className="patient-mini-stat rounded-lg bg-violet-50 px-3 py-2 text-left">
       <small className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">{label}</small>
       <strong className="mt-1 block text-sm font-bold text-slate-900">{value}</strong>
     </span>

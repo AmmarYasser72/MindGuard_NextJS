@@ -16,7 +16,7 @@ function ChatHeader({ connectionMode, onBack }: ChatHeaderProps) {
       <div className="flex w-full items-center gap-3 pt-1">
         <button
           type="button"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/70 text-[#8168d9] shadow-sm transition hover:-translate-x-0.5 hover:bg-white focus:outline-none focus:ring-4 focus:ring-[#e7ddff]"
+          className="patient-chat-back-button grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/70 text-[#8168d9] shadow-sm transition hover:-translate-x-0.5 hover:bg-white focus:outline-none focus:ring-4 focus:ring-[#e7ddff]"
           onClick={onBack}
           aria-label="Back"
         >
@@ -26,8 +26,8 @@ function ChatHeader({ connectionMode, onBack }: ChatHeaderProps) {
           <Icon name="bot-message-square" size={17} color="#fff" />
         </span>
         <div className="min-w-0">
-          <h1 className="text-[1rem] font-black leading-none tracking-[-0.03em] text-[#7560c9] md:text-[1.18rem] xl:text-[1.26rem]">Smart AI Chat</h1>
-          <p className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#9b8ad4]">{statusCopy(connectionMode)}</p>
+          <h1 className="patient-chat-title text-[1rem] font-black leading-none tracking-[-0.03em] text-[#7560c9] md:text-[1.18rem] xl:text-[1.26rem]">Smart AI Chat</h1>
+          <p className="patient-chat-status mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#9b8ad4]">{statusCopy(connectionMode)}</p>
         </div>
       </div>
     </header>

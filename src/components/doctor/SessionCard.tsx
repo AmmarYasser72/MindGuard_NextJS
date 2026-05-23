@@ -11,7 +11,7 @@ export default function SessionCard({ session, isPast, onDelete, onEdit, onRevie
   const duration = session.duration ? `${session.duration} min` : "Duration unavailable";
 
   return (
-    <article className="grid gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm shadow-violet-950/5">
+    <article className="doctor-surface grid gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm shadow-violet-950/5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-3xl font-bold text-slate-950">{formatTime(session.scheduledAt)}</h2>

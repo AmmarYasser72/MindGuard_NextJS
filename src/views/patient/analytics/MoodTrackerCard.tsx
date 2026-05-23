@@ -36,7 +36,7 @@ export default function MoodTrackerCard({ bars, cycle, moodColor, moodInsights, 
         </div>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4">
+      <section className="patient-card-gradient rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h3 className="text-base font-bold text-slate-950">Interactive Mood Chart</h3>
@@ -86,7 +86,7 @@ export default function MoodTrackerCard({ bars, cycle, moodColor, moodInsights, 
         <h3 className="text-base font-bold text-slate-950">Mood Insights</h3>
         <ul className="grid gap-2 md:grid-cols-2">
           {moodInsights.map((insight, index) => (
-            <li className="flex gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm leading-6 text-slate-600" key={insight}>
+            <li className="patient-analytics-row flex gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm leading-6 text-slate-600" key={insight}>
               <span className="mt-2 h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: moodColor((index % 5) + 1) }} />
               {insight}
             </li>

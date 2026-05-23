@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import Icon from "../../components/common/Icon";
+import ThemeToggle from "../../components/common/ThemeToggle";
 import { useToast } from "../../components/common/Toast";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
@@ -130,9 +131,9 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <main className="min-h-screen text-slate-950" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #f8fafc 46%, #ffffff 100%)" }}>
+    <main className="doctor-shell dashboard-shell min-h-screen text-slate-950">
       <div className="flex min-h-screen w-full">
-        <aside className="sticky top-0 hidden h-screen w-28 shrink-0 flex-col border-r border-violet-100 bg-white/90 px-3 py-4 shadow-sm shadow-violet-950/5 backdrop-blur lg:flex">
+        <aside className="dashboard-glass sticky top-0 hidden h-screen w-28 shrink-0 flex-col border-r px-3 py-4 lg:flex">
           <div className="mb-5 grid h-12 w-12 place-items-center self-center rounded-lg bg-[var(--primary)] text-white shadow-lg shadow-indigo-900/20">
             <Icon name="stethoscope" size={24} color="#fff" />
           </div>
@@ -147,18 +148,19 @@ export default function DoctorDashboard() {
         </aside>
 
         <section className="min-w-0 flex-1 pb-28 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-violet-100 bg-white/90 px-4 py-3 shadow-sm shadow-violet-950/5 backdrop-blur sm:px-6 lg:px-8">
+          <header className="dashboard-glass sticky top-0 z-20 border-b px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex w-full items-center justify-between gap-4">
               <div>
                 <span className="text-xs font-bold uppercase text-[var(--primary)]">{greeting()}</span>
                 <h1 className="text-2xl font-bold tracking-normal text-slate-950">Dr. {firstName(doctorName)}</h1>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" className="hidden rounded-lg border border-violet-100 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-[var(--primary)] sm:inline-flex" onClick={() => setSchedulePatient(null)}>
+                <ThemeToggle className="hidden sm:inline-flex" />
+                <button type="button" className="dashboard-outline-btn hidden rounded-lg px-3 py-2 text-sm font-bold sm:inline-flex" onClick={() => setSchedulePatient(null)}>
                   <Icon name="calendar-plus" size={18} />
                   New session
                 </button>
-                <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-violet-100 bg-white text-slate-600 transition hover:border-violet-200 hover:bg-violet-50 hover:text-[var(--primary)]" aria-label="Logout" title="Logout" onClick={logout}>
+                <button type="button" className="dashboard-outline-btn grid h-10 w-10 place-items-center rounded-lg" aria-label="Logout" title="Logout" onClick={logout}>
                   <Icon name="log-out" size={20} />
                 </button>
               </div>
@@ -199,7 +201,7 @@ export default function DoctorDashboard() {
         </section>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-violet-100 bg-white/95 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-12px_30px_rgba(76,29,149,0.12)] backdrop-blur lg:hidden" aria-label="Doctor navigation">
+      <nav className="dashboard-nav fixed inset-x-0 bottom-0 z-30 border-t px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 lg:hidden" aria-label="Doctor navigation">
         <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
           {destinations.map((item) => (
             <button type="button" className={bottomNavClass(selected === item.key)} key={item.key} onClick={() => setSelected(item.key)}>
@@ -209,6 +211,10 @@ export default function DoctorDashboard() {
           ))}
         </div>
       </nav>
+
+      <div className="fixed bottom-[5.4rem] right-3 z-30 lg:hidden">
+        <ThemeToggle />
+      </div>
 
       {schedulePatient !== undefined ? (
         <ScheduleSessionModal patient={schedulePatient} onClose={() => setSchedulePatient(undefined)} onCreate={createSession} />

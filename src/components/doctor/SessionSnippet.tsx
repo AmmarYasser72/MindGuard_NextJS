@@ -4,7 +4,7 @@ import SeverityPill from "./SeverityPill";
 
 export default function SessionSnippet({ session }) {
   return (
-    <article className="grid gap-2 rounded-lg border border-violet-100 bg-violet-50/60 p-4">
+    <article className="doctor-card-gradient grid gap-2 rounded-lg border border-violet-100 bg-violet-50/60 p-4">
       <div className="flex items-center justify-between gap-3">
         <strong className="truncate text-sm font-bold text-slate-900">{session.patientName}</strong>
         {session.severity ? <SeverityPill severity={session.severity} /> : null}

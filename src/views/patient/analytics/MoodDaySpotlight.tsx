@@ -1,6 +1,6 @@
 export default function MoodDaySpotlight({ getDayLabel, monthLabel, selectedDay, selectedEntry }) {
   return (
-    <div className="grid gap-3 rounded-[1.5rem] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-sm shadow-slate-950/5">
+    <div className="patient-card-gradient grid gap-3 rounded-[1.5rem] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-sm shadow-slate-950/5">
       <div className="flex items-start gap-3">
         <span className="grid h-14 w-14 place-items-center rounded-[1.25rem] bg-violet-50 text-2xl">
           {selectedEntry.recorded ? selectedEntry.emoji : "\u{1F4DD}"}

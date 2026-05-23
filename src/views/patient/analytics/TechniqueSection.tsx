@@ -10,7 +10,7 @@ export default function TechniqueSection({ title, techniques, color }) {
       <h2 className="text-xl font-bold text-slate-950">{title}</h2>
       <div className="grid gap-3">
         {techniques.map((technique) => (
-          <div className="grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4 lg:grid-cols-[auto_1fr_auto] lg:items-center" key={technique.name}>
+          <div className="patient-analytics-row grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4 lg:grid-cols-[auto_1fr_auto] lg:items-center" key={technique.name}>
             <span className="grid h-10 w-10 place-items-center rounded-2xl" style={{ backgroundColor: `${color}1a` }}>
               <Icon name={technique.icon} size={20} color={color} />
             </span>
@@ -24,7 +24,7 @@ export default function TechniqueSection({ title, techniques, color }) {
             </span>
             <button
               type="button"
-              className="min-h-11 rounded-2xl bg-[linear-gradient(135deg,var(--amber),#f97316)] px-4 text-sm font-bold text-white transition hover:-translate-y-0.5"
+              className="patient-calm-action min-h-11 rounded-2xl px-4 text-sm font-bold text-white transition hover:-translate-y-0.5"
               onClick={() => showToast(`${technique.name} ready to start`, "success")}
             >
               {technique.duration ? `Start ${technique.duration}` : "Start"}

@@ -3,7 +3,7 @@ import IconButton from "../common/IconButton";
 
 export default function AppTopBar({ title, onBack, actionIcon, onAction }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-white/80 bg-white/90 px-4 py-3 shadow-sm shadow-slate-950/5 backdrop-blur sm:px-6">
+    <header className="dashboard-glass sticky top-0 z-20 border-b px-4 py-3 sm:px-6">
       <div className="mx-auto grid max-w-5xl grid-cols-[44px_1fr_44px] items-center gap-3">
         <IconButton icon="arrow-left" label="Back" onClick={onBack} />
         <h1 className="text-center text-xl font-bold text-slate-950">{title}</h1>

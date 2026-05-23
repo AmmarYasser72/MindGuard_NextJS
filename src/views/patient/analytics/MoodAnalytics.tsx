@@ -270,7 +270,7 @@ export default function MoodAnalytics() {
                   ? "border-violet-300 bg-violet-50 shadow-sm shadow-violet-900/10"
                   : isToday
                     ? "border-violet-200 bg-white"
-                    : "border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]"
+                    : "patient-card-gradient border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]"
               } ${isFuture ? "text-slate-300" : "text-slate-600"}`}
               key={day}
               onClick={() => handleSelectDay(day)}

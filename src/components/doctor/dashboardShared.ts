@@ -6,11 +6,11 @@ export const destinations = [
 ];
 
 export const primaryPurple = "var(--primary)";
-export const surfaceClass = "rounded-lg border border-violet-100 bg-white p-5 shadow-sm shadow-violet-950/5";
-export const primaryButtonClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition hover:bg-[#4f46e5] focus:outline-none focus:ring-4 focus:ring-violet-200";
-export const secondaryButtonClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-violet-100 bg-white px-4 text-sm font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-[var(--primary)] focus:outline-none focus:ring-4 focus:ring-violet-100";
+export const surfaceClass = "doctor-surface dashboard-surface rounded-lg border p-5";
+export const primaryButtonClass = "dashboard-primary-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition focus:outline-none focus:ring-4 focus:ring-violet-200";
+export const secondaryButtonClass = "dashboard-outline-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-violet-100";
 export const fieldClass = "grid gap-2 text-sm font-bold text-slate-700";
-export const inputClass = "min-h-12 w-full rounded-lg border border-violet-100 bg-white px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100";
+export const inputClass = "doctor-input min-h-12 w-full rounded-lg border border-violet-100 bg-white px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100";
 
 export function greeting() {
   const hour = new Date().getHours();

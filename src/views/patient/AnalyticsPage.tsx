@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <section className="min-h-screen w-full bg-[#f4f2fb] pb-24 pt-4 sm:pt-5 lg:pt-7">
+    <section className="patient-analytics-shell dashboard-analytics-shell min-h-screen w-full pb-24 pt-4 sm:pt-5 lg:pt-7">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 xl:px-0">
         <div
           className="relative grid min-h-[432px] overflow-hidden rounded-[1.75rem] p-5 text-white shadow-[0_22px_64px_rgba(15,23,42,0.14)] sm:p-6 lg:grid-rows-[auto_1fr_auto]"
@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
 
       <div className="mx-auto mt-5 w-full max-w-[1240px] px-4 sm:px-6 xl:px-0">
         <div
-          className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_20px_56px_rgba(15,23,42,0.08)]"
+          className="patient-analytics-panel dashboard-surface overflow-hidden rounded-[1.75rem] border shadow-[0_20px_56px_rgba(15,23,42,0.08)]"
           aria-labelledby={`analytics-tab-${tab.key}`}
           id={`analytics-panel-${tab.key}`}
           role="tabpanel"

@@ -69,7 +69,7 @@ export default function SleepAnalytics() {
         <h2 className="text-xl font-bold text-slate-950">Sleep Hygiene Tips</h2>
         <div className="grid gap-3">
           {sleepAnalytics.tips.map((tip) => (
-            <div className="grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-[auto_1fr] sm:items-center" key={tip.title}>
+            <div className="patient-analytics-row grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-[auto_1fr] sm:items-center" key={tip.title}>
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-violet-100">
                 <Icon name={tip.icon} size={20} color="#8b5cf6" />
               </span>

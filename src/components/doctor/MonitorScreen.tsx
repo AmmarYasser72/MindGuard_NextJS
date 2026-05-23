@@ -50,7 +50,7 @@ export default function MonitorScreen({ onOpenSchedule }) {
         <Icon name="chevron-right" size={18} color="#fff" />
       </button>
 
-      <section className="grid gap-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm shadow-violet-950/5 lg:grid-cols-[1fr_auto] lg:items-center">
+      <section className="doctor-surface grid gap-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm shadow-violet-950/5 lg:grid-cols-[1fr_auto] lg:items-center">
         <div className="flex flex-wrap gap-2">
           <button type="button" className={tabButtonClass(filter === "all")} onClick={() => setFilter("all")}>All alerts</button>
           <button type="button" className={tabButtonClass(filter === "critical")} onClick={() => setFilter("critical")}>Critical</button>
@@ -96,7 +96,7 @@ export default function MonitorScreen({ onOpenSchedule }) {
 
 function MonitorStat({ label, value, color }) {
   return (
-    <div className="rounded-lg border border-violet-100 bg-white p-4 shadow-sm shadow-violet-950/5">
+    <div className="doctor-surface rounded-lg border border-violet-100 bg-white p-4 shadow-sm shadow-violet-950/5">
       <small className="text-xs font-black uppercase text-slate-400">{label}</small>
       <strong className="mt-2 block text-2xl font-black text-slate-950" style={{ color }}>{value}</strong>
     </div>
@@ -107,7 +107,7 @@ function SettingToggle({ title, description, checked }) {
   const [enabled, setEnabled] = useState(checked);
 
   return (
-    <button type="button" className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:bg-slate-50" onClick={() => setEnabled((current) => !current)}>
+    <button type="button" className="doctor-card-gradient grid gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:bg-slate-50" onClick={() => setEnabled((current) => !current)}>
       <span className="flex items-start justify-between gap-3">
         <strong className="text-sm font-black text-slate-950">{title}</strong>
         <span className={`grid h-6 w-11 items-center rounded-full p-1 transition ${enabled ? "justify-end bg-[var(--primary)]" : "justify-start bg-slate-200"}`}>

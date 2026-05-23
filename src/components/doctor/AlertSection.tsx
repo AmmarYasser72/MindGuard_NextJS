@@ -7,7 +7,7 @@ export default function AlertSection({ title, tone, items, onOpenSchedule }) {
   const critical = tone === "critical";
 
   return (
-    <section className={`overflow-hidden rounded-lg border shadow-sm ${critical ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"}`}>
+    <section className={`doctor-alert overflow-hidden rounded-lg border shadow-sm ${critical ? "doctor-alert-critical border-red-200 bg-red-50" : "doctor-alert-warning border-amber-200 bg-amber-50"}`}>
       <header className="flex items-center gap-2 border-b border-white/80 p-3">
         <span className={`grid h-7 w-7 place-items-center rounded-lg text-white ${critical ? "bg-red-600" : "bg-amber-500"}`}><Icon name={critical ? "triangle-alert" : "info"} size={15} color="#fff" /></span>
         <strong className={critical ? "text-red-700" : "text-amber-700"}>{title}</strong>
@@ -22,7 +22,7 @@ export default function AlertSection({ title, tone, items, onOpenSchedule }) {
               <strong className="text-sm text-slate-950">{patientName(patient)}</strong>
               <small className="text-xs font-semibold text-slate-500">Last update - {time(summary.generatedAt)}</small>
             </span>
-            <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-white bg-white/80 text-slate-700 shadow-sm transition hover:bg-white" onClick={() => onOpenSchedule(patient)} aria-label="Schedule session"><Icon name="video" size={20} /></button>
+            <button type="button" className="doctor-icon-button grid h-10 w-10 place-items-center rounded-lg border border-white bg-white/80 text-slate-700 shadow-sm transition hover:bg-white" onClick={() => onOpenSchedule(patient)} aria-label="Schedule session"><Icon name="video" size={20} /></button>
           </article>
         ))}
       </div>

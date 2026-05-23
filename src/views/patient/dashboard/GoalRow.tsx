@@ -4,7 +4,7 @@ export default function GoalRow({ goal }) {
   const percentage = Math.round(goal.progress * 100);
 
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50/70 p-3 transition hover:border-violet-100 hover:bg-white">
+    <div className="patient-list-row rounded-lg border border-slate-100 bg-slate-50/70 p-3 transition hover:border-violet-100 hover:bg-white">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <strong className="block truncate text-sm font-bold text-slate-800">{goal.title}</strong>

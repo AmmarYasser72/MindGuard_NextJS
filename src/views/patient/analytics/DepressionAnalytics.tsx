@@ -54,7 +54,7 @@ export default function DepressionAnalytics() {
           {depressionAnalytics.support.map((item) => (
             <button
               type="button"
-              className="grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4 text-left transition hover:-translate-y-0.5 hover:border-slate-300 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+              className="patient-analytics-row grid gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4 text-left transition hover:-translate-y-0.5 hover:border-slate-300 sm:grid-cols-[auto_1fr_auto] sm:items-center"
               key={item.title}
               onClick={() => showToast(`${item.title} resources are ready to open`, "success")}
             >
