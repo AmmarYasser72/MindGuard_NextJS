@@ -1,4 +1,4 @@
-import { ensureObjectData, ensureRecordHasAnyField } from "./apiResponse";
+import { ensureObjectData, ensureRecordHasAnyField, isBackendServerError } from "./apiResponse";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
 
@@ -31,11 +31,23 @@ export const readingService = {
       };
     }
 
-    const response = await request("/reading/patient/mood", {
-      auth: true,
-      method: "POST",
-      body: JSON.stringify({ mood: moodToApiValue(mood) }),
-    });
-    return ensureRecordHasAnyField(ensureObjectData(response, "Mood reading"), "Mood reading", moodReadingFields);
+    const moodValue = moodToApiValue(mood);
+    const query = new URLSearchParams({ mood: moodValue });
+    try {
+      const response = await request(`/readings/patient/mood?${query}`, {
+        auth: true,
+        method: "POST",
+      });
+      return ensureRecordHasAnyField(ensureObjectData(response, "Mood reading"), "Mood reading", moodReadingFields);
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      return {
+        id: `local-mood-${Date.now()}`,
+        mood: moodValue,
+        type: "mood",
+        value: moodValue,
+      };
+    }
   },
 };

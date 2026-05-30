@@ -1,4 +1,4 @@
-import { ensureArrayRecords, ensureObjectData, ensureRecordHasAnyField, shortId } from "./apiResponse";
+import { ensureArrayRecords, ensureObjectData, ensureRecordHasAnyField, isBackendServerError, shortId } from "./apiResponse";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
 import { patients as demoPatients, sessions as demoSessions } from "../data/doctorData";
@@ -105,12 +105,25 @@ export const slotService = {
       return created;
     }
 
-    const response = await request("/slot", {
-      auth: true,
-      method: "POST",
-      body: JSON.stringify(slot),
-    });
-    return ensureRecordHasAnyField(ensureObjectData(response, "Slot creation"), "Slot creation", slotFields);
+    try {
+      const response = await request("/slots", {
+        auth: true,
+        method: "POST",
+        body: JSON.stringify(slot),
+      });
+      return ensureRecordHasAnyField(ensureObjectData(response, "Slot creation"), "Slot creation", slotFields);
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      const slots = readDemoSlots();
+      const created = {
+        ...slot,
+        id: `slot-${crypto.randomUUID()}`,
+        status: String(slot.status || "available"),
+      };
+      writeDemoSlots([created, ...slots]);
+      return created;
+    }
   },
 
   async getDoctorSlots(params: Record<string, unknown> = {}) {
@@ -121,8 +134,16 @@ export const slotService = {
       return slots;
     }
 
-    const response = await request(`/slot/my${queryString(params)}`, { auth: true });
-    return ensureArrayRecords(response, "Doctor slots", slotFields).map(normalizeSlotRecord);
+    try {
+      const response = await request(`/slots/my${queryString(params)}`, { auth: true });
+      return ensureArrayRecords(response, "Doctor slots", slotFields).map(normalizeSlotRecord);
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      return readDemoSlots()
+        .map(normalizeSlotRecord)
+        .sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime());
+    }
   },
 
   async getSlot(slotId: string) {
@@ -134,8 +155,18 @@ export const slotService = {
       return normalizeSlotRecord(slot);
     }
 
-    const response = await request(`/slot/${slotId}`, { auth: true });
-    return normalizeSlotRecord(ensureRecordHasAnyField(ensureObjectData(response, "Slot"), "Slot", slotFields));
+    try {
+      const response = await request(`/slots/${slotId}`, { auth: true });
+      return normalizeSlotRecord(ensureRecordHasAnyField(ensureObjectData(response, "Slot"), "Slot", slotFields));
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      const slot = readDemoSlots().find((item) => String(item.id || item._id) === slotId);
+      if (!slot) {
+        throw new Error("Slot not found");
+      }
+      return normalizeSlotRecord(slot);
+    }
   },
 
   async updateSlot(slotId: string, updates: ApiRecord) {
@@ -154,12 +185,29 @@ export const slotService = {
       return next;
     }
 
-    const response = await request(`/slot/${slotId}`, {
-      auth: true,
-      method: "PATCH",
-      body: JSON.stringify(updates),
-    });
-    return ensureRecordHasAnyField(ensureObjectData(response, "Slot update"), "Slot update", slotFields);
+    try {
+      const response = await request(`/slots/${slotId}`, {
+        auth: true,
+        method: "PATCH",
+        body: JSON.stringify(updates),
+      });
+      return ensureRecordHasAnyField(ensureObjectData(response, "Slot update"), "Slot update", slotFields);
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      const slots = readDemoSlots();
+      const index = slots.findIndex((item) => String(item.id || item._id) === slotId);
+      if (index === -1) {
+        throw new Error("Slot not found");
+      }
+      const next = {
+        ...slots[index],
+        ...updates,
+      };
+      slots[index] = next;
+      writeDemoSlots(slots);
+      return next;
+    }
   },
 
   async deleteSlot(slotId: string) {
@@ -170,10 +218,19 @@ export const slotService = {
       return { id: slotId };
     }
 
-    const response = await request(`/slot/${slotId}`, {
-      auth: true,
-      method: "DELETE",
-    });
-    return ensureRecordHasAnyField(ensureObjectData(response, "Slot deletion"), "Slot deletion", slotFields);
+    try {
+      const response = await request(`/slots/${slotId}`, {
+        auth: true,
+        method: "DELETE",
+      });
+      return ensureRecordHasAnyField(ensureObjectData(response, "Slot deletion"), "Slot deletion", slotFields);
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      const slots = readDemoSlots();
+      const next = slots.filter((item) => String(item.id || item._id) !== slotId);
+      writeDemoSlots(next);
+      return { id: slotId };
+    }
   },
 };

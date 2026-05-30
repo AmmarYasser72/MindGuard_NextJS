@@ -6,6 +6,10 @@ export function createServiceError(message: string, details: unknown = null) {
   return error;
 }
 
+export function isBackendServerError(error: unknown) {
+  return error instanceof Error && (error as ApiError).status === 500;
+}
+
 export function ensureApiData(response: unknown, label: string): unknown {
   if (!response || typeof response !== "object" || Array.isArray(response)) {
     throw createServiceError(`${label} returned an invalid response.`, response);

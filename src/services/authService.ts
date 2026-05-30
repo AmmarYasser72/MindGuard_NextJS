@@ -81,6 +81,7 @@ function authToken(data: unknown): string | null {
   return stringValue(record.token)
     || stringValue(record.accessToken)
     || stringValue(record.access_token)
+    || stringValue(record.data)
     || stringValue(nested.token)
     || stringValue(nested.accessToken)
     || stringValue(nested.access_token)
@@ -120,8 +121,12 @@ function decodeJwtPayload(token: string | null) {
 }
 
 function normalizeProfile(data: ApiRecord, fallback: Partial<AuthUser> = {}): AuthUser {
+  const uid = String(firstValue(data.id, data.uid, data._id, data.sub, fallback.uid, fallback.id, fallback._id, crypto.randomUUID()));
+
   return {
-    uid: String(firstValue(data.id, data.uid, data._id, data.sub, fallback.uid, crypto.randomUUID())),
+    _id: uid,
+    id: uid,
+    uid,
     email: String(firstValue(data.email, fallback.email, "")),
     displayName: String(firstValue(
       data.name,
@@ -168,6 +173,13 @@ function createConnectionError() {
   return new Error("Couldn't reach the backend. Make sure your local backend server is running.");
 }
 
+function createBackendAuthTokenError(action: "sign in" | "sign up") {
+  return new Error(
+    `The backend accepted the ${action} request but did not return a usable auth token. ` +
+    "Make sure the running backend has USER_ACCESS_JWT_SECRET set to the same value as JWT_SECRET, then restart the backend.",
+  );
+}
+
 function createLocalUser(profile: RegisterProfile, cleanEmail: string) {
   const user: StoredUser = {
     uid: crypto.randomUUID(),
@@ -189,6 +201,24 @@ function isConnectionError(error: unknown): error is ApiError {
   return error.name === "TypeError"
     || error.message === "Failed to fetch"
     || typedError.code === "REQUEST_TIMEOUT";
+}
+
+function isInternalServerError(error: unknown): error is ApiError {
+  return error instanceof Error && (error as ApiError).status === 500;
+}
+
+async function remoteSignIn(cleanEmail: string, password: string, fallback: Partial<AuthUser>) {
+  const auth = await request("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email: cleanEmail, password, rememberMe: true }),
+  });
+  const token = authToken(auth);
+
+  if (!token) {
+    throw createBackendAuthTokenError("sign in");
+  }
+
+  return persistSession(profileFromAuth(auth, fallback), token);
 }
 
 export const authService = {
@@ -213,13 +243,7 @@ export const authService = {
     }
 
     try {
-      const auth = await request("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email: cleanEmail, password }),
-      });
-      const token = authToken(auth);
-      const fallback = { email: cleanEmail, role: roleFromEmail(cleanEmail) };
-      return persistSession(profileFromAuth(auth, fallback), token);
+      return await remoteSignIn(cleanEmail, password, { email: cleanEmail, role: roleFromEmail(cleanEmail) });
     } catch (error) {
       if (fallbackUser && isConnectionError(error)) {
         return persistSession(removePassword(fallbackUser));
@@ -227,26 +251,30 @@ export const authService = {
       if (isConnectionError(error)) {
         throw createConnectionError();
       }
+      if (isInternalServerError(error)) {
+        throw createBackendAuthTokenError("sign in");
+      }
       throw new Error(error instanceof Error ? error.message : "Invalid email or password");
     }
   },
 
   async register(profile: RegisterProfile) {
     const cleanEmail = profile.email.trim().toLowerCase();
-    const body = {
+    const displayName = `${profile.firstName} ${profile.lastName}`;
+    const body: ApiRecord = {
       email: cleanEmail,
       password: profile.password,
       confirmPassword: profile.password,
-      name: `${profile.firstName} ${profile.lastName}`,
+      name: displayName,
       role: profile.role,
       gender: profile.gender.toLowerCase(),
-      specialization: profile.specialization || undefined,
-      licenseNumber: profile.licenseNumber || undefined,
-      yearsOfExperience: profile.yearsOfExperience
-        ? Number(profile.yearsOfExperience)
-        : undefined,
     };
-    const fallback = { email: cleanEmail, displayName: body.name, role: profile.role };
+
+    if (profile.role === "doctor") {
+      body.specialization = profile.specialization;
+    }
+
+    const fallback = { email: cleanEmail, displayName, role: profile.role };
 
     if (isDemoMode) {
       const users = savedUsers();
@@ -262,6 +290,9 @@ export const authService = {
         body: JSON.stringify(body),
       });
       const token = authToken(auth);
+      if (!token) {
+        throw createBackendAuthTokenError("sign up");
+      }
       return persistSession(profileFromAuth(auth, fallback), token);
     } catch (error) {
       if (isConnectionError(error)) {
@@ -270,6 +301,13 @@ export const authService = {
           throw new Error("Email already exists");
         }
         return persistSession(createLocalUser(profile, cleanEmail));
+      }
+      if (isInternalServerError(error)) {
+        try {
+          return await remoteSignIn(cleanEmail, profile.password, fallback);
+        } catch {
+          throw createBackendAuthTokenError("sign up");
+        }
       }
       throw new Error(error instanceof Error ? error.message : "Registration failed");
     }

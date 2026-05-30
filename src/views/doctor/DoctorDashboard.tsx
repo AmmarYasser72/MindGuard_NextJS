@@ -2,22 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import Icon from "../../components/common/Icon";
-import ThemeToggle from "../../components/common/ThemeToggle";
 import { useToast } from "../../components/common/Toast";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
 import DoctorHome from "../../components/doctor/DoctorHome";
+import { DoctorMobileNav, DoctorSideNav } from "../../components/doctor/DoctorDashboardNav";
+import DoctorTopBar from "../../components/doctor/DoctorTopBar";
 import { patientService } from "../../services/patientService";
 import { slotService } from "../../services/slotService";
-import {
-  bottomNavClass,
-  destinations,
-  firstName,
-  greeting,
-  primaryPurple,
-  railButtonClass,
-} from "../../components/doctor/dashboardShared";
 import type { DoctorPatient, DoctorSession, ScheduleForm } from "../../types/doctor";
 
 const MonitorScreen = dynamic(() => import("../../components/doctor/MonitorScreen"));
@@ -133,39 +125,10 @@ export default function DoctorDashboard() {
   return (
     <main className="doctor-shell dashboard-shell min-h-screen text-slate-950">
       <div className="flex min-h-screen w-full">
-        <aside className="dashboard-glass sticky top-0 hidden h-screen w-28 shrink-0 flex-col border-r px-3 py-4 lg:flex">
-          <div className="mb-5 grid h-12 w-12 place-items-center self-center rounded-lg bg-[var(--primary)] text-white shadow-lg shadow-indigo-900/20">
-            <Icon name="stethoscope" size={24} color="#fff" />
-          </div>
-          <nav className="grid gap-2" aria-label="Doctor navigation">
-            {destinations.map((item) => (
-              <button type="button" className={railButtonClass(selected === item.key)} key={item.key} onClick={() => setSelected(item.key)}>
-                <Icon name={item.icon} size={22} />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </aside>
+        <DoctorSideNav selected={selected} onSelect={setSelected} />
 
         <section className="min-w-0 flex-1 pb-28 lg:pb-0">
-          <header className="dashboard-glass sticky top-0 z-20 border-b px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex w-full items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase text-[var(--primary)]">{greeting()}</span>
-                <h1 className="text-2xl font-bold tracking-normal text-slate-950">Dr. {firstName(doctorName)}</h1>
-              </div>
-              <div className="flex items-center gap-2">
-                <ThemeToggle className="hidden sm:inline-flex" />
-                <button type="button" className="dashboard-outline-btn hidden rounded-lg px-3 py-2 text-sm font-bold sm:inline-flex" onClick={() => setSchedulePatient(null)}>
-                  <Icon name="calendar-plus" size={18} />
-                  New session
-                </button>
-                <button type="button" className="dashboard-outline-btn grid h-10 w-10 place-items-center rounded-lg" aria-label="Logout" title="Logout" onClick={logout}>
-                  <Icon name="log-out" size={20} />
-                </button>
-              </div>
-            </div>
-          </header>
+          <DoctorTopBar doctorName={doctorName} onLogout={logout} onNewSession={() => setSchedulePatient(null)} />
 
           {selected === "dashboard" ? (
             <DoctorHome
@@ -201,20 +164,7 @@ export default function DoctorDashboard() {
         </section>
       </div>
 
-      <nav className="dashboard-nav fixed inset-x-0 bottom-0 z-30 border-t px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 lg:hidden" aria-label="Doctor navigation">
-        <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
-          {destinations.map((item) => (
-            <button type="button" className={bottomNavClass(selected === item.key)} key={item.key} onClick={() => setSelected(item.key)}>
-              <Icon name={item.icon} size={22} color={selected === item.key ? primaryPurple : "currentColor"} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      <div className="fixed bottom-[5.4rem] right-3 z-30 lg:hidden">
-        <ThemeToggle />
-      </div>
+      <DoctorMobileNav selected={selected} onSelect={setSelected} />
 
       {schedulePatient !== undefined ? (
         <ScheduleSessionModal patient={schedulePatient} onClose={() => setSchedulePatient(undefined)} onCreate={createSession} />

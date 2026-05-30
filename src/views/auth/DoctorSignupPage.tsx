@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Icon from "../../components/common/Icon";
-import Card from "../../components/common/Card";
 import DateField from "../../components/auth/DateField";
 import AuthProfileHeader from "../../components/auth/AuthProfileHeader";
 import AuthRoleCard from "../../components/auth/AuthRoleCard";
-import ErrorBanner from "../../components/auth/ErrorBanner";
-import PasswordField from "../../components/auth/PasswordField";
+import NameFields from "../../components/auth/NameFields";
+import PasswordConfirmationFields from "../../components/auth/PasswordConfirmationFields";
 import SegmentedChoiceField from "../../components/auth/SegmentedChoiceField";
 import SelectField from "../../components/auth/SelectField";
+import SignupFormCard from "../../components/auth/SignupFormCard";
 import SubmitButton from "../../components/auth/SubmitButton";
 import TextField from "../../components/auth/TextField";
 import { doctorSpecializations, genderChoices } from "../../data/authFormData";
@@ -72,38 +72,25 @@ export default function DoctorSignupPage() {
           tone="green"
         />
 
-        <Card className="p-6 sm:p-7">
-          <form className="grid gap-5" onSubmit={onSubmit}>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-950">Professional details</h2>
-                <p className="mt-1 text-sm text-slate-500">Your profile helps patients find the right support.</p>
-              </div>
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50">
-                <Icon name="badge-check" size={22} color="#059669" />
-              </span>
-            </div>
-            <ErrorBanner error={error} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <TextField
-                label="First Name"
-                icon="user"
-                placeholder="ammar"
-                value={form.firstName}
-                onChange={(value) => update("firstName", value)}
-                autoComplete="given-name"
-                disabled={authLoading}
-              />
-              <TextField
-                label="Last Name"
-                icon="user"
-                placeholder="yasser"
-                value={form.lastName}
-                onChange={(value) => update("lastName", value)}
-                autoComplete="family-name"
-                disabled={authLoading}
-              />
-            </div>
+        <SignupFormCard
+          description="Your profile helps patients find the right support."
+          error={error}
+          footerActionClassName="text-emerald-600"
+          footerActionLabel="Sign In"
+          footerPrompt="Already have an account?"
+          heading="Professional details"
+          icon="badge-check"
+          iconColor="#059669"
+          iconSurfaceClassName="bg-emerald-50"
+          onFooterAction={() => navigate("/login")}
+          onSubmit={onSubmit}
+        >
+            <NameFields
+              firstName={form.firstName}
+              lastName={form.lastName}
+              onChange={update}
+              disabled={authLoading}
+            />
             <DateField
               label="Date of Birth"
               value={form.dateOfBirth}
@@ -158,33 +145,17 @@ export default function DoctorSignupPage() {
               autoComplete="email"
               disabled={authLoading}
             />
-            <PasswordField
-              label="Password"
-              value={form.password}
-              onChange={(value) => update("password", value)}
-              autoComplete="new-password"
-              disabled={authLoading}
-            />
-            <PasswordField
-              label="Confirm Password"
-              value={form.confirmPassword}
-              onChange={(value) => update("confirmPassword", value)}
-              placeholder="Confirm your password"
-              autoComplete="new-password"
+            <PasswordConfirmationFields
+              confirmPassword={form.confirmPassword}
+              password={form.password}
+              onChange={update}
               disabled={authLoading}
             />
             <SubmitButton loading={authLoading} tone="green">
               Create Doctor Account
               <Icon name="arrow-right" size={18} color="#fff" />
             </SubmitButton>
-          </form>
-          <p className="mt-5 text-center text-sm text-slate-500">
-            Already have an account?{" "}
-            <button className="font-bold text-emerald-600" type="button" onClick={() => navigate("/login")}>
-              Sign In
-            </button>
-          </p>
-        </Card>
+        </SignupFormCard>
 
         <AuthRoleCard
           icon="user"

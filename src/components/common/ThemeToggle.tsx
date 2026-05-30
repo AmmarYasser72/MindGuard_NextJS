@@ -2,6 +2,7 @@
 
 import Icon from "./Icon";
 import { useTheme } from "../../providers/ThemeProvider";
+import { cn } from "../../utils/cn";
 
 type ThemeToggleProps = {
   className?: string;
@@ -13,12 +14,12 @@ export default function ThemeToggle({ className = "", variant = "default" }: The
   const darkMode = theme === "dark";
   const label = darkMode ? "Light mode" : "Dark mode";
   const variantClass = variant === "patient" ? "theme-toggle--patient" : "theme-toggle--default dashboard-outline-btn";
-  const displayClass = className.split(/\s+/).includes("hidden") ? "" : "inline-flex";
+  const shouldAddDefaultDisplay = !/\bhidden\b/.test(className);
 
   return (
     <button
       type="button"
-      className={`theme-toggle ${displayClass} ${variantClass} ${className}`.trim()}
+      className={cn("theme-toggle", shouldAddDefaultDisplay && "inline-flex", variantClass, className)}
       onClick={toggleTheme}
       role="switch"
       aria-checked={darkMode}

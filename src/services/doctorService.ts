@@ -7,17 +7,17 @@ const sessionSlotFields = ["_id", "id", "slots", "startTime", "endTime", "from",
 
 export const doctorService = {
   async getDoctors() {
-    const response = await request("/doctor", { auth: true });
+    const response = await request("/doctors", { auth: true });
     return ensureArrayRecords(response, "Doctors", doctorFields);
   },
 
   async getDoctor(doctorId: string) {
-    const response = await request(`/doctor/${doctorId}`, { auth: true });
+    const response = await request(`/doctors/${doctorId}`, { auth: true });
     return ensureRecordHasAnyField(ensureObjectData(response, "Doctor"), "Doctor", doctorFields);
   },
 
   async createSessionSlots({ from, to }: { from: string; to: string }) {
-    const response = await request("/doctor", {
+    const response = await request("/doctors", {
       auth: true,
       method: "POST",
       body: JSON.stringify({ from, to }),

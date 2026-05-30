@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import Icon from "../../../components/common/Icon";
 import { useToast } from "../../../components/common/Toast";
 import { useAuth } from "../../../hooks/useAuth";
 import { moodBars, moodInsights } from "../../../data/analyticsData";
@@ -20,7 +19,9 @@ import {
   moodSummaries,
 } from "../../../services/moodCalendarService";
 import MoodCalendarModal from "./MoodCalendarModal";
+import MoodAnalyticsHeader from "./MoodAnalyticsHeader";
 import MoodDaySpotlight from "./MoodDaySpotlight";
+import MoodSevenDayStrip from "./MoodSevenDayStrip";
 import MoodSummaryCards from "./MoodSummaryCards";
 import MoodTrackerCard from "./MoodTrackerCard";
 
@@ -210,26 +211,7 @@ export default function MoodAnalytics() {
 
   return (
     <div className="grid gap-5 p-6 sm:gap-6 sm:p-8">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="grid gap-1.5">
-          <h2 className="text-[2rem] font-medium leading-tight tracking-[-0.04em] text-slate-950">Mood Calendar</h2>
-          <small className="text-sm leading-6 text-slate-500 sm:text-[0.95rem]">Every daily check-in is grouped into one monthly snapshot.</small>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
-          <span className="inline-flex min-h-12 items-center gap-3 rounded-full border border-slate-200 bg-white px-5 text-lg font-black text-slate-600 shadow-[0_10px_26px_rgba(15,23,42,0.06)]">
-            <Icon name="flame" size={24} color="#f59e0b" />
-            {currentStreak} day streak
-          </span>
-          <button
-            type="button"
-            className="inline-flex min-h-12 items-center gap-3 rounded-full border border-slate-200 bg-white px-5 text-lg font-black text-slate-600 shadow-[0_10px_26px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-slate-300"
-            onClick={openCalendar}
-          >
-            <Icon name="calendar-days" size={24} color="#10b981" />
-            Open calendar
-          </button>
-        </div>
-      </div>
+      <MoodAnalyticsHeader currentStreak={currentStreak} onOpenCalendar={openCalendar} />
       <MoodCalendarModal
         calendarCells={viewCalendarCells}
         calendarLabels={calendarLabels}
@@ -255,33 +237,13 @@ export default function MoodAnalytics() {
         todayDay={viewTodayLimit}
         viewYear={viewYear}
       />
-      <div className="grid auto-cols-[72px] grid-flow-col gap-2 overflow-x-auto pb-1 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7">
-        {days.map((dayEntry) => {
-          const day = dayEntry.day;
-          const isToday = day === todayDay;
-          const isSelected = day === selectedDay;
-          const isFuture = day > todayDay;
-          return (
-            <button
-              type="button"
-              aria-pressed={isSelected}
-              className={`grid min-w-[72px] gap-2 rounded-[1.25rem] border px-3 py-3 text-center transition ${
-                isSelected
-                  ? "border-violet-300 bg-violet-50 shadow-sm shadow-violet-900/10"
-                  : isToday
-                    ? "border-violet-200 bg-white"
-                    : "patient-card-gradient border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]"
-              } ${isFuture ? "text-slate-300" : "text-slate-600"}`}
-              key={day}
-              onClick={() => handleSelectDay(day)}
-            >
-              <small className="text-xs font-black uppercase tracking-[0.14em]">{getDayLabel(day)}</small>
-              <strong className={`text-lg font-bold ${isToday ? "text-[var(--primary)]" : ""}`}>{day}</strong>
-              <span className={`text-lg ${isFuture ? "opacity-25" : ""}`}>{isFuture || !dayEntry?.recorded ? "" : dayEntry.emoji}</span>
-            </button>
-          );
-        })}
-      </div>
+      <MoodSevenDayStrip
+        days={days}
+        getDayLabel={getDayLabel}
+        onSelectDay={handleSelectDay}
+        selectedDay={selectedDay}
+        todayDay={todayDay}
+      />
       <MoodDaySpotlight getDayLabel={getDayLabel} monthLabel={monthLabel} selectedDay={selectedDay} selectedEntry={selectedEntry} />
       <MoodSummaryCards
         averageMood={averageMood}

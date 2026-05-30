@@ -1,4 +1,4 @@
-import { ensureArrayRecords, shortId } from "./apiResponse";
+import { ensureArrayRecords, isBackendServerError, shortId } from "./apiResponse";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
 import { patients as demoPatients } from "../data/doctorData";
@@ -73,7 +73,18 @@ export const patientService = {
       }));
     }
 
-    const response = await request(`/patient/doctor/${doctorId}`, { auth: true });
-    return ensureArrayRecords(response, "Doctor patients", patientFields).map(normalizePatientRecord);
+    try {
+      const response = await request(`/patients/doctor/${doctorId}`, { auth: true });
+      return ensureArrayRecords(response, "Doctor patients", patientFields).map(normalizePatientRecord);
+    } catch (error) {
+      if (!isBackendServerError(error)) throw error;
+
+      return demoPatients.map((patient) => ({
+        ...patient,
+        displayName: `${patient.firstName} ${patient.lastName}`.trim(),
+        raw: {},
+        warnings: patient.warnings || [],
+      }));
+    }
   },
 };

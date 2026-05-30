@@ -94,7 +94,7 @@ BACKEND_PROXY_TARGET=http://localhost:3000
 The frontend does not call the AI server directly. The NestJS backend should be configured with its own AI service URL that points to the local AI backend, commonly:
 
 ```text
-AI_SERVICE_URL=http://localhost:8000
+AI_SERVER_URL=http://localhost:8000
 ```
 
 ### Production Build

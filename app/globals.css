@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+@layer base {
 :root {
   --bg: #f8fafc;
   --card: #ffffff;
@@ -155,7 +156,9 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.65;
 }
+}
 
+@layer components {
 .dashboard-shell {
   color: var(--text);
   background: linear-gradient(180deg, var(--dashboard-bg-start) 0%, var(--dashboard-bg-mid) 46%, var(--dashboard-bg-end) 100%);
@@ -169,16 +172,6 @@ button:disabled {
   border-color: var(--line);
   background: var(--card);
   box-shadow: var(--shadow);
-}
-
-.dashboard-surface-soft {
-  border-color: var(--line);
-  background: var(--surface-soft);
-}
-
-.dashboard-surface-muted {
-  border-color: var(--line);
-  background: var(--surface-muted);
 }
 
 .dashboard-glass {
@@ -208,31 +201,12 @@ button:disabled {
   color: var(--primary);
 }
 
-.dashboard-ghost-btn {
-  color: var(--primary);
-  transition: background-color 180ms ease, color 180ms ease;
-}
-
-.dashboard-ghost-btn:hover {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-}
-
 .dashboard-primary-btn {
   background: var(--primary);
 }
 
 .dashboard-primary-btn:hover {
   background: var(--primary-strong);
-}
-
-.dashboard-input-shell {
-  border-color: var(--line);
-  background: var(--surface-muted);
-}
-
-.dashboard-input-shell:focus-within {
-  border-color: color-mix(in srgb, var(--primary) 58%, white);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 .theme-toggle {
@@ -846,4 +820,5 @@ html[data-theme="dark"] .doctor-shell .doctor-input {
 
 html[data-theme="dark"] .doctor-shell .doctor-input::placeholder {
   color: var(--faint);
+}
 }

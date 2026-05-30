@@ -97,7 +97,7 @@ function normalizeMessages(messages: unknown): ChatMessage[] {
 
   return list.map((message) => ({
     text: String(message.content || message.text || ""),
-    isUser: message.sender === "user" || message.isUser === true,
+    isUser: message.sender === "user" || message.isUser === true || message.isSenderUser === true,
     time: message.createdAt ? formatMessageTime(message.createdAt) : String(message.time || formatTime()),
   }));
 }
@@ -161,7 +161,7 @@ function shouldRefreshStoredChat(error: unknown) {
 }
 
 async function createRemoteChat(userId: string) {
-  const created = await request("/chat", {
+  const created = await request("/chats", {
     auth: true,
     method: "POST",
   });
@@ -188,7 +188,7 @@ async function ensureRemoteChat(userId: string, { skipStored = false } = {}): Pr
   if (existingChatId) return { chatId: existingChatId, source: "stored" };
 
   try {
-    const chats = await request("/chat", { auth: true });
+    const chats = await request("/chats", { auth: true });
     const chatId = pickLatestChatId(chats, existingChatId);
     if (chatId) {
       saveChatThreadId(userId, chatId);
@@ -203,7 +203,7 @@ async function ensureRemoteChat(userId: string, { skipStored = false } = {}): Pr
 }
 
 async function loadRemoteMessages(chatId: string) {
-  const remoteMessages = await request(`/chat/${chatId}`, { auth: true });
+  const remoteMessages = await request(`/chats/${chatId}`, { auth: true });
   return normalizeMessages(remoteMessages);
 }
 
