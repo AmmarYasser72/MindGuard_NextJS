@@ -12,8 +12,7 @@ export function Modal({ title, children, onClose, actions }: ModalProps) {
   return (
     <div className="fixed inset-0 z-70 grid place-items-center bg-slate-950/45 p-5" role="presentation" onMouseDown={onClose}>
       <div
-        className="max-h-[86vh] w-full max-w-3xl overflow-auto rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_24px_90px_rgba(15,23,42,0.24)]"
-        style={{ background: "var(--card)", borderColor: "var(--line)", color: "var(--text)" }}
+        className="max-h-[86vh] w-full max-w-3xl overflow-auto rounded-[1.75rem] border border-app-line bg-app-card text-app-text shadow-[0_24px_90px_rgba(15,23,42,0.24)]"
         role="dialog"
         aria-modal="true"
         onMouseDown={(event) => event.stopPropagation()}

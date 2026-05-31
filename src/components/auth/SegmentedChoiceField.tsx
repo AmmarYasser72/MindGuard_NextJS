@@ -41,14 +41,14 @@ export default function SegmentedChoiceField({
 
   return (
     <fieldset className="grid gap-2">
-      <legend className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">{label}</legend>
+      <legend className="text-xs font-black uppercase tracking-[0.12em] text-app-muted">{label}</legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {choices.map((choice) => {
           const active = choice.value === value;
           return (
             <button
               className={cn(
-                "flex min-h-14 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-slate-700 shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-violet-100 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0",
+                "auth-choice-card flex min-h-14 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-app-text-soft shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-violet-100 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0",
                 active && activeTone.active,
               )}
               key={choice.value}
@@ -57,12 +57,12 @@ export default function SegmentedChoiceField({
               aria-pressed={active}
               onClick={() => onChange(choice.value)}
             >
-              <span className={cn("grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-400", active && activeTone.icon)}>
+              <span className={cn("auth-field-icon grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-app-faint", active && activeTone.icon)}>
                 <Icon name={choice.icon || "circle"} size={18} />
               </span>
               <span className="min-w-0">
                 <strong className="block text-sm font-bold">{choice.label}</strong>
-                <small className="mt-0.5 block text-xs font-semibold text-slate-400">{active ? "Selected" : "Tap to choose"}</small>
+                <small className="mt-0.5 block text-xs font-semibold text-app-faint">{active ? "Selected" : "Tap to choose"}</small>
               </span>
             </button>
           );

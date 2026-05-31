@@ -32,7 +32,7 @@ export default function AuthProfileHeader({
       <IconButton
         icon="arrow-left"
         label={backLabel}
-        className="h-11 w-11 rounded-2xl border-slate-200 bg-white shadow-sm shadow-slate-950/5"
+        className="auth-square-button h-11 w-11 rounded-2xl border-slate-200 bg-white shadow-sm shadow-slate-950/5"
         onClick={onBack}
       />
       <AuthLogo tone={tone} size={56} icon={icon} />
@@ -41,8 +41,8 @@ export default function AuthProfileHeader({
           {eyebrow}
         </span>
         <div>
-          <h1 className="text-[clamp(1.9rem,5vw,2.5rem)] font-bold leading-tight text-slate-950">{title}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{description}</p>
+          <h1 className="text-[clamp(1.9rem,5vw,2.5rem)] font-bold leading-tight text-app-text">{title}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-app-muted">{description}</p>
         </div>
         {badge ? (
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">

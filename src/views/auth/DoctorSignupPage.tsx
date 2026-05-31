@@ -59,7 +59,7 @@ export default function DoctorSignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#f4fbf9_0%,#f8fafc_52%,#ffffff_100%)] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="auth-shell min-h-screen px-4 py-6 sm:px-6 lg:px-8">
       <section className="mx-auto grid w-full max-w-3xl gap-6">
         <AuthProfileHeader
           backLabel="Back to patient signup"

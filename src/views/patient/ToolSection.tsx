@@ -1,11 +1,11 @@
 import Card from "../../components/common/Card";
-import Icon from "../../components/common/Icon";
 import ActivityRows from "../../components/patient/ActivityRows";
 import BreakdownGrid from "../../components/patient/BreakdownGrid";
 import DaysRow from "../../components/patient/DaysRow";
 import GoalList from "../../components/patient/GoalList";
 import ItemList from "../../components/patient/ItemList";
 import JournalEntries from "../../components/patient/JournalEntries";
+import PatientListButton from "../../components/patient/PatientListButton";
 import StatGrid from "../../components/patient/StatGrid";
 
 export default function ToolSection({ section, color, onAction }) {
@@ -22,22 +22,16 @@ export default function ToolSection({ section, color, onAction }) {
       {section.type === "sleep" ? (
         <div className="grid gap-3">
           {section.items.map((item) => (
-            <button
-              type="button"
-              className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4 text-left shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+            <PatientListButton
               key={item.date}
+              eyebrow={item.date}
+              icon="moon"
+              iconBg="#fdf2f8"
+              iconColor="#ec4899"
+              title={<>{item.duration} <em className="text-xs not-italic text-pink-500">{item.quality}</em></>}
+              subtitle={`Bedtime: ${item.bedtime}`}
               onClick={() => onAction(item)}
-            >
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-pink-50"><Icon name="moon" size={20} color="#ec4899" /></span>
-              <span className="min-w-0">
-                <small className="block text-xs font-semibold text-slate-400">{item.date}</small>
-                <strong className="mt-1 block text-sm font-bold text-slate-900">
-                  {item.duration} <em className="text-xs not-italic text-pink-500">{item.quality}</em>
-                </strong>
-                <span className="mt-1 block text-xs font-semibold text-slate-500">Bedtime: {item.bedtime}</span>
-              </span>
-              <Icon name="chevron-right" size={16} color="#9ca3af" />
-            </button>
+            />
           ))}
         </div>
       ) : null}

@@ -71,13 +71,13 @@ export default function SelectField({
 
   return (
     <div className="relative grid gap-2" ref={rootRef}>
-      <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-500" id={`${fieldId}-label`}>
+      <label className="text-xs font-black uppercase tracking-[0.12em] text-app-muted" id={`${fieldId}-label`}>
         {label}
       </label>
       <input name={name} required={required} type="hidden" value={value} readOnly />
       <button
         className={cn(
-          "group flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 text-left shadow-sm shadow-slate-950/5 transition focus:outline-none",
+          "auth-field-control group flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 text-left shadow-sm shadow-slate-950/5 transition focus:outline-none",
           error
             ? "border-red-300 bg-red-50/80 ring-4 ring-red-100"
             : "border-slate-200 bg-white hover:border-slate-300 focus:border-violet-400 focus:ring-4 focus:ring-violet-100",
@@ -92,7 +92,7 @@ export default function SelectField({
       >
         {icon ? (
           <span className={cn(
-            "grid h-9 w-9 place-items-center rounded-lg transition",
+            "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
             error ? "bg-red-100 text-red-500" : "bg-slate-100 text-slate-400 group-focus:bg-violet-50 group-focus:text-[var(--primary)]",
           )}>
             <Icon name={icon} size={18} />
@@ -102,18 +102,18 @@ export default function SelectField({
           <span
             className={cn(
               "block truncate text-sm font-bold",
-              selected ? "text-slate-900" : "text-slate-400",
+              selected ? "text-app-text" : "text-app-faint",
             )}
             id={`${fieldId}-value`}
           >
             {selected?.label || placeholder}
           </span>
-          <span className="mt-0.5 block text-xs font-semibold text-slate-400">
+          <span className="mt-0.5 block text-xs font-semibold text-app-faint">
             {selected ? "Selected option" : "Tap to open list"}
           </span>
         </span>
         <span className={cn(
-          "grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-400 transition",
+          "auth-field-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-app-faint transition",
           open && "rotate-180 bg-violet-50 text-[var(--primary)]",
         )}>
           <Icon name="chevron-down" size={18} />
@@ -122,7 +122,7 @@ export default function SelectField({
 
       {open ? (
         <div
-          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)]"
+          className="auth-dropdown absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)]"
           role="listbox"
           aria-labelledby={`${fieldId}-label`}
           tabIndex={-1}
@@ -136,7 +136,7 @@ export default function SelectField({
                     "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-bold transition",
                     active
                       ? "bg-violet-50 text-[var(--primary)]"
-                      : "text-slate-700 hover:bg-slate-50 hover:text-slate-950",
+                      : "text-app-text-soft hover:bg-slate-50 hover:text-app-text",
                     option.disabled && "cursor-not-allowed opacity-50",
                   )}
                   key={option.value}
@@ -148,7 +148,7 @@ export default function SelectField({
                 >
                   <span className={cn(
                     "grid h-7 w-7 place-items-center rounded-lg",
-                    active ? "bg-violet-100 text-[var(--primary)]" : "bg-slate-100 text-slate-400",
+                    active ? "bg-violet-100 text-[var(--primary)]" : "auth-field-icon bg-slate-100 text-app-faint",
                   )}>
                     <Icon name={active ? "check" : "circle"} size={14} />
                   </span>

@@ -24,7 +24,7 @@ export default function PasswordField({
   return (
     <Field label={label} icon="lock" error={error}>
       <input
-        className="min-w-0 flex-1 bg-transparent py-1 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-slate-400"
+        className="min-w-0 flex-1 bg-transparent py-1 text-sm font-bold text-app-text outline-none placeholder:text-app-faint disabled:cursor-not-allowed disabled:text-app-faint"
         type={visible ? "text" : "password"}
         value={value}
         placeholder={placeholder}
@@ -34,12 +34,12 @@ export default function PasswordField({
       />
       <button
         type="button"
-        className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+        className="auth-field-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-app-faint transition hover:bg-slate-200/70 hover:text-app-text focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
         onClick={() => setVisible((state) => !state)}
         aria-label="Toggle password visibility"
         disabled={disabled}
       >
-        <Icon name={visible ? "eye-off" : "eye"} size={20} color="#9ca3af" />
+        <Icon name={visible ? "eye-off" : "eye"} size={20} />
       </button>
     </Field>
   );

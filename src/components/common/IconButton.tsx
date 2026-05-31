@@ -12,7 +12,7 @@ export default function IconButton({ icon, label, className = "", ...props }: Ic
     <button
       type="button"
       className={cn(
-        "grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60",
+        "grid h-10 w-10 place-items-center rounded-xl border border-app-line bg-app-card text-app-text-soft transition hover:border-[color-mix(in_srgb,var(--primary)_24%,var(--line))] hover:bg-[var(--surface-soft)] hover:text-app-text focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60",
         className,
       )}
       aria-label={label}

@@ -18,7 +18,7 @@ export default function TextField({ label, icon, value, onChange, placeholder, t
     <Field label={label} icon={icon} error={error}>
       <input
         className={cn(
-          "min-w-0 flex-1 bg-transparent py-1 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-slate-400",
+          "min-w-0 flex-1 bg-transparent py-1 text-sm font-bold text-app-text outline-none placeholder:text-app-faint disabled:cursor-not-allowed disabled:text-app-faint",
           isNumber && "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
         )}
         type={type}
@@ -28,7 +28,7 @@ export default function TextField({ label, icon, value, onChange, placeholder, t
         {...props}
       />
       {isNumber ? (
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-400">
+        <span className="auth-field-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-app-faint">
           <Icon name="hash" size={16} />
         </span>
       ) : null}

@@ -111,13 +111,13 @@ export default function DateField({
 
   return (
     <div className="relative grid gap-2" ref={rootRef}>
-      <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-500" id={`${fieldId}-label`}>
+      <label className="text-xs font-black uppercase tracking-[0.12em] text-app-muted" id={`${fieldId}-label`}>
         {label}
       </label>
       <input autoComplete={autoComplete} name={name} type="hidden" value={value} readOnly />
       <button
         className={cn(
-          "group flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 text-left shadow-sm shadow-slate-950/5 transition focus:outline-none",
+          "auth-field-control group flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 text-left shadow-sm shadow-slate-950/5 transition focus:outline-none",
           error
             ? "border-red-300 bg-red-50/80 ring-4 ring-red-100"
             : "border-slate-200 bg-white hover:border-slate-300 focus:border-violet-400 focus:ring-4 focus:ring-violet-100",
@@ -131,24 +131,24 @@ export default function DateField({
         onClick={() => setOpen((state) => !state)}
       >
         <span className={cn(
-          "grid h-9 w-9 place-items-center rounded-lg transition",
+          "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
           error ? "bg-red-100 text-red-500" : "bg-slate-100 text-slate-400 group-focus:bg-violet-50 group-focus:text-[var(--primary)]",
         )}>
           <Icon name="calendar-days" size={18} />
         </span>
         <span className="min-w-0 flex-1">
           <span
-            className={cn("block truncate text-sm font-bold", value ? "text-slate-900" : "text-slate-400")}
+            className={cn("block truncate text-sm font-bold", value ? "text-app-text" : "text-app-faint")}
             id={`${fieldId}-value`}
           >
             {formatDisplayDate(value) || placeholder}
           </span>
-          <span className="mt-0.5 block text-xs font-semibold text-slate-400">
+          <span className="mt-0.5 block text-xs font-semibold text-app-faint">
             {value ? "Selected birth date" : "Open custom calendar"}
           </span>
         </span>
         <span className={cn(
-          "grid h-8 w-8 place-items-center rounded-lg transition",
+          "auth-field-icon grid h-8 w-8 place-items-center rounded-lg transition",
           open ? "bg-violet-50 text-[var(--primary)]" : "bg-slate-100 text-slate-400",
         )}>
           <Icon name="chevron-down" size={18} />
@@ -157,7 +157,7 @@ export default function DateField({
 
       {open ? (
         <div
-          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)]"
+          className="auth-dropdown absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)]"
           role="dialog"
           aria-labelledby={`${fieldId}-label`}
         >
@@ -169,7 +169,7 @@ export default function DateField({
               <button className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]" type="button" onClick={() => setViewDate((date) => addMonths(date, -1))} aria-label="Previous month">
                 <Icon name="chevron-left" size={18} />
               </button>
-              <strong className="min-w-0 flex-1 text-center text-sm font-black text-slate-950">
+              <strong className="min-w-0 flex-1 text-center text-sm font-black text-app-text">
                 {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
               </strong>
               <button className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]" type="button" onClick={() => setViewDate((date) => addMonths(date, 1))} aria-label="Next month">

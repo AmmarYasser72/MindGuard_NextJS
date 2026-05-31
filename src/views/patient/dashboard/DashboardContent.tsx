@@ -6,6 +6,7 @@ import { useRouter } from "../../../hooks/useRouter";
 import { readingService } from "../../../services/readingService";
 import { getTodayMoodSnapshot, recordMoodForToday } from "../../../services/moodCalendarService";
 import { dailyGoals, moodOptions, patientNotifications, weeklyMood } from "../../../data/patientData";
+import FindDoctorSection from "./FindDoctorSection";
 import MoodCheckInPanel from "./MoodCheckInPanel";
 import MoodTrendPanel from "./MoodTrendPanel";
 import PatientDashboardHero from "./PatientDashboardHero";
@@ -136,6 +137,7 @@ export default function DashboardContent({ email }: { email: string }) {
             selectedMood={selectedMood}
           />
           <MoodTrendPanel average={average} bestMoodDay={bestMoodDay} />
+          <FindDoctorSection onNavigate={navigate} />
           <QuickActionsSection onNavigate={navigate} />
         </div>
 
