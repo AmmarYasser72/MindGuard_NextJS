@@ -1,6 +1,7 @@
 import { storage } from "./storage";
 import { request } from "./apiClient";
 import { LOCAL_DEMO_TOKEN, clearSession, getSession, setSession } from "./session";
+import { saveSignedUpDoctor } from "./localDoctorDirectory";
 import { isDemoMode } from "../config/demoMode";
 import type { ApiError, ApiRecord } from "../types/api";
 import type { AuthUser, RegisterProfile, UserRole } from "../types/auth";
@@ -195,6 +196,11 @@ function createLocalUser(profile: RegisterProfile, cleanEmail: string) {
   return removePassword(user);
 }
 
+function persistRegisteredProfile(profile: RegisterProfile, user: AuthUser, token: string | null = LOCAL_DEMO_TOKEN) {
+  saveSignedUpDoctor(profile, user);
+  return persistSession(user, token);
+}
+
 function isConnectionError(error: unknown): error is ApiError {
   if (!(error instanceof Error)) return false;
   const typedError = error as ApiError;
@@ -281,7 +287,7 @@ export const authService = {
       if (users.some((user) => user.email.toLowerCase() === cleanEmail)) {
         throw new Error("Email already exists");
       }
-      return persistSession(createLocalUser(profile, cleanEmail));
+      return persistRegisteredProfile(profile, createLocalUser(profile, cleanEmail));
     }
 
     try {
@@ -293,18 +299,20 @@ export const authService = {
       if (!token) {
         throw createBackendAuthTokenError("sign up");
       }
-      return persistSession(profileFromAuth(auth, fallback), token);
+      return persistRegisteredProfile(profile, profileFromAuth(auth, fallback), token);
     } catch (error) {
       if (isConnectionError(error)) {
         const users = savedUsers();
         if (users.some((user) => user.email.toLowerCase() === cleanEmail)) {
           throw new Error("Email already exists");
         }
-        return persistSession(createLocalUser(profile, cleanEmail));
+        return persistRegisteredProfile(profile, createLocalUser(profile, cleanEmail));
       }
       if (isInternalServerError(error)) {
         try {
-          return await remoteSignIn(cleanEmail, profile.password, fallback);
+          const nextUser = await remoteSignIn(cleanEmail, profile.password, fallback);
+          saveSignedUpDoctor(profile, nextUser);
+          return nextUser;
         } catch {
           throw createBackendAuthTokenError("sign up");
         }

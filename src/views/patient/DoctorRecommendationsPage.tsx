@@ -32,10 +32,17 @@ export default function DoctorRecommendationsPage() {
   }
 
   return (
-    <main className="patient-shell dashboard-shell min-h-screen text-app-text">
-      <AppTopBar title="Doctor Recommendations" onBack={() => navigate("/patient-dashboard")} actionIcon="message-circle" onAction={openCareChat} />
+    <main className="patient-shell patient-recommendations-shell dashboard-shell min-h-screen ![background:var(--patient-recommendations-bg)] text-app-text">
+      <AppTopBar
+        title="Doctor Recommendations"
+        subtitle="Find care"
+        onBack={() => navigate("/patient-dashboard")}
+        actionIcon="message-circle"
+        actionLabel="Open care chat"
+        onAction={openCareChat}
+      />
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="mx-auto grid w-full max-w-7xl gap-7 px-4 py-6 sm:px-6 lg:px-8">
         <RecommendationHero
           conditionLabel={selectedConditionOption.label}
           totalDoctors={recommendations.length}
@@ -44,17 +51,18 @@ export default function DoctorRecommendationsPage() {
         />
 
         <ConditionSelectionPanel
+          conditionLabel={selectedConditionOption.label}
           selectedCondition={selectedCondition}
+          totalDoctors={recommendations.length}
+          usedCuratedProfiles={Boolean(result?.usedCuratedProfiles)}
           onReset={resetCondition}
           onSelect={loadCondition}
         />
 
         <RecommendationResultsSection
-          conditionLabel={selectedConditionOption.label}
           error={error}
           isLoading={isLoading}
           recommendations={recommendations}
-          usedCuratedProfiles={Boolean(result?.usedCuratedProfiles)}
           onContact={setContactDoctor}
           onRetry={retryRecommendations}
         />

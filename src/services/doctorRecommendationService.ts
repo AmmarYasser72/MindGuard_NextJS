@@ -1,6 +1,7 @@
 import { curatedDoctorProfiles, patientConditionOptions } from "../data/doctorRecommendations";
 import { shouldUseDemoData } from "../config/demoMode";
 import { doctorService } from "./doctorService";
+import { getSignedUpDoctors, type SignedUpDoctor } from "./localDoctorDirectory";
 import type { ApiRecord } from "../types/api";
 import type {
   DoctorProfile,
@@ -99,6 +100,28 @@ function normalizeBackendDoctor(record: ApiRecord): DoctorProfile {
   };
 }
 
+function normalizeSignedUpDoctor(record: SignedUpDoctor): DoctorProfile {
+  const specialization = asString(record.specialization) || "Mental health specialist";
+  const rawRecord = record as unknown as ApiRecord;
+
+  return {
+    id: record.id,
+    displayName: asString(record.displayName) || normalizeDoctorName(rawRecord, record.id),
+    specialization,
+    yearsOfExperience: asNumber(record.yearsOfExperience),
+    conditions: inferConditionsFromSpecialization(specialization),
+    careModes: ["Video", "Chat"],
+    languages: ["English", "Arabic"],
+    email: asString(record.email) || null,
+    phone: null,
+    clinicAddress: "MindGuard signed-up doctor",
+    sessionTime: "Flexible",
+    source: "signed-up",
+    bio: `Recently joined MindGuard as a ${specialization.toLowerCase()} specialist.`,
+    raw: rawRecord,
+  };
+}
+
 function keywordScore(doctor: DoctorProfile, conditionId: PatientConditionId) {
   const searchable = `${doctor.specialization} ${doctor.bio} ${doctor.conditions.join(" ")}`.toLowerCase();
   return keywordByCondition[conditionId].filter((keyword) => searchable.includes(keyword)).length;
@@ -131,6 +154,11 @@ function scoreDoctor(doctor: DoctorProfile, conditionId: PatientConditionId): Do
   const directMatch = doctor.conditions.includes(conditionId);
   const broadMatch = doctor.conditions.includes("mixed");
   const specializationMatches = keywordScore(doctor, conditionId);
+  const matchStatus = directMatch || specializationMatches > 0
+    ? "matched"
+    : broadMatch
+      ? "broad"
+      : "not-matched";
   const experienceScore = Math.min(doctor.yearsOfExperience, 15);
   const contactScore = doctor.email || doctor.phone ? 6 : 0;
   const score = 42
@@ -142,15 +170,33 @@ function scoreDoctor(doctor: DoctorProfile, conditionId: PatientConditionId): Do
 
   return {
     ...doctor,
+    conditionMatch: matchStatus !== "not-matched",
     matchReasons: buildMatchReasons(doctor, conditionId),
     matchScore: Math.min(Math.round(score), 99),
+    matchStatus,
   };
 }
 
-function mergeDoctorProfiles(primary: DoctorProfile[], fallback: DoctorProfile[]) {
-  const seen = new Set(primary.map((doctor) => doctor.id));
-  const additions = fallback.filter((doctor) => !seen.has(doctor.id));
-  return [...primary, ...additions];
+function doctorIdentityKeys(doctor: DoctorProfile) {
+  return [doctor.id, doctor.email || ""]
+    .map((key) => key.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function mergeDoctorProfiles(...groups: DoctorProfile[][]) {
+  const seen = new Set<string>();
+  const merged: DoctorProfile[] = [];
+
+  groups.forEach((group) => {
+    group.forEach((doctor) => {
+      const keys = doctorIdentityKeys(doctor);
+      if (keys.some((key) => seen.has(key))) return;
+      merged.push(doctor);
+      keys.forEach((key) => seen.add(key));
+    });
+  });
+
+  return merged;
 }
 
 async function loadBackendDoctorProfiles() {
@@ -158,7 +204,12 @@ async function loadBackendDoctorProfiles() {
   return doctors.map(normalizeBackendDoctor);
 }
 
+function loadSignedUpDoctorProfiles() {
+  return getSignedUpDoctors().map(normalizeSignedUpDoctor);
+}
+
 export async function getDoctorRecommendations(conditionId: PatientConditionId): Promise<DoctorRecommendationResult> {
+  const signedUpDoctors = loadSignedUpDoctorProfiles();
   let backendDoctors: DoctorProfile[] = [];
   let backendAvailable = false;
 
@@ -171,10 +222,11 @@ export async function getDoctorRecommendations(conditionId: PatientConditionId):
     }
   }
 
-  const needsCuratedProfiles = backendDoctors.length < MINIMUM_VISIBLE_DOCTORS;
+  const liveDoctors = mergeDoctorProfiles(signedUpDoctors, backendDoctors);
+  const needsCuratedProfiles = liveDoctors.length < MINIMUM_VISIBLE_DOCTORS;
   const doctors = needsCuratedProfiles
-    ? mergeDoctorProfiles(backendDoctors, curatedDoctorProfiles)
-    : backendDoctors;
+    ? mergeDoctorProfiles(liveDoctors, curatedDoctorProfiles)
+    : liveDoctors;
 
   return {
     backendAvailable,

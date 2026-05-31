@@ -449,8 +449,8 @@ html[data-theme="dark"] .auth-shell .text-red-700 {
   --patient-card-soft: #f8fafc;
   --patient-card-muted: #f5f3ff;
   --patient-line: #e2e8f0;
-  --patient-doctor-accent: #0f766e;
-  --patient-doctor-bg: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+  --patient-doctor-accent: #0e7490;
+  --patient-doctor-bg: linear-gradient(135deg, #ffffff 0%, #ecfeff 48%, #f5f3ff 100%);
   --patient-doctor-chip-bg: rgba(255, 255, 255, 0.85);
   --patient-doctor-chip-border: #e2e8f0;
   --patient-doctor-icon-ring: #ffffff;
@@ -458,13 +458,14 @@ html[data-theme="dark"] .auth-shell .text-red-700 {
   --patient-doctor-orb-secondary: rgba(196, 181, 253, 0.2);
   --patient-doctor-stat-bg: rgba(255, 255, 255, 0.86);
   --patient-doctor-stat-border: rgba(94, 234, 212, 0.32);
-  --patient-recommendation-hero-bg: radial-gradient(circle at top left, rgba(20, 184, 166, 0.2), transparent 34%), linear-gradient(135deg, #f0fdfa, #ffffff 58%, #eef2ff);
+  --patient-recommendations-bg: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 38%, #ffffff 100%);
+  --patient-recommendation-hero-bg: radial-gradient(circle at 8% 18%, rgba(14, 116, 144, 0.11), transparent 30%), radial-gradient(circle at 92% 8%, rgba(99, 102, 241, 0.13), transparent 28%), linear-gradient(135deg, #ffffff 0%, #eefafa 48%, #f6f4ff 100%);
   --patient-recommendation-badge-bg: rgba(255, 255, 255, 0.84);
   --patient-recommendation-metric-bg: rgba(255, 255, 255, 0.86);
-  --patient-recommendation-soft-border: rgba(94, 234, 212, 0.34);
-  --patient-condition-active-bg: color-mix(in srgb, var(--patient-doctor-accent) 10%, var(--patient-card));
-  --patient-condition-icon-bg: color-mix(in srgb, var(--patient-doctor-accent) 14%, var(--patient-card));
-  --patient-condition-icon-active-bg: #0f766e;
+  --patient-recommendation-soft-border: rgba(99, 102, 241, 0.16);
+  --patient-condition-active-bg: linear-gradient(180deg, rgba(236, 254, 255, 0.96), rgba(245, 243, 255, 0.76));
+  --patient-condition-icon-bg: color-mix(in srgb, var(--patient-doctor-accent) 12%, var(--patient-card));
+  --patient-condition-icon-active-bg: #0e7490;
   --patient-condition-badge-bg: var(--patient-card);
   --patient-hero-bg: linear-gradient(135deg, #413470 0%, #5b67d8 58%, #7d5bd9 100%);
   --patient-hero-border: rgba(255, 255, 255, 0.3);
@@ -500,6 +501,7 @@ html[data-theme="dark"] .patient-shell {
   --patient-doctor-orb-secondary: rgba(168, 176, 255, 0.13);
   --patient-doctor-stat-bg: rgba(11, 18, 32, 0.48);
   --patient-doctor-stat-border: rgba(94, 234, 212, 0.2);
+  --patient-recommendations-bg: var(--patient-page-bg);
   --patient-recommendation-hero-bg: radial-gradient(circle at top left, rgba(45, 212, 191, 0.16), transparent 34%), linear-gradient(135deg, #131b2a 0%, #162436 58%, #101827 100%);
   --patient-recommendation-badge-bg: rgba(94, 234, 212, 0.1);
   --patient-recommendation-metric-bg: rgba(11, 18, 32, 0.42);
@@ -582,58 +584,6 @@ html[data-theme="dark"] .patient-shell {
 
 .patient-find-doctor-orb-secondary {
   background: var(--patient-doctor-orb-secondary);
-}
-
-.patient-recommendation-hero {
-  background: var(--patient-recommendation-hero-bg) !important;
-  border-color: var(--patient-recommendation-soft-border) !important;
-}
-
-.patient-recommendation-hero-orb {
-  background: var(--patient-doctor-orb-primary);
-}
-
-.patient-recommendation-badge {
-  background: var(--patient-recommendation-badge-bg);
-  color: var(--patient-doctor-accent);
-  box-shadow: inset 0 0 0 1px var(--patient-recommendation-soft-border);
-}
-
-.patient-recommendation-metric {
-  background: var(--patient-recommendation-metric-bg);
-  box-shadow: inset 0 0 0 1px var(--patient-line), 0 0.75rem 1.9rem rgba(15, 23, 42, 0.06);
-}
-
-.patient-condition-card {
-  background: var(--patient-card);
-  border-color: var(--patient-line);
-  color: var(--text);
-}
-
-.patient-condition-card:hover {
-  background: var(--patient-card-muted);
-  border-color: color-mix(in srgb, var(--patient-doctor-accent) 34%, var(--patient-line));
-}
-
-.patient-condition-card.is-active {
-  background: var(--patient-condition-active-bg);
-  border-color: color-mix(in srgb, var(--patient-doctor-accent) 42%, var(--patient-line));
-}
-
-.patient-condition-icon {
-  background: var(--patient-condition-icon-bg);
-  color: var(--patient-doctor-accent);
-}
-
-.patient-condition-icon.is-active {
-  background: var(--patient-condition-icon-active-bg);
-  color: #ffffff;
-}
-
-.patient-condition-badge {
-  background: var(--patient-condition-badge-bg);
-  color: var(--patient-doctor-accent);
-  box-shadow: inset 0 0 0 1px var(--patient-recommendation-soft-border);
 }
 
 .patient-card-gradient,

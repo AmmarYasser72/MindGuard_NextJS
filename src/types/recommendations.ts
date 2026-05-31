@@ -10,6 +10,8 @@ export type PatientConditionOption = {
   keywords: string[];
 };
 
+export type DoctorProfileSource = "backend" | "curated" | "signed-up";
+
 export type DoctorProfile = {
   id: string;
   bio: string;
@@ -22,14 +24,16 @@ export type DoctorProfile = {
   phone?: string | null;
   raw?: ApiRecord;
   sessionTime?: string | null;
-  source: "backend" | "curated";
+  source: DoctorProfileSource;
   specialization: string;
   yearsOfExperience: number;
 };
 
 export type DoctorRecommendation = DoctorProfile & {
+  conditionMatch: boolean;
   matchReasons: string[];
   matchScore: number;
+  matchStatus: "matched" | "broad" | "not-matched";
 };
 
 export type DoctorRecommendationResult = {

@@ -14,6 +14,12 @@ type ContactDoctorModalProps = {
   onOpenCareChat: () => void;
 };
 
+const matchLabels = {
+  matched: "condition match",
+  broad: "broad fit",
+  "not-matched": "not a match",
+};
+
 function buildMailTo(doctor: DoctorRecommendation, conditionLabel: string, patientEmail?: string) {
   const recipient = doctor.email || "";
   const subject = encodeURIComponent(`MindGuard appointment request: ${conditionLabel}`);
@@ -40,6 +46,7 @@ export default function ContactDoctorModal({
 }: ContactDoctorModalProps) {
   const { showToast } = useToast();
   const mailToHref = buildMailTo(doctor, conditionLabel, patientEmail);
+  const matchLabel = matchLabels[doctor.matchStatus];
 
   async function copyDoctorId() {
     try {
@@ -77,7 +84,7 @@ export default function ContactDoctorModal({
             </div>
             <span className="rounded-2xl bg-white px-4 py-3 text-center shadow-sm">
               <strong className="block text-2xl font-black text-teal-800">{doctor.matchScore}%</strong>
-              <small className="font-bold text-teal-700">match</small>
+              <small className="font-bold text-teal-700">{matchLabel}</small>
             </span>
           </div>
         </div>
