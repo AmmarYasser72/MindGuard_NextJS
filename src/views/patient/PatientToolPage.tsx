@@ -24,7 +24,7 @@ const actionModalKinds: Record<string, ToolModalKind> = {
 };
 
 export default function PatientToolPage({ config }: PatientToolPageProps) {
-  const { navigate } = useRouter();
+  const { back } = useRouter();
   const { showToast } = useToast();
   const [activeModal, setActiveModal] = useState<ActiveToolModal | null>(null);
   const [journalEntries, setJournalEntries] = useState<ToolItem[]>([]);
@@ -76,7 +76,7 @@ export default function PatientToolPage({ config }: PatientToolPageProps) {
     <main className="patient-shell dashboard-shell min-h-screen bg-[linear-gradient(180deg,#f5f3ff_0%,#f8fafc_46%,#ffffff_100%)]">
       <AppTopBar
         title={config.title}
-        onBack={() => navigate("/patient-dashboard")}
+        onBack={() => back("/patient-dashboard")}
         actionIcon={headerAction ? "plus" : undefined}
         onAction={headerAction ? () => openAction(headerAction) : undefined}
       />

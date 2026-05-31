@@ -32,7 +32,7 @@ export default function SignupPage() {
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const { register, authLoading } = useAuth();
-  const { navigate } = useRouter();
+  const { back, navigate } = useRouter();
 
   function update<Key extends keyof PatientSignupForm>(key: Key, value: PatientSignupForm[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -62,7 +62,7 @@ export default function SignupPage() {
           description="Start your wellness journey with a secure profile."
           eyebrow="Patient account"
           icon="user-plus"
-          onBack={() => navigate("/login")}
+          onBack={() => back("/login")}
           title="Create Account"
         />
 

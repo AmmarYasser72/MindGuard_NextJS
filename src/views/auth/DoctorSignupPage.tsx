@@ -36,7 +36,7 @@ export default function DoctorSignupPage() {
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const { register, authLoading } = useAuth();
-  const { navigate } = useRouter();
+  const { back, navigate } = useRouter();
 
   function update<Key extends keyof DoctorSignupForm>(key: Key, value: DoctorSignupForm[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -67,7 +67,7 @@ export default function DoctorSignupPage() {
           description="Join MindGuard as a healthcare professional."
           eyebrow="Doctor account"
           icon="stethoscope"
-          onBack={() => navigate("/signup")}
+          onBack={() => back("/signup")}
           title="Doctor Registration"
           tone="green"
         />

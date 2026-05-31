@@ -11,6 +11,17 @@ export function useRouter() {
   const nextRouter = useNextRouter();
   const path = usePathname() || "/";
 
+  const back = useCallback((fallbackPath?: string) => {
+    if (window.history.length > 1) {
+      nextRouter.back();
+      return;
+    }
+
+    if (fallbackPath) {
+      nextRouter.push(fallbackPath, { scroll: true });
+    }
+  }, [nextRouter]);
+
   const navigate = useCallback((nextPath: string, options: NavigateOptions = {}) => {
     if (options.replace) {
       nextRouter.replace(nextPath, { scroll: true });
@@ -20,9 +31,9 @@ export function useRouter() {
   }, [nextRouter]);
 
   return useMemo(() => ({
-    back: nextRouter.back,
+    back,
     navigate,
     path,
     refresh: nextRouter.refresh,
-  }), [navigate, nextRouter.back, nextRouter.refresh, path]);
+  }), [back, navigate, nextRouter.refresh, path]);
 }

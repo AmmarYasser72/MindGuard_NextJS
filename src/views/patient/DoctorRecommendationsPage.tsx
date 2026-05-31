@@ -11,7 +11,7 @@ import { useRouter } from "../../hooks/useRouter";
 
 export default function DoctorRecommendationsPage() {
   const { user } = useAuth();
-  const { navigate } = useRouter();
+  const { back, navigate } = useRouter();
   const {
     contactDoctor,
     error,
@@ -36,7 +36,7 @@ export default function DoctorRecommendationsPage() {
       <AppTopBar
         title="Doctor Recommendations"
         subtitle="Find care"
-        onBack={() => navigate("/patient-dashboard")}
+        onBack={() => back("/patient-dashboard")}
         actionIcon="message-circle"
         actionLabel="Open care chat"
         onAction={openCareChat}

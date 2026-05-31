@@ -9,7 +9,7 @@ import { SUPPORT_PROMPTS } from "./chat/chatView";
 import { usePatientChat } from "./chat/usePatientChat";
 
 export default function PatientChat({ userId }: { userId: string }) {
-  const { navigate } = useRouter();
+  const { back } = useRouter();
   const {
     connectionMode,
     draft,
@@ -21,7 +21,7 @@ export default function PatientChat({ userId }: { userId: string }) {
     setDraft,
     visibleMessages,
   } = usePatientChat(userId);
-  const handleBack = useCallback(() => navigate("/patient-dashboard"), [navigate]);
+  const handleBack = useCallback(() => back("/patient-dashboard"), [back]);
 
   return (
     <main className="patient-shell patient-chat-shell dashboard-shell relative flex h-dvh max-h-dvh flex-col overflow-hidden text-slate-950">
