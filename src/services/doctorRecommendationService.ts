@@ -17,6 +17,21 @@ import type {
 } from "../types/recommendations";
 
 const MINIMUM_VISIBLE_DOCTORS = 3;
+const demoDoctorProfile: DoctorProfile = {
+  id: "demo-doctor-001",
+  displayName: "Demo Doctor",
+  specialization: "Clinical Psychology and CBT",
+  yearsOfExperience: 15,
+  conditions: ["anxiety", "stress", "mixed"],
+  careModes: ["Video", "Chat"],
+  languages: ["English", "Arabic"],
+  email: "doctor@demo.com",
+  phone: null,
+  clinicAddress: "MindGuard demo clinic",
+  sessionTime: "45 min",
+  source: "signed-up",
+  bio: "Demo clinician profile connected to the local doctor dashboard schedule for anxiety, panic, worry, and CBT follow-up care.",
+};
 
 const keywordByCondition = patientConditionOptions.reduce<
   Record<PatientConditionId, string[]>
@@ -271,6 +286,7 @@ export async function getDoctorRecommendations(
   conditionId: PatientConditionId,
 ): Promise<DoctorRecommendationResult> {
   const signedUpDoctors = loadSignedUpDoctorProfiles();
+  const demoDoctors = shouldUseDemoData() ? [demoDoctorProfile] : [];
   let backendDoctors: DoctorProfile[] = [];
   let backendAvailable = false;
 
@@ -283,7 +299,11 @@ export async function getDoctorRecommendations(
     }
   }
 
-  const liveDoctors = mergeDoctorProfiles(signedUpDoctors, backendDoctors);
+  const liveDoctors = mergeDoctorProfiles(
+    demoDoctors,
+    signedUpDoctors,
+    backendDoctors,
+  );
   const needsCuratedProfiles = liveDoctors.length < MINIMUM_VISIBLE_DOCTORS;
   const doctors = needsCuratedProfiles
     ? mergeDoctorProfiles(liveDoctors, curatedDoctorProfiles)

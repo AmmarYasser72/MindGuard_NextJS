@@ -219,6 +219,7 @@ function EditSessionModal({
   const [form, setForm] = useState(() => ({
     date: formatDateInput(session.scheduledAt),
     duration: String(session.duration || 60),
+    notes: session.notes || String(session.raw?.doctorNote || ""),
     reason: session.reason || "routineCheckIn",
     status: session.status || "available",
     time: formatTimeInput(session.scheduledAt),
@@ -248,6 +249,7 @@ function EditSessionModal({
     onSave({
       ...session,
       duration,
+      notes: form.notes,
       reason: form.reason,
       scheduledAt: start,
       status: form.status,
@@ -255,6 +257,9 @@ function EditSessionModal({
       raw: {
         ...(session.raw || {}),
         endTime: end.toISOString(),
+        doctorNote: form.notes,
+        notes: form.notes,
+        sessionUpdatedAt: new Date().toISOString(),
         startTime: start.toISOString(),
         status: form.status,
       },
@@ -355,6 +360,15 @@ function EditSessionModal({
             className={inputClass}
             value={form.reason}
             onChange={(event) => update("reason", event.target.value)}
+          />
+        </label>
+        <label className={`${fieldClass} sm:col-span-2`}>
+          Doctor note
+          <textarea
+            className={`${inputClass} min-h-28 py-3`}
+            value={form.notes}
+            onChange={(event) => update("notes", event.target.value)}
+            placeholder="Describe what was done or add important comments for the patient."
           />
         </label>
       </div>

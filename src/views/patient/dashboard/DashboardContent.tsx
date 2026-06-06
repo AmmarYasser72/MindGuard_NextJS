@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import NotificationPanel from "../../../components/patient/NotificationPanel";
 import { useToast } from "../../../components/common/Toast";
 import { useAuth } from "../../../hooks/useAuth";
@@ -14,13 +14,18 @@ import {
   patientNotifications,
   weeklyMood,
 } from "../../../data/patientData";
+import { slotService } from "../../../services/slotService";
 import FindDoctorSection from "./FindDoctorSection";
 import MoodCheckInPanel from "./MoodCheckInPanel";
 import MoodTrendPanel from "./MoodTrendPanel";
+import PatientAppointmentsSection from "./PatientAppointmentsSection";
 import PatientDashboardHero from "./PatientDashboardHero";
 import QuickActionsSection from "./QuickActionsSection";
 import WellnessSidebar from "./WellnessSidebar";
 import { dashboardGreeting, nameFromEmail } from "./dashboardUtils";
+import type { DoctorSession } from "../../../types/doctor";
+
+type PatientNotification = (typeof patientNotifications)[number];
 
 export default function DashboardContent({ email }: { email: string }) {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
@@ -29,11 +34,24 @@ export default function DashboardContent({ email }: { email: string }) {
   const [moodSaveError, setMoodSaveError] = useState("");
   const [recordedMood, setRecordedMood] = useState<string | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(patientNotifications);
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [sessionNotifications, setSessionNotifications] = useState<
+    PatientNotification[]
+  >([]);
   const { navigate } = useRouter();
   const { signOut, user } = useAuth();
   const { showToast } = useToast();
   const patientKey = user?.uid || user?.email || email || "guest-patient";
+  const patientDetails = useMemo(
+    () => ({
+      patientEmail: user?.email || email || "",
+      patientId: user?.uid || user?._id || user?.id || user?.email || email,
+      patientName: user?.displayName || email?.split("@")[0] || "Patient",
+    }),
+    [email, user],
+  );
   const [currentStreak, setCurrentStreak] = useState(0);
 
   const average = useMemo(
@@ -48,6 +66,17 @@ export default function DashboardContent({ email }: { email: string }) {
   const completedGoals = dailyGoals.filter(
     (goal) => goal.progress >= 0.7,
   ).length;
+  const notifications = useMemo(
+    () =>
+      [...sessionNotifications, ...patientNotifications].map(
+        (notification) => ({
+          ...notification,
+          unread:
+            notification.unread && !readNotificationIds.has(notification.id),
+        }),
+      ),
+    [readNotificationIds, sessionNotifications],
+  );
   const unreadCount = notifications.filter(
     (notification) => notification.unread,
   ).length;
@@ -83,17 +112,33 @@ export default function DashboardContent({ email }: { email: string }) {
     });
   }, [patientKey]);
 
+  const loadSessionNotifications = useCallback(async () => {
+    try {
+      const patientSlots = await slotService.getPatientSlots(patientDetails);
+      setSessionNotifications(
+        patientSlots
+          .map(sessionUpdateNotification)
+          .filter((notification): notification is PatientNotification =>
+            Boolean(notification),
+          ),
+      );
+    } catch {
+      setSessionNotifications([]);
+    }
+  }, [patientDetails]);
+
+  useEffect(() => {
+    window.queueMicrotask(loadSessionNotifications);
+  }, [loadSessionNotifications]);
+
   function handleLogout() {
     signOut();
     navigate("/login");
   }
 
   function handleMarkAllRead() {
-    setNotifications((currentNotifications) =>
-      currentNotifications.map((notification) => ({
-        ...notification,
-        unread: false,
-      })),
+    setReadNotificationIds(
+      new Set(notifications.map((notification) => notification.id)),
     );
     showToast("All notifications marked as read", "success");
   }
@@ -173,6 +218,7 @@ export default function DashboardContent({ email }: { email: string }) {
             selectedMood={selectedMood}
           />
           <MoodTrendPanel average={average} bestMoodDay={bestMoodDay} />
+          <PatientAppointmentsSection onNavigate={navigate} />
           <FindDoctorSection onNavigate={navigate} />
           <QuickActionsSection onNavigate={navigate} />
         </div>
@@ -184,4 +230,65 @@ export default function DashboardContent({ email }: { email: string }) {
       </div>
     </section>
   );
+}
+
+function cleanText(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function sessionUpdateNotification(
+  session: DoctorSession,
+): PatientNotification | null {
+  const note =
+    cleanText(session.notes) ||
+    cleanText(session.raw?.doctorNote) ||
+    cleanText(session.raw?.notes);
+  const updatedAt =
+    cleanText(session.raw?.sessionUpdatedAt) ||
+    cleanText(session.raw?.updatedAt);
+
+  if (!note || !updatedAt) return null;
+
+  return {
+    id: `session-update-${session.id}-${updatedAt}`,
+    title: "Session updated",
+    message: `Your doctor updated your session for ${formatNotificationDate(session.scheduledAt)}. Note: ${note}`,
+    time: relativeNotificationTime(updatedAt),
+    icon: "calendar-check",
+    color: "#0f766e",
+    bg: "#ccfbf1",
+    category: "Session",
+    value: "Doctor note",
+    unread: true,
+  };
+}
+
+function formatNotificationDate(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function relativeNotificationTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Updated recently";
+
+  const diffMinutes = Math.max(
+    0,
+    Math.round((Date.now() - date.getTime()) / 60000),
+  );
+  if (diffMinutes < 1) return "Just now";
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24)
+    return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }

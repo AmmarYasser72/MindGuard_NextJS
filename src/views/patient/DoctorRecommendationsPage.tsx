@@ -73,6 +73,8 @@ export default function DoctorRecommendationsPage() {
           conditionLabel={selectedConditionOption.label}
           doctor={contactDoctor}
           patientEmail={user?.email}
+          patientId={user?.uid || user?._id || user?.id}
+          patientName={user?.displayName}
           onClose={() => setContactDoctor(null)}
           onOpenCareChat={openCareChat}
         />

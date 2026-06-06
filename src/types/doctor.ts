@@ -23,11 +23,13 @@ export type DoctorPatient = {
 
 export type DoctorSession = {
   id: string;
+  doctorId?: string | null;
   patientName: string;
   scheduledAt: Date;
   condition: string | null;
   duration: number | null;
   patientId?: string | null;
+  notes?: string;
   raw?: ApiRecord;
   reason?: string;
   severity?: string | null;

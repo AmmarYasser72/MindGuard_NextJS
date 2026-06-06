@@ -1,15 +1,20 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Button from "../../common/Button";
 import Icon from "../../common/Icon";
 import { Modal } from "../../common/Modal";
 import { useToast } from "../../common/Toast";
+import { slotService } from "../../../services/slotService";
 import type { DoctorRecommendation } from "../../../types/recommendations";
+import type { DoctorSession } from "../../../types/doctor";
 
 type ContactDoctorModalProps = {
   conditionLabel: string;
   doctor: DoctorRecommendation;
   patientEmail?: string;
+  patientId?: string;
+  patientName?: string;
   onClose: () => void;
   onOpenCareChat: () => void;
 };
@@ -51,12 +56,68 @@ export default function ContactDoctorModal({
   conditionLabel,
   doctor,
   patientEmail,
+  patientId,
+  patientName,
   onClose,
   onOpenCareChat,
 }: ContactDoctorModalProps) {
   const { showToast } = useToast();
+  const [slots, setSlots] = useState<DoctorSession[]>([]);
+  const [selectedSlotId, setSelectedSlotId] = useState("");
+  const [slotError, setSlotError] = useState("");
+  const [isLoadingSlots, setIsLoadingSlots] = useState(true);
+  const [isBooking, setIsBooking] = useState(false);
   const mailToHref = buildMailTo(doctor, conditionLabel, patientEmail);
   const matchLabel = matchLabels[doctor.matchStatus];
+  const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) || null;
+  const bookingPatient = useMemo(
+    () => ({
+      patientEmail: patientEmail || "",
+      patientId: patientId || patientEmail || "patient",
+      patientName: patientName || patientEmail?.split("@")[0] || "Patient",
+    }),
+    [patientEmail, patientId, patientName],
+  );
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadSlots() {
+      setIsLoadingSlots(true);
+      setSlotError("");
+
+      try {
+        const availableSlots = await slotService.getDoctorAvailableSlots(
+          doctor.id,
+          doctor,
+        );
+        if (!isActive) return;
+        setSlots(availableSlots);
+        setSelectedSlotId((current) =>
+          availableSlots.some((slot) => slot.id === current) ? current : "",
+        );
+      } catch (error) {
+        if (!isActive) return;
+        setSlots([]);
+        setSelectedSlotId("");
+        setSlotError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load available slots.",
+        );
+      } finally {
+        if (isActive) {
+          setIsLoadingSlots(false);
+        }
+      }
+    }
+
+    loadSlots();
+
+    return () => {
+      isActive = false;
+    };
+  }, [doctor]);
 
   async function copyDoctorId() {
     try {
@@ -67,9 +128,74 @@ export default function ContactDoctorModal({
     }
   }
 
+  async function refreshSlots() {
+    setIsLoadingSlots(true);
+    setSlotError("");
+    try {
+      const availableSlots = await slotService.getDoctorAvailableSlots(
+        doctor.id,
+        doctor,
+      );
+      setSlots(availableSlots);
+      setSelectedSlotId((current) =>
+        availableSlots.some((slot) => slot.id === current) ? current : "",
+      );
+    } catch (error) {
+      setSlots([]);
+      setSelectedSlotId("");
+      setSlotError(
+        error instanceof Error
+          ? error.message
+          : "Unable to refresh available slots.",
+      );
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  }
+
+  async function bookSelectedSlot() {
+    if (!selectedSlot) {
+      setSlotError("Choose an available future slot before booking.");
+      return;
+    }
+
+    if (selectedSlot.scheduledAt.getTime() <= Date.now()) {
+      setSlotError("This time slot has already passed. Choose a future slot.");
+      return;
+    }
+
+    setIsBooking(true);
+    setSlotError("");
+
+    try {
+      const bookedSlot = await slotService.bookSlot(
+        selectedSlot.id,
+        bookingPatient,
+      );
+      setSlots((current) =>
+        current.filter((slot) => slot.id !== bookedSlot.id),
+      );
+      setSelectedSlotId("");
+      showToast(
+        `Session booked for ${formatSlotDateTime(bookedSlot.scheduledAt)}`,
+        "success",
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "This slot is no longer available. Please choose another time.";
+      setSlotError(message);
+      showToast(message, "error");
+      await refreshSlots();
+    } finally {
+      setIsBooking(false);
+    }
+  }
+
   return (
     <Modal
-      title={`Contact ${doctor.displayName}`}
+      title={`Book ${doctor.displayName}`}
       onClose={onClose}
       actions={
         <>
@@ -83,6 +209,14 @@ export default function ContactDoctorModal({
             <Icon name="mail" size={18} color="#fff" />
             {doctor.email ? "Email doctor" : "Prepare email request"}
           </a>
+          <Button
+            className="rounded-xl bg-teal-600 hover:bg-teal-700 focus:ring-teal-200"
+            icon="calendar-check"
+            onClick={bookSelectedSlot}
+            disabled={!selectedSlot || isBooking || isLoadingSlots}
+          >
+            {isBooking ? "Booking..." : "Book selected"}
+          </Button>
         </>
       }
     >
@@ -108,6 +242,74 @@ export default function ContactDoctorModal({
             </span>
           </div>
         </div>
+
+        <section className="rounded-[1.25rem] border border-slate-100 bg-white p-4 shadow-sm shadow-slate-950/5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">
+                Available sessions
+              </span>
+              <h4 className="mt-1 text-lg font-black text-slate-950">
+                Future open slots
+              </h4>
+            </div>
+            <Button
+              variant="ghost"
+              icon="refresh-cw"
+              onClick={refreshSlots}
+              disabled={isLoadingSlots || isBooking}
+            >
+              Refresh
+            </Button>
+          </div>
+
+          {slotError ? (
+            <div className="mt-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
+              {slotError}
+            </div>
+          ) : null}
+
+          {isLoadingSlots ? (
+            <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-5 text-sm font-bold text-slate-500">
+              Loading available slots...
+            </div>
+          ) : null}
+
+          {!isLoadingSlots && !slots.length ? (
+            <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
+              No future open slots are available for this doctor right now. You
+              can still email the doctor to request another time.
+            </div>
+          ) : null}
+
+          {!isLoadingSlots && slots.length ? (
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {slots.map((slot) => {
+                const active = selectedSlotId === slot.id;
+                return (
+                  <button
+                    type="button"
+                    key={slot.id}
+                    className={`rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-4 focus:ring-teal-100 ${
+                      active
+                        ? "border-teal-500 bg-teal-50 text-teal-950 shadow-sm shadow-teal-950/10"
+                        : "border-slate-100 bg-slate-50 text-slate-700 hover:border-teal-200 hover:bg-white"
+                    }`}
+                    onClick={() => setSelectedSlotId(slot.id)}
+                    aria-pressed={active}
+                  >
+                    <span className="block text-sm font-black">
+                      {formatSlotDateTime(slot.scheduledAt)}
+                    </span>
+                    <span className="mt-1 block text-xs font-bold text-slate-500">
+                      {slot.duration || 60} min - {slot.type || "video"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </section>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <ContactMethod
@@ -157,6 +359,16 @@ export default function ContactDoctorModal({
       </div>
     </Modal>
   );
+}
+
+function formatSlotDateTime(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
 type ContactMethodProps = {

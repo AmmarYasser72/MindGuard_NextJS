@@ -110,7 +110,9 @@ export default function DoctorDashboard() {
   }, []);
 
   async function createSession(form: ScheduleForm) {
-    await slotService.createSlot(createSlotPayload(form, schedulePatient));
+    await slotService.createSlot(
+      createSlotPayload(form, schedulePatient, doctorId),
+    );
     await loadSlots();
     setSelected("sessions");
     setSchedulePatient(undefined);
@@ -119,14 +121,23 @@ export default function DoctorDashboard() {
   async function editSession(session: DoctorSession) {
     try {
       await slotService.updateSlot(session.id, {
+        doctorNote: session.notes || "",
         endTime:
           session.raw?.endTime ||
           new Date(
             session.scheduledAt.getTime() +
               (session.duration || 60) * 60 * 1000,
           ).toISOString(),
+        notes: session.notes || "",
+        patient: session.patientId || session.raw?.patient || undefined,
+        patientEmail: session.raw?.patientEmail || undefined,
+        patientId: session.patientId || session.raw?.patientId || undefined,
+        patientName: session.patientName,
+        reason: session.reason || undefined,
+        sessionUpdatedAt: new Date().toISOString(),
         startTime: session.raw?.startTime || session.scheduledAt.toISOString(),
         status: session.status || "available",
+        type: session.type || undefined,
       });
       await loadSlots();
       showToast("Slot saved.", "success");
@@ -209,6 +220,7 @@ export default function DoctorDashboard() {
 function createSlotPayload(
   form: ScheduleForm,
   patient: DoctorPatient | null | undefined,
+  doctorId: string,
 ) {
   const startTime = new Date(`${form.date}T${form.time}`);
   const duration = Number(form.duration);
@@ -228,9 +240,23 @@ function createSlotPayload(
 
   const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
   return {
+    doctor: doctorId || undefined,
     endTime: endTime.toISOString(),
     patient: patient?.id || undefined,
+    patientEmail: patient?.email || undefined,
+    patientId: patient?.id || undefined,
+    patientName: patient?.id ? patient.displayName : undefined,
+    reason: form.reason || undefined,
     startTime: startTime.toISOString(),
     status: patient?.id ? "booked" : "available",
+    type: normalizeSessionType(form.type),
   };
+}
+
+function normalizeSessionType(type: string) {
+  const cleanType = type.toLowerCase();
+  if (cleanType.includes("person")) return "inPerson";
+  if (cleanType.includes("audio")) return "audio";
+  if (cleanType.includes("chat")) return "chat";
+  return "video";
 }
