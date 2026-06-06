@@ -8,7 +8,13 @@ type MoodSevenDayStripProps = {
   todayDay: number;
 };
 
-export default function MoodSevenDayStrip({ days, getDayLabel, onSelectDay, selectedDay, todayDay }: MoodSevenDayStripProps) {
+export default function MoodSevenDayStrip({
+  days,
+  getDayLabel,
+  onSelectDay,
+  selectedDay,
+  todayDay,
+}: MoodSevenDayStripProps) {
   return (
     <div className="grid auto-cols-[72px] grid-flow-col gap-2 overflow-x-auto pb-1 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7">
       {days.map((dayEntry) => {
@@ -30,9 +36,17 @@ export default function MoodSevenDayStrip({ days, getDayLabel, onSelectDay, sele
             key={day}
             onClick={() => onSelectDay(day)}
           >
-            <small className="text-xs font-black uppercase tracking-[0.14em]">{getDayLabel(day)}</small>
-            <strong className={`text-lg font-bold ${isToday ? "text-[var(--primary)]" : ""}`}>{day}</strong>
-            <span className={`text-lg ${isFuture ? "opacity-25" : ""}`}>{isFuture || !dayEntry?.recorded ? "" : dayEntry.emoji}</span>
+            <small className="text-xs font-black uppercase tracking-[0.14em]">
+              {getDayLabel(day)}
+            </small>
+            <strong
+              className={`text-lg font-bold ${isToday ? "text-[var(--primary)]" : ""}`}
+            >
+              {day}
+            </strong>
+            <span className={`text-lg ${isFuture ? "opacity-25" : ""}`}>
+              {isFuture || !dayEntry?.recorded ? "" : dayEntry.emoji}
+            </span>
           </button>
         );
       })}

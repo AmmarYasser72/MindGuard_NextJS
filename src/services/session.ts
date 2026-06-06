@@ -19,5 +19,8 @@ export function clearSession() {
 
 export function isLocalDemoSession(session = getSession()) {
   const email = session?.user.email?.trim().toLowerCase();
-  return session?.token === LOCAL_DEMO_TOKEN && Boolean(email && LOCAL_DEMO_EMAILS.has(email));
+  return (
+    session?.token === LOCAL_DEMO_TOKEN &&
+    Boolean(email && LOCAL_DEMO_EMAILS.has(email))
+  );
 }

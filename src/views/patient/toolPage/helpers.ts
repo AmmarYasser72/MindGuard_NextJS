@@ -1,7 +1,9 @@
 import { exercisePlans } from "./constants";
 import type { ToolItem } from "./types";
 
-export function hasExercisePlan(title: string): title is keyof typeof exercisePlans {
+export function hasExercisePlan(
+  title: string,
+): title is keyof typeof exercisePlans {
   return title in exercisePlans;
 }
 
@@ -9,33 +11,69 @@ export function breathingPlan(title: string) {
   if (title.includes("Box")) {
     return {
       phases: [
-        { label: "Inhale", seconds: 4, helper: "Breathe in smoothly through your nose." },
+        {
+          label: "Inhale",
+          seconds: 4,
+          helper: "Breathe in smoothly through your nose.",
+        },
         { label: "Hold", seconds: 4, helper: "Keep your shoulders relaxed." },
         { label: "Exhale", seconds: 4, helper: "Release the breath slowly." },
         { label: "Hold", seconds: 4, helper: "Rest before the next round." },
       ],
-      tips: ["Keep the rhythm equal.", "Stop if you feel lightheaded.", "Repeat for five minutes."],
+      tips: [
+        "Keep the rhythm equal.",
+        "Stop if you feel lightheaded.",
+        "Repeat for five minutes.",
+      ],
     };
   }
 
   if (title.includes("Diaphragmatic")) {
     return {
       phases: [
-        { label: "Belly inhale", seconds: 4, helper: "Let your abdomen rise gently." },
-        { label: "Soft pause", seconds: 2, helper: "Keep the breath comfortable." },
-        { label: "Long exhale", seconds: 6, helper: "Let your abdomen soften." },
+        {
+          label: "Belly inhale",
+          seconds: 4,
+          helper: "Let your abdomen rise gently.",
+        },
+        {
+          label: "Soft pause",
+          seconds: 2,
+          helper: "Keep the breath comfortable.",
+        },
+        {
+          label: "Long exhale",
+          seconds: 6,
+          helper: "Let your abdomen soften.",
+        },
       ],
-      tips: ["Place one hand on your belly.", "Breathe quietly.", "Use this before sleep."],
+      tips: [
+        "Place one hand on your belly.",
+        "Breathe quietly.",
+        "Use this before sleep.",
+      ],
     };
   }
 
   return {
     phases: [
       { label: "Inhale", seconds: 4, helper: "Fill your lungs slowly." },
-      { label: "Hold", seconds: 7, helper: "Hold without tightening your jaw." },
-      { label: "Exhale", seconds: 8, helper: "Exhale longer than you inhaled." },
+      {
+        label: "Hold",
+        seconds: 7,
+        helper: "Hold without tightening your jaw.",
+      },
+      {
+        label: "Exhale",
+        seconds: 8,
+        helper: "Exhale longer than you inhaled.",
+      },
     ],
-    tips: ["Use four rounds to start.", "Keep your neck loose.", "Let the exhale do the calming."],
+    tips: [
+      "Use four rounds to start.",
+      "Keep your neck loose.",
+      "Let the exhale do the calming.",
+    ],
   };
 }
 
@@ -59,9 +97,13 @@ export function formatClock(value: string) {
 }
 
 export function detailNextStep(item: ToolItem) {
-  if (item.status === "Done") return "Keep the goal visible tomorrow and choose a similar start time.";
-  if (item.status === "In Progress") return "Finish the smallest remaining piece first, then mark the goal complete.";
-  if (item.status === "Pending") return "Schedule a specific time and make the first step shorter than five minutes.";
-  if (item.subtitle) return "Review what helped, then repeat the useful part once more this week.";
+  if (item.status === "Done")
+    return "Keep the goal visible tomorrow and choose a similar start time.";
+  if (item.status === "In Progress")
+    return "Finish the smallest remaining piece first, then mark the goal complete.";
+  if (item.status === "Pending")
+    return "Schedule a specific time and make the first step shorter than five minutes.";
+  if (item.subtitle)
+    return "Review what helped, then repeat the useful part once more this week.";
   return "Add one note so your dashboard can keep the context attached to this item.";
 }

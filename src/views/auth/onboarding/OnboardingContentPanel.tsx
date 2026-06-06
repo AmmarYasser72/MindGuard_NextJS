@@ -30,12 +30,22 @@ export default function OnboardingContentPanel({
     <article className="order-2 mx-auto w-full max-w-3xl lg:order-1 lg:mx-0">
       <div className="grid gap-5">
         <div className="flex items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center rounded-lg text-white shadow-lg" style={{ background: tone.accent, boxShadow: `0 18px 34px ${tone.glow}` }}>
+          <span
+            className="grid h-12 w-12 place-items-center rounded-lg text-white shadow-lg"
+            style={{
+              background: tone.accent,
+              boxShadow: `0 18px 34px ${tone.glow}`,
+            }}
+          >
             <Icon name={slide.icon} size={26} color="#fff" />
           </span>
           <span className="min-w-0">
-            <small className="block text-xs font-bold uppercase text-slate-400">Intro {index + 1} of {onboardingSlides.length}</small>
-            <strong className="block text-sm font-bold text-slate-700">{slide.subtitle}</strong>
+            <small className="block text-xs font-bold uppercase text-slate-400">
+              Intro {index + 1} of {onboardingSlides.length}
+            </small>
+            <strong className="block text-sm font-bold text-slate-700">
+              {slide.subtitle}
+            </strong>
           </span>
         </div>
 
@@ -63,7 +73,10 @@ export default function OnboardingContentPanel({
           </button>
           <Button
             className="min-h-12 w-full rounded-lg text-base shadow-lg"
-            style={{ background: `linear-gradient(135deg, ${tone.accent}, ${tone.accentDark})`, boxShadow: `0 18px 34px ${tone.glow}` }}
+            style={{
+              background: `linear-gradient(135deg, ${tone.accent}, ${tone.accentDark})`,
+              boxShadow: `0 18px 34px ${tone.glow}`,
+            }}
             onClick={onNext}
           >
             {isLast ? "Get Started" : "Continue"}
@@ -89,10 +102,15 @@ function FeatureList({ highlights, tone }: FeatureListProps) {
           key={item}
           style={{ borderColor: tone.border }}
         >
-          <span className="grid h-8 w-8 place-items-center rounded-lg" style={{ backgroundColor: tone.soft, color: tone.accent }}>
+          <span
+            className="grid h-8 w-8 place-items-center rounded-lg"
+            style={{ backgroundColor: tone.soft, color: tone.accent }}
+          >
             <Icon name="check" size={16} />
           </span>
-          <strong className="text-sm font-bold leading-5 text-slate-800 sm:text-base">{item}</strong>
+          <strong className="text-sm font-bold leading-5 text-slate-800 sm:text-base">
+            {item}
+          </strong>
         </li>
       ))}
     </ul>
@@ -112,7 +130,11 @@ function SlideDots({ activeIndex, onSelect, tone }: SlideDotsProps) {
         <button
           key={slide.title}
           className={`h-2.5 rounded-full transition-all ${dotIndex === activeIndex ? "w-9" : "w-2.5 bg-slate-300 hover:bg-slate-400"}`}
-          style={dotIndex === activeIndex ? { backgroundColor: tone.accent } : undefined}
+          style={
+            dotIndex === activeIndex
+              ? { backgroundColor: tone.accent }
+              : undefined
+          }
           type="button"
           aria-label={`Show slide ${dotIndex + 1}`}
           aria-current={dotIndex === activeIndex ? "step" : undefined}

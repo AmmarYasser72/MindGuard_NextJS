@@ -13,8 +13,15 @@ export default function ProgressSection({ items }) {
             key={item.label}
           >
             <Icon name={item.icon} size={24} color={item.color} />
-            <strong className="text-2xl font-bold" style={{ color: item.color }}>{item.value}</strong>
-            <span className="text-xs font-bold text-slate-600">{item.label}</span>
+            <strong
+              className="text-2xl font-bold"
+              style={{ color: item.color }}
+            >
+              {item.value}
+            </strong>
+            <span className="text-xs font-bold text-slate-600">
+              {item.label}
+            </span>
           </div>
         ))}
       </div>

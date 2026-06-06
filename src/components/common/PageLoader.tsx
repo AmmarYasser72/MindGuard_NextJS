@@ -1,6 +1,10 @@
 import Icon from "./Icon";
 
-export default function PageLoader({ message = "Loading MindGuard..." }: { message?: string }) {
+export default function PageLoader({
+  message = "Loading MindGuard...",
+}: {
+  message?: string;
+}) {
   return (
     <main className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center text-slate-700">
       <div className="grid justify-items-center gap-4">

@@ -5,10 +5,30 @@ import Icon from "../../components/common/Icon";
 import { useRouter } from "../../hooks/useRouter";
 
 const signalTokens = [
-  { className: "left-[8%] top-[18%] bg-emerald-400/18 text-emerald-100 shadow-emerald-950/20", icon: "heart-pulse", label: "Mood care" },
-  { className: "right-[8%] top-[16%] bg-cyan-400/16 text-cyan-100 shadow-cyan-950/20", icon: "brain", label: "AI insight" },
-  { className: "bottom-[18%] left-[10%] hidden bg-white/12 text-white shadow-indigo-950/20 sm:grid", icon: "activity", label: "Monitoring" },
-  { className: "bottom-[20%] right-[10%] hidden bg-rose-400/16 text-rose-100 shadow-rose-950/20 sm:grid", icon: "shield-check", label: "Protected" },
+  {
+    className:
+      "left-[8%] top-[18%] bg-emerald-400/18 text-emerald-100 shadow-emerald-950/20",
+    icon: "heart-pulse",
+    label: "Mood care",
+  },
+  {
+    className:
+      "right-[8%] top-[16%] bg-cyan-400/16 text-cyan-100 shadow-cyan-950/20",
+    icon: "brain",
+    label: "AI insight",
+  },
+  {
+    className:
+      "bottom-[18%] left-[10%] hidden bg-white/12 text-white shadow-indigo-950/20 sm:grid",
+    icon: "activity",
+    label: "Monitoring",
+  },
+  {
+    className:
+      "bottom-[20%] right-[10%] hidden bg-rose-400/16 text-rose-100 shadow-rose-950/20 sm:grid",
+    icon: "shield-check",
+    label: "Protected",
+  },
 ];
 
 export default function SplashPage() {
@@ -33,7 +53,9 @@ export default function SplashPage() {
           key={token.label}
         >
           <Icon name={token.icon} size={18} />
-          <span className="hidden text-xs font-bold sm:block">{token.label}</span>
+          <span className="hidden text-xs font-bold sm:block">
+            {token.label}
+          </span>
         </div>
       ))}
 
@@ -56,7 +78,9 @@ export default function SplashPage() {
           Secure wellness space
         </div>
 
-        <h1 className="mt-5 text-[clamp(2.35rem,9vw,3.75rem)] font-bold leading-none tracking-normal">Mind Guard</h1>
+        <h1 className="mt-5 text-[clamp(2.35rem,9vw,3.75rem)] font-bold leading-none tracking-normal">
+          Mind Guard
+        </h1>
         <p className="mt-4 max-w-md text-[clamp(1rem,3vw,1.25rem)] font-medium leading-7 text-white/78">
           Your mental health companion is getting everything ready.
         </p>

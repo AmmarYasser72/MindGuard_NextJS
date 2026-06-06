@@ -13,8 +13,15 @@ export default function TriggerSection({ title, triggers }) {
       {triggers.map((trigger) => (
         <div className="grid gap-2" key={trigger.name}>
           <span className="flex items-center justify-between gap-3">
-            <strong className="text-sm font-bold text-slate-900">{trigger.name}</strong>
-            <em className="text-xs font-bold not-italic" style={{ color: trigger.color }}>{trigger.percentage}%</em>
+            <strong className="text-sm font-bold text-slate-900">
+              {trigger.name}
+            </strong>
+            <em
+              className="text-xs font-bold not-italic"
+              style={{ color: trigger.color }}
+            >
+              {trigger.percentage}%
+            </em>
           </span>
           <ProgressBar value={trigger.percentage / 100} color={trigger.color} />
         </div>

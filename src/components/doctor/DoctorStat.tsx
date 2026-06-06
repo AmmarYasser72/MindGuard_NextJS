@@ -11,14 +11,18 @@ export default function DoctorStat({ title, value, icon, helper, tone }) {
   return (
     <article className="doctor-surface dashboard-surface rounded-lg border p-4">
       <div className="flex items-start justify-between gap-3">
-        <span className={`grid h-10 w-10 place-items-center rounded-lg ${styles[tone]}`}>
+        <span
+          className={`grid h-10 w-10 place-items-center rounded-lg ${styles[tone]}`}
+        >
           <Icon name={icon} size={20} />
         </span>
         <strong className="text-3xl font-bold text-slate-950">{value}</strong>
       </div>
       <div className="mt-5">
         <span className="block text-sm font-bold text-slate-800">{title}</span>
-        <small className="mt-1 block text-xs font-semibold text-slate-500">{helper}</small>
+        <small className="mt-1 block text-xs font-semibold text-slate-500">
+          {helper}
+        </small>
       </div>
     </article>
   );

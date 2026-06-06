@@ -9,7 +9,12 @@ type PasswordConfirmationFieldsProps = {
   password: string;
 };
 
-export default function PasswordConfirmationFields({ confirmPassword, disabled, onChange, password }: PasswordConfirmationFieldsProps) {
+export default function PasswordConfirmationFields({
+  confirmPassword,
+  disabled,
+  onChange,
+  password,
+}: PasswordConfirmationFieldsProps) {
   return (
     <>
       <PasswordField

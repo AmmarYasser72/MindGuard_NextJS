@@ -19,11 +19,13 @@ type SegmentedChoiceFieldProps = {
 
 const toneClasses = {
   emerald: {
-    active: "border-emerald-300 bg-emerald-50 text-emerald-700 ring-4 ring-emerald-100",
+    active:
+      "border-emerald-300 bg-emerald-50 text-emerald-700 ring-4 ring-emerald-100",
     icon: "bg-emerald-100 text-emerald-600",
   },
   violet: {
-    active: "border-violet-300 bg-violet-50 text-[var(--primary)] ring-4 ring-violet-100",
+    active:
+      "border-violet-300 bg-violet-50 text-[var(--primary)] ring-4 ring-violet-100",
     icon: "bg-violet-100 text-[var(--primary)]",
   },
 };
@@ -41,7 +43,9 @@ export default function SegmentedChoiceField({
 
   return (
     <fieldset className="grid gap-2">
-      <legend className="text-xs font-black uppercase tracking-[0.12em] text-app-muted">{label}</legend>
+      <legend className="text-xs font-black uppercase tracking-[0.12em] text-app-muted">
+        {label}
+      </legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {choices.map((choice) => {
           const active = choice.value === value;
@@ -57,18 +61,29 @@ export default function SegmentedChoiceField({
               aria-pressed={active}
               onClick={() => onChange(choice.value)}
             >
-              <span className={cn("auth-field-icon grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-app-faint", active && activeTone.icon)}>
+              <span
+                className={cn(
+                  "auth-field-icon grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-app-faint",
+                  active && activeTone.icon,
+                )}
+              >
                 <Icon name={choice.icon || "circle"} size={18} />
               </span>
               <span className="min-w-0">
-                <strong className="block text-sm font-bold">{choice.label}</strong>
-                <small className="mt-0.5 block text-xs font-semibold text-app-faint">{active ? "Selected" : "Tap to choose"}</small>
+                <strong className="block text-sm font-bold">
+                  {choice.label}
+                </strong>
+                <small className="mt-0.5 block text-xs font-semibold text-app-faint">
+                  {active ? "Selected" : "Tap to choose"}
+                </small>
               </span>
             </button>
           );
         })}
       </div>
-      {error ? <span className="text-xs font-bold text-red-600">{error}</span> : null}
+      {error ? (
+        <span className="text-xs font-bold text-red-600">{error}</span>
+      ) : null}
     </fieldset>
   );
 }

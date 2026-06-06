@@ -1,4 +1,7 @@
-import type { DoctorProfile, PatientConditionOption } from "../types/recommendations";
+import type {
+  DoctorProfile,
+  PatientConditionOption,
+} from "../types/recommendations";
 
 export const patientConditionOptions: PatientConditionOption[] = [
   {

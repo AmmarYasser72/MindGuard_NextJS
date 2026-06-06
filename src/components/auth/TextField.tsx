@@ -3,7 +3,10 @@ import Icon from "../common/Icon";
 import { cn } from "../../utils/cn";
 import type { InputHTMLAttributes } from "react";
 
-type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> & {
+type TextFieldProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value"
+> & {
   label: string;
   onChange: (value: string) => void;
   value: string;
@@ -11,7 +14,16 @@ type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "
   icon?: string;
 };
 
-export default function TextField({ label, icon, value, onChange, placeholder, type = "text", error, ...props }: TextFieldProps) {
+export default function TextField({
+  label,
+  icon,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  error,
+  ...props
+}: TextFieldProps) {
   const isNumber = type === "number";
 
   return (
@@ -19,7 +31,8 @@ export default function TextField({ label, icon, value, onChange, placeholder, t
       <input
         className={cn(
           "min-w-0 flex-1 bg-transparent py-1 text-sm font-bold text-app-text outline-none placeholder:text-app-faint disabled:cursor-not-allowed disabled:text-app-faint",
-          isNumber && "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+          isNumber &&
+            "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
         )}
         type={type}
         value={value}

@@ -4,8 +4,16 @@ import { useToast } from "../../../components/common/Toast";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "../../../hooks/useRouter";
 import { readingService } from "../../../services/readingService";
-import { getTodayMoodSnapshot, recordMoodForToday } from "../../../services/moodCalendarService";
-import { dailyGoals, moodOptions, patientNotifications, weeklyMood } from "../../../data/patientData";
+import {
+  getTodayMoodSnapshot,
+  recordMoodForToday,
+} from "../../../services/moodCalendarService";
+import {
+  dailyGoals,
+  moodOptions,
+  patientNotifications,
+  weeklyMood,
+} from "../../../data/patientData";
 import FindDoctorSection from "./FindDoctorSection";
 import MoodCheckInPanel from "./MoodCheckInPanel";
 import MoodTrendPanel from "./MoodTrendPanel";
@@ -28,11 +36,27 @@ export default function DashboardContent({ email }: { email: string }) {
   const patientKey = user?.uid || user?.email || email || "guest-patient";
   const [currentStreak, setCurrentStreak] = useState(0);
 
-  const average = useMemo(() => Math.round((weeklyMood.reduce((sum, item) => sum + item.value, 0) / weeklyMood.length) * 100), []);
-  const completedGoals = dailyGoals.filter((goal) => goal.progress >= 0.7).length;
-  const unreadCount = notifications.filter((notification) => notification.unread).length;
-  const nextGoal = dailyGoals.find((goal) => goal.progress < 0.7) || dailyGoals[0];
-  const bestMoodDay = weeklyMood.reduce((best, item) => (item.value > best.value ? item : best), weeklyMood[0]);
+  const average = useMemo(
+    () =>
+      Math.round(
+        (weeklyMood.reduce((sum, item) => sum + item.value, 0) /
+          weeklyMood.length) *
+          100,
+      ),
+    [],
+  );
+  const completedGoals = dailyGoals.filter(
+    (goal) => goal.progress >= 0.7,
+  ).length;
+  const unreadCount = notifications.filter(
+    (notification) => notification.unread,
+  ).length;
+  const nextGoal =
+    dailyGoals.find((goal) => goal.progress < 0.7) || dailyGoals[0];
+  const bestMoodDay = weeklyMood.reduce(
+    (best, item) => (item.value > best.value ? item : best),
+    weeklyMood[0],
+  );
 
   useEffect(() => {
     if (!isNotificationsOpen) return undefined;
@@ -65,7 +89,12 @@ export default function DashboardContent({ email }: { email: string }) {
   }
 
   function handleMarkAllRead() {
-    setNotifications((currentNotifications) => currentNotifications.map((notification) => ({ ...notification, unread: false })));
+    setNotifications((currentNotifications) =>
+      currentNotifications.map((notification) => ({
+        ...notification,
+        unread: false,
+      })),
+    );
     showToast("All notifications marked as read", "success");
   }
 
@@ -87,12 +116,19 @@ export default function DashboardContent({ email }: { email: string }) {
     try {
       await readingService.savePatientMood(moodValue);
       const moodSnapshot = recordMoodForToday(patientKey, moodValue);
-      const label = moodSnapshot.todayEntry?.label || moodOptions[selectedMood].label;
+      const label =
+        moodSnapshot.todayEntry?.label || moodOptions[selectedMood].label;
       setRecordedMood(label);
       setCurrentStreak(moodSnapshot.currentStreak);
-      showToast(`Mood "${label}" recorded. ${moodSnapshot.currentStreak} day streak.`, "success");
+      showToast(
+        `Mood "${label}" recorded. ${moodSnapshot.currentStreak} day streak.`,
+        "success",
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to save mood right now.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to save mood right now.";
       setMoodSaveError(message);
       showToast(message, "error");
     } finally {
@@ -141,7 +177,10 @@ export default function DashboardContent({ email }: { email: string }) {
           <QuickActionsSection onNavigate={navigate} />
         </div>
 
-        <WellnessSidebar completedGoals={completedGoals} onNavigate={navigate} />
+        <WellnessSidebar
+          completedGoals={completedGoals}
+          onNavigate={navigate}
+        />
       </div>
     </section>
   );

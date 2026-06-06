@@ -26,8 +26,18 @@ type DemoAccount = SignInCredentials & {
 };
 
 const demoAccounts: DemoAccount[] = [
-  { title: "Patient Account", email: "patient@demo.com", password: "demo123", icon: "user" },
-  { title: "Doctor Account", email: "doctor@demo.com", password: "demo123", icon: "stethoscope" },
+  {
+    title: "Patient Account",
+    email: "patient@demo.com",
+    password: "demo123",
+    icon: "user",
+  },
+  {
+    title: "Doctor Account",
+    email: "doctor@demo.com",
+    password: "demo123",
+    icon: "stethoscope",
+  },
 ];
 
 function dashboardPath(user: AuthUser) {
@@ -35,12 +45,18 @@ function dashboardPath(user: AuthUser) {
 }
 
 export default function SignInPage() {
-  const [form, setForm] = useState<SignInCredentials>({ email: "", password: "" });
+  const [form, setForm] = useState<SignInCredentials>({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const { signIn, authLoading } = useAuth();
   const { navigate } = useRouter();
 
-  function update<Key extends keyof SignInCredentials>(key: Key, value: SignInCredentials[Key]) {
+  function update<Key extends keyof SignInCredentials>(
+    key: Key,
+    value: SignInCredentials[Key],
+  ) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
@@ -59,7 +75,9 @@ export default function SignInPage() {
       const user = await signIn(cleanEmail, credentials.password);
       navigate(dashboardPath(user));
     } catch (authError) {
-      setError(authError instanceof Error ? authError.message : "Unable to sign in");
+      setError(
+        authError instanceof Error ? authError.message : "Unable to sign in",
+      );
     }
   }
 
@@ -84,10 +102,19 @@ export default function SignInPage() {
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,480px)]">
           <div className="auth-hero-card grid min-h-[560px] content-center gap-5 rounded-[24px] p-8 text-white shadow-[0_24px_60px_rgba(15,118,110,0.18)] sm:p-12">
             <AuthLogo />
-            <span className="text-xs font-extrabold uppercase text-white/70">Mind Guard</span>
-            <h1 className="max-w-xl text-[clamp(40px,7vw,68px)] font-bold leading-[0.95]">Welcome back</h1>
-            <p className="max-w-md text-lg leading-7 text-white/80">Sign in to continue your mental wellness care.</p>
-            <div className="mt-3 grid w-full max-w-md grid-cols-2 gap-3" aria-label="Sign in benefits">
+            <span className="text-xs font-extrabold uppercase text-white/70">
+              Mind Guard
+            </span>
+            <h1 className="max-w-xl text-[clamp(40px,7vw,68px)] font-bold leading-[0.95]">
+              Welcome back
+            </h1>
+            <p className="max-w-md text-lg leading-7 text-white/80">
+              Sign in to continue your mental wellness care.
+            </p>
+            <div
+              className="mt-3 grid w-full max-w-md grid-cols-2 gap-3"
+              aria-label="Sign in benefits"
+            >
               <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/15 px-3 text-sm font-extrabold">
                 <Icon name="timer" size={18} color="#5eead4" />
                 Fast Recovery
@@ -104,9 +131,13 @@ export default function SignInPage() {
               <form className="grid gap-4" onSubmit={onSubmit}>
                 <div className="mb-1 flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-[22px] font-bold text-app-text">Sign in</h2>
+                    <h2 className="text-[22px] font-bold text-app-text">
+                      Sign in
+                    </h2>
                     <p className="mt-1 text-sm text-app-muted">
-                      {isDemoMode ? "Hosted demo mode is active. Use a demo account or create a local browser-only account." : "Enter your email and password"}
+                      {isDemoMode
+                        ? "Hosted demo mode is active. Use a demo account or create a local browser-only account."
+                        : "Enter your email and password"}
                     </p>
                   </div>
                 </div>
@@ -129,10 +160,19 @@ export default function SignInPage() {
                   autoComplete="current-password"
                   disabled={authLoading}
                 />
-                <Button type="submit" className="mt-1 min-h-[52px] w-full rounded-xl" disabled={authLoading}>
+                <Button
+                  type="submit"
+                  className="mt-1 min-h-[52px] w-full rounded-xl"
+                  disabled={authLoading}
+                >
                   {authLoading ? (
                     <>
-                      <Icon name="loader-circle" size={18} color="#fff" className="animate-spin" />
+                      <Icon
+                        name="loader-circle"
+                        size={18}
+                        color="#fff"
+                        className="animate-spin"
+                      />
                       Signing in...
                     </>
                   ) : (
@@ -145,7 +185,11 @@ export default function SignInPage() {
               </form>
               <p className="mt-5 text-center text-sm text-app-muted">
                 Don&apos;t have an account?{" "}
-                <button className="font-bold text-[var(--primary)]" type="button" onClick={() => navigate("/signup")}>
+                <button
+                  className="font-bold text-[var(--primary)]"
+                  type="button"
+                  onClick={() => navigate("/signup")}
+                >
                   Sign up
                 </button>
               </p>
@@ -157,8 +201,12 @@ export default function SignInPage() {
                   <Icon name="flask-conical" size={18} color="#3b82f6" />
                 </span>
                 <div>
-                  <h2 className="text-base font-bold text-app-text">Demo Accounts</h2>
-                  <p className="text-sm text-app-muted">One-click access for testing</p>
+                  <h2 className="text-base font-bold text-app-text">
+                    Demo Accounts
+                  </h2>
+                  <p className="text-sm text-app-muted">
+                    One-click access for testing
+                  </p>
                 </div>
               </div>
               <div className="grid gap-3">
@@ -174,10 +222,16 @@ export default function SignInPage() {
                       <Icon name={account.icon} size={20} color="#3b82f6" />
                     </span>
                     <span className="min-w-0">
-                      <strong className="block text-sm font-bold text-app-text">{account.title}</strong>
-                      <small className="mt-1 block font-mono text-xs text-[var(--primary)]">{account.email}</small>
+                      <strong className="block text-sm font-bold text-app-text">
+                        {account.title}
+                      </strong>
+                      <small className="mt-1 block font-mono text-xs text-[var(--primary)]">
+                        {account.email}
+                      </small>
                     </span>
-                    <span className="text-xs font-black uppercase tracking-[0.16em] text-blue-600">Use</span>
+                    <span className="text-xs font-black uppercase tracking-[0.16em] text-blue-600">
+                      Use
+                    </span>
                   </button>
                 ))}
               </div>

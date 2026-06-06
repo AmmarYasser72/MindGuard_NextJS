@@ -26,7 +26,8 @@ function cleanNumber(value: unknown) {
 }
 
 function doctorId(profile: RegisterProfile, user?: AuthUser) {
-  const existingId = cleanString(user?.uid) || cleanString(user?.id) || cleanString(user?._id);
+  const existingId =
+    cleanString(user?.uid) || cleanString(user?.id) || cleanString(user?._id);
   if (existingId) return existingId;
   return `local-doctor-${profile.email.trim().toLowerCase()}`;
 }
@@ -34,14 +35,19 @@ function doctorId(profile: RegisterProfile, user?: AuthUser) {
 export function getSignedUpDoctors() {
   return storage
     .get<SignedUpDoctor[]>(SIGNED_UP_DOCTORS_KEY, [])
-    .filter((doctor) => doctor && doctor.id && doctor.email && doctor.specialization);
+    .filter(
+      (doctor) => doctor && doctor.id && doctor.email && doctor.specialization,
+    );
 }
 
 export function saveSignedUpDoctor(profile: RegisterProfile, user?: AuthUser) {
   if (profile.role !== "doctor") return null;
 
   const cleanEmail = profile.email.trim().toLowerCase();
-  const displayName = `Dr. ${profile.firstName.trim()} ${profile.lastName.trim()}`.replace(/\s+/g, " ").trim();
+  const displayName =
+    `Dr. ${profile.firstName.trim()} ${profile.lastName.trim()}`
+      .replace(/\s+/g, " ")
+      .trim();
   const nextDoctor: SignedUpDoctor = {
     id: doctorId(profile, user),
     createdAt: new Date().toISOString(),
@@ -51,13 +57,16 @@ export function saveSignedUpDoctor(profile: RegisterProfile, user?: AuthUser) {
     gender: cleanString(profile.gender),
     lastName: cleanString(profile.lastName),
     licenseNumber: cleanString(profile.licenseNumber),
-    specialization: cleanString(profile.specialization) || "Mental health specialist",
+    specialization:
+      cleanString(profile.specialization) || "Mental health specialist",
     yearsOfExperience: cleanNumber(profile.yearsOfExperience),
   };
   const doctors = getSignedUpDoctors();
-  const existingIndex = doctors.findIndex((doctor) => (
-    doctor.id === nextDoctor.id || cleanString(doctor.email).toLowerCase() === cleanEmail
-  ));
+  const existingIndex = doctors.findIndex(
+    (doctor) =>
+      doctor.id === nextDoctor.id ||
+      cleanString(doctor.email).toLowerCase() === cleanEmail,
+  );
 
   if (existingIndex >= 0) {
     doctors[existingIndex] = { ...doctors[existingIndex], ...nextDoctor };

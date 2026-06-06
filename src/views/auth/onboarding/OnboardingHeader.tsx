@@ -6,11 +6,17 @@ type OnboardingHeaderProps = {
   tone: Tone;
 };
 
-export default function OnboardingHeader({ onSkip, tone }: OnboardingHeaderProps) {
+export default function OnboardingHeader({
+  onSkip,
+  tone,
+}: OnboardingHeaderProps) {
   return (
     <header className="flex min-h-12 items-center gap-3">
       <div className="inline-flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 text-left shadow-sm shadow-slate-950/5">
-        <span className="grid h-8 w-8 place-items-center rounded-lg text-white" style={{ background: tone.accent }}>
+        <span
+          className="grid h-8 w-8 place-items-center rounded-lg text-white"
+          style={{ background: tone.accent }}
+        >
           <Icon name="shield" size={17} color="#fff" />
         </span>
         <strong className="text-sm font-bold text-slate-950">Mind Guard</strong>

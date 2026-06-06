@@ -24,7 +24,13 @@ type IconProps = {
   title?: string;
 };
 
-export default function Icon({ name, size = 20, color = "currentColor", className = "", title }: IconProps) {
+export default function Icon({
+  name,
+  size = 20,
+  color = "currentColor",
+  className = "",
+  title,
+}: IconProps) {
   const iconName = aliases[name] || name;
   const style: CSSProperties = {
     width: size,

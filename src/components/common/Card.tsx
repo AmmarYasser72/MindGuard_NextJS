@@ -6,7 +6,12 @@ type CardProps = HTMLAttributes<HTMLElement> & {
   children: ReactNode;
 };
 
-export default function Card({ children, className = "", as: Tag = "section", ...props }: CardProps) {
+export default function Card({
+  children,
+  className = "",
+  as: Tag = "section",
+  ...props
+}: CardProps) {
   return (
     <Tag
       className={cn(

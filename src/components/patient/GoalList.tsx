@@ -12,12 +12,19 @@ export default function GoalList({ items, onItem }) {
           onClick={() => onItem?.(item)}
         >
           <span className="flex items-start justify-between gap-3">
-            <strong className="text-sm font-bold text-slate-900">{item.title}</strong>
-            <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ color: item.color, backgroundColor: `${item.color}1a` }}>
+            <strong className="text-sm font-bold text-slate-900">
+              {item.title}
+            </strong>
+            <span
+              className="rounded-full px-3 py-1 text-xs font-bold"
+              style={{ color: item.color, backgroundColor: `${item.color}1a` }}
+            >
               {item.status}
             </span>
           </span>
-          <em className="text-sm not-italic leading-6 text-slate-600">{item.description}</em>
+          <em className="text-sm not-italic leading-6 text-slate-600">
+            {item.description}
+          </em>
           <small className="flex items-center gap-2 text-xs font-semibold text-slate-400">
             <Icon name="clock" size={14} color="#9ca3af" /> {item.time}
           </small>

@@ -10,10 +10,18 @@ type FieldProps = {
   icon?: string;
 };
 
-export default function Field({ label, icon, error, children, className = "" }: FieldProps) {
+export default function Field({
+  label,
+  icon,
+  error,
+  children,
+  className = "",
+}: FieldProps) {
   return (
     <label className={cn("grid gap-2", className)}>
-      <span className="text-xs font-black uppercase tracking-[0.12em] text-app-muted">{label}</span>
+      <span className="text-xs font-black uppercase tracking-[0.12em] text-app-muted">
+        {label}
+      </span>
       <span
         className={cn(
           "auth-field-control group flex min-h-14 items-center gap-3 rounded-xl border px-4 shadow-sm shadow-slate-950/5 transition",
@@ -23,16 +31,22 @@ export default function Field({ label, icon, error, children, className = "" }: 
         )}
       >
         {icon ? (
-          <span className={cn(
-            "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
-            error ? "bg-red-100 text-red-500" : "bg-slate-100 text-slate-400 group-focus-within:bg-violet-50 group-focus-within:text-[var(--primary)]",
-          )}>
+          <span
+            className={cn(
+              "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
+              error
+                ? "bg-red-100 text-red-500"
+                : "bg-slate-100 text-slate-400 group-focus-within:bg-violet-50 group-focus-within:text-[var(--primary)]",
+            )}
+          >
             <Icon name={icon} size={18} />
           </span>
         ) : null}
         {children}
       </span>
-      {error ? <span className="text-xs font-bold text-red-600">{error}</span> : null}
+      {error ? (
+        <span className="text-xs font-bold text-red-600">{error}</span>
+      ) : null}
     </label>
   );
 }

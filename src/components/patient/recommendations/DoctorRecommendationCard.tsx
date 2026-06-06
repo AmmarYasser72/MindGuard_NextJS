@@ -35,7 +35,10 @@ const matchLabels = {
   "not-matched": "Not a match",
 };
 
-export default function DoctorRecommendationCard({ doctor, onContact }: DoctorRecommendationCardProps) {
+export default function DoctorRecommendationCard({
+  doctor,
+  onContact,
+}: DoctorRecommendationCardProps) {
   const hasDirectContact = Boolean(doctor.email || doctor.phone);
   const matchLabel = matchLabels[doctor.matchStatus];
 
@@ -50,7 +53,9 @@ export default function DoctorRecommendationCard({ doctor, onContact }: DoctorRe
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-xl font-black tracking-[-0.02em] text-app-text">{doctor.displayName}</h3>
+                <h3 className="text-xl font-black tracking-[-0.02em] text-app-text">
+                  {doctor.displayName}
+                </h3>
                 <span
                   className={cn(
                     "rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em]",
@@ -68,25 +73,51 @@ export default function DoctorRecommendationCard({ doctor, onContact }: DoctorRe
                   {matchLabel}
                 </span>
               </div>
-              <p className="doctor-recommendation-specialty mt-1 text-sm font-bold [html:not([data-theme='dark'])_&]:text-[var(--patient-doctor-accent)]">{doctor.specialization}</p>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-app-text-soft">{doctor.bio}</p>
+              <p className="doctor-recommendation-specialty mt-1 text-sm font-bold [html:not([data-theme='dark'])_&]:text-[var(--patient-doctor-accent)]">
+                {doctor.specialization}
+              </p>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-app-text-soft">
+                {doctor.bio}
+              </p>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <DoctorMeta icon="briefcase-business" label="Experience" value={doctor.yearsOfExperience ? `${doctor.yearsOfExperience} years` : "Available on profile"} />
-            <DoctorMeta icon="clock" label="Session" value={doctor.sessionTime || "Flexible"} />
-            <DoctorMeta icon="languages" label="Languages" value={doctor.languages.join(", ")} />
+            <DoctorMeta
+              icon="briefcase-business"
+              label="Experience"
+              value={
+                doctor.yearsOfExperience
+                  ? `${doctor.yearsOfExperience} years`
+                  : "Available on profile"
+              }
+            />
+            <DoctorMeta
+              icon="clock"
+              label="Session"
+              value={doctor.sessionTime || "Flexible"}
+            />
+            <DoctorMeta
+              icon="languages"
+              label="Languages"
+              value={doctor.languages.join(", ")}
+            />
           </div>
 
           <div className="flex flex-wrap gap-2">
             {doctor.matchReasons.map((reason) => (
-              <span key={reason} className="doctor-recommendation-pill doctor-recommendation-pill-reason rounded-full bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-800 ring-1 ring-teal-100 [html:not([data-theme='dark'])_&]:bg-[color-mix(in_srgb,var(--patient-doctor-accent)_9%,#ffffff)] [html:not([data-theme='dark'])_&]:text-cyan-800 [html:not([data-theme='dark'])_&]:ring-[rgba(14,116,144,0.16)]">
+              <span
+                key={reason}
+                className="doctor-recommendation-pill doctor-recommendation-pill-reason rounded-full bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-800 ring-1 ring-teal-100 [html:not([data-theme='dark'])_&]:bg-[color-mix(in_srgb,var(--patient-doctor-accent)_9%,#ffffff)] [html:not([data-theme='dark'])_&]:text-cyan-800 [html:not([data-theme='dark'])_&]:ring-[rgba(14,116,144,0.16)]"
+              >
                 {reason}
               </span>
             ))}
             {doctor.careModes.map((mode) => (
-              <span key={mode} className="doctor-recommendation-pill rounded-full bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-100">
+              <span
+                key={mode}
+                className="doctor-recommendation-pill rounded-full bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-100"
+              >
                 {mode}
               </span>
             ))}
@@ -95,18 +126,30 @@ export default function DoctorRecommendationCard({ doctor, onContact }: DoctorRe
 
         <aside className="doctor-recommendation-score-panel flex min-w-44 flex-col justify-between gap-4 rounded-[1.15rem] border border-teal-100 bg-teal-50/70 p-4 [html:not([data-theme='dark'])_&]:border-[rgba(14,116,144,0.18)] [html:not([data-theme='dark'])_&]:bg-[linear-gradient(180deg,#ecfeff_0%,#eef2ff_100%)] [html:not([data-theme='dark'])_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.72)]">
           <div>
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Condition fit</span>
+            <span className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">
+              Condition fit
+            </span>
             <div className="mt-2 flex items-end gap-1">
-              <strong className="text-4xl font-black tracking-[-0.05em] text-teal-950">{doctor.matchScore}</strong>
+              <strong className="text-4xl font-black tracking-[-0.05em] text-teal-950">
+                {doctor.matchScore}
+              </strong>
               <span className="pb-1 text-sm font-black text-teal-700">%</span>
             </div>
-            <strong className="mt-1 block text-xs font-black uppercase tracking-[0.12em] text-teal-700">{matchLabel}</strong>
+            <strong className="mt-1 block text-xs font-black uppercase tracking-[0.12em] text-teal-700">
+              {matchLabel}
+            </strong>
             <p className="mt-2 text-xs leading-5 text-teal-800">
-              {hasDirectContact ? "Direct contact details available." : "Backend profile has limited contact data."}
+              {hasDirectContact
+                ? "Direct contact details available."
+                : "Backend profile has limited contact data."}
             </p>
           </div>
 
-          <Button className="doctor-recommendation-cta w-full bg-teal-600 hover:bg-teal-700 focus:ring-teal-200 [html:not([data-theme='dark'])_&]:bg-[linear-gradient(135deg,var(--patient-doctor-accent),var(--primary))] [html:not([data-theme='dark'])_&]:shadow-[0_0.75rem_1.6rem_rgba(14,116,144,0.16)] [html:not([data-theme='dark'])_&]:hover:brightness-[0.96]" icon={hasDirectContact ? "message-circle" : "mail"} onClick={() => onContact(doctor)}>
+          <Button
+            className="doctor-recommendation-cta w-full bg-teal-600 hover:bg-teal-700 focus:ring-teal-200 [html:not([data-theme='dark'])_&]:bg-[linear-gradient(135deg,var(--patient-doctor-accent),var(--primary))] [html:not([data-theme='dark'])_&]:shadow-[0_0.75rem_1.6rem_rgba(14,116,144,0.16)] [html:not([data-theme='dark'])_&]:hover:brightness-[0.96]"
+            icon={hasDirectContact ? "message-circle" : "mail"}
+            onClick={() => onContact(doctor)}
+          >
             {hasDirectContact ? "Contact" : "Request intro"}
           </Button>
         </aside>
@@ -128,8 +171,12 @@ function DoctorMeta({ icon, label, value }: DoctorMetaProps) {
         <Icon name={icon} size={18} />
       </span>
       <span className="min-w-0">
-        <span className="block text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</span>
-        <strong className="block break-words text-sm font-bold leading-5 text-slate-800">{value}</strong>
+        <span className="block text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+          {label}
+        </span>
+        <strong className="block break-words text-sm font-bold leading-5 text-slate-800">
+          {value}
+        </strong>
       </span>
     </div>
   );

@@ -30,12 +30,18 @@ export default function MoodCheckInPanel({
             <Icon name="heart" size={19} />
           </span>
           <div>
-            <h2 className="text-base font-bold text-slate-950">How are you feeling today?</h2>
-            <p className="text-sm text-slate-600">Choose the closest match for this moment.</p>
+            <h2 className="text-base font-bold text-slate-950">
+              How are you feeling today?
+            </h2>
+            <p className="text-sm text-slate-600">
+              Choose the closest match for this moment.
+            </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <span className="w-fit rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-500 shadow-sm shadow-violet-950/5">1 minute check-in</span>
+          <span className="w-fit rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-500 shadow-sm shadow-violet-950/5">
+            1 minute check-in
+          </span>
           <span className="inline-flex w-fit items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-amber-600 shadow-sm shadow-violet-950/5">
             <Icon name="flame" size={14} color="#f59e0b" />
             {currentStreak} day streak
@@ -53,10 +59,17 @@ export default function MoodCheckInPanel({
               key={`${mood.label}-${index}`}
               onClick={() => onSelectMood(index)}
             >
-              <span className="grid h-12 w-12 place-items-center rounded-lg text-3xl leading-none" style={{ backgroundColor: mood.bg }}>
+              <span
+                className="grid h-12 w-12 place-items-center rounded-lg text-3xl leading-none"
+                style={{ backgroundColor: mood.bg }}
+              >
                 {mood.emoji}
               </span>
-              <small className={`mt-3 block text-xs font-bold ${active ? "text-[var(--primary)]" : "text-slate-600"}`}>{mood.label}</small>
+              <small
+                className={`mt-3 block text-xs font-bold ${active ? "text-[var(--primary)]" : "text-slate-600"}`}
+              >
+                {mood.label}
+              </small>
             </button>
           );
         })}
@@ -64,7 +77,12 @@ export default function MoodCheckInPanel({
 
       {moodSaveError ? (
         <div className="mt-4">
-          <ErrorState title="Mood could not be saved" message={moodSaveError} actionLabel="Try again" onAction={onRecordMood} />
+          <ErrorState
+            title="Mood could not be saved"
+            message={moodSaveError}
+            actionLabel="Try again"
+            onAction={onRecordMood}
+          />
         </div>
       ) : null}
       {recordedMood && !moodSaveError ? (
@@ -78,7 +96,12 @@ export default function MoodCheckInPanel({
         disabled={selectedMood === null || isSavingMood}
         onClick={onRecordMood}
       >
-        <Icon name={isSavingMood ? "loader-circle" : "check-circle"} size={18} color="#fff" className={isSavingMood ? "animate-spin" : ""} />
+        <Icon
+          name={isSavingMood ? "loader-circle" : "check-circle"}
+          size={18}
+          color="#fff"
+          className={isSavingMood ? "animate-spin" : ""}
+        />
         {isSavingMood ? "Saving mood..." : "Record today's mood"}
       </button>
     </DashboardPanel>

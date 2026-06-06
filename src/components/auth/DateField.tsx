@@ -14,7 +14,20 @@ type DateFieldProps = {
   value: string;
 };
 
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 const weekdayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 function pad(value: number) {
@@ -29,13 +42,23 @@ function parseIsoDate(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return null;
 
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const date = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
   if (Number.isNaN(date.getTime())) return null;
   return date;
 }
 
 function sameDay(a: Date | null, b: Date | null) {
-  return Boolean(a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate());
+  return Boolean(
+    a &&
+    b &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate(),
+  );
 }
 
 function addMonths(date: Date, amount: number) {
@@ -84,7 +107,9 @@ export default function DateField({
   value,
 }: DateFieldProps) {
   const [open, setOpen] = useState(false);
-  const [viewDate, setViewDate] = useState(() => parseIsoDate(value) || defaultBirthView());
+  const [viewDate, setViewDate] = useState(
+    () => parseIsoDate(value) || defaultBirthView(),
+  );
   const fieldId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const selectedDate = parseIsoDate(value);
@@ -111,10 +136,19 @@ export default function DateField({
 
   return (
     <div className="relative grid gap-2" ref={rootRef}>
-      <label className="text-xs font-black uppercase tracking-[0.12em] text-app-muted" id={`${fieldId}-label`}>
+      <label
+        className="text-xs font-black uppercase tracking-[0.12em] text-app-muted"
+        id={`${fieldId}-label`}
+      >
         {label}
       </label>
-      <input autoComplete={autoComplete} name={name} type="hidden" value={value} readOnly />
+      <input
+        autoComplete={autoComplete}
+        name={name}
+        type="hidden"
+        value={value}
+        readOnly
+      />
       <button
         className={cn(
           "auth-field-control group flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 text-left shadow-sm shadow-slate-950/5 transition focus:outline-none",
@@ -130,15 +164,22 @@ export default function DateField({
         aria-labelledby={`${fieldId}-label ${fieldId}-value`}
         onClick={() => setOpen((state) => !state)}
       >
-        <span className={cn(
-          "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
-          error ? "bg-red-100 text-red-500" : "bg-slate-100 text-slate-400 group-focus:bg-violet-50 group-focus:text-[var(--primary)]",
-        )}>
+        <span
+          className={cn(
+            "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
+            error
+              ? "bg-red-100 text-red-500"
+              : "bg-slate-100 text-slate-400 group-focus:bg-violet-50 group-focus:text-[var(--primary)]",
+          )}
+        >
           <Icon name="calendar-days" size={18} />
         </span>
         <span className="min-w-0 flex-1">
           <span
-            className={cn("block truncate text-sm font-bold", value ? "text-app-text" : "text-app-faint")}
+            className={cn(
+              "block truncate text-sm font-bold",
+              value ? "text-app-text" : "text-app-faint",
+            )}
             id={`${fieldId}-value`}
           >
             {formatDisplayDate(value) || placeholder}
@@ -147,10 +188,14 @@ export default function DateField({
             {value ? "Selected birth date" : "Open custom calendar"}
           </span>
         </span>
-        <span className={cn(
-          "auth-field-icon grid h-8 w-8 place-items-center rounded-lg transition",
-          open ? "bg-violet-50 text-[var(--primary)]" : "bg-slate-100 text-slate-400",
-        )}>
+        <span
+          className={cn(
+            "auth-field-icon grid h-8 w-8 place-items-center rounded-lg transition",
+            open
+              ? "bg-violet-50 text-[var(--primary)]"
+              : "bg-slate-100 text-slate-400",
+          )}
+        >
           <Icon name="chevron-down" size={18} />
         </span>
       </button>
@@ -163,26 +208,51 @@ export default function DateField({
         >
           <div className="p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <button className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]" type="button" onClick={() => setViewDate((date) => addYears(date, -1))} aria-label="Previous year">
+              <button
+                className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]"
+                type="button"
+                onClick={() => setViewDate((date) => addYears(date, -1))}
+                aria-label="Previous year"
+              >
                 <Icon name="chevrons-left" size={18} />
               </button>
-              <button className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]" type="button" onClick={() => setViewDate((date) => addMonths(date, -1))} aria-label="Previous month">
+              <button
+                className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]"
+                type="button"
+                onClick={() => setViewDate((date) => addMonths(date, -1))}
+                aria-label="Previous month"
+              >
                 <Icon name="chevron-left" size={18} />
               </button>
               <strong className="min-w-0 flex-1 text-center text-sm font-black text-app-text">
                 {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
               </strong>
-              <button className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]" type="button" onClick={() => setViewDate((date) => addMonths(date, 1))} aria-label="Next month">
+              <button
+                className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]"
+                type="button"
+                onClick={() => setViewDate((date) => addMonths(date, 1))}
+                aria-label="Next month"
+              >
                 <Icon name="chevron-right" size={18} />
               </button>
-              <button className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]" type="button" onClick={() => setViewDate((date) => addYears(date, 1))} aria-label="Next year">
+              <button
+                className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-violet-50 hover:text-[var(--primary)]"
+                type="button"
+                onClick={() => setViewDate((date) => addYears(date, 1))}
+                aria-label="Next year"
+              >
                 <Icon name="chevrons-right" size={18} />
               </button>
             </div>
 
             <div className="grid grid-cols-7 gap-1 text-center">
               {weekdayLabels.map((day) => (
-                <span className="py-2 text-xs font-black text-slate-400" key={day}>{day}</span>
+                <span
+                  className="py-2 text-xs font-black text-slate-400"
+                  key={day}
+                >
+                  {day}
+                </span>
               ))}
               {days.map((date) => {
                 const inMonth = date.getMonth() === viewDate.getMonth();
@@ -194,11 +264,15 @@ export default function DateField({
                   <button
                     className={cn(
                       "grid h-9 place-items-center rounded-lg text-sm font-bold transition",
-                      active && "bg-[var(--primary)] text-white shadow-md shadow-indigo-950/15",
-                      !active && inMonth && "text-slate-800 hover:bg-violet-50 hover:text-[var(--primary)]",
+                      active &&
+                        "bg-[var(--primary)] text-white shadow-md shadow-indigo-950/15",
+                      !active &&
+                        inMonth &&
+                        "text-slate-800 hover:bg-violet-50 hover:text-[var(--primary)]",
                       !active && !inMonth && "text-slate-300 hover:bg-slate-50",
                       !active && isToday && "ring-2 ring-violet-200",
-                      isFuture && "cursor-not-allowed text-slate-200 hover:bg-transparent hover:text-slate-200",
+                      isFuture &&
+                        "cursor-not-allowed text-slate-200 hover:bg-transparent hover:text-slate-200",
                     )}
                     key={toIsoDate(date)}
                     type="button"
@@ -212,10 +286,18 @@ export default function DateField({
             </div>
 
             <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-              <button className="rounded-lg px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900" type="button" onClick={clearDate}>
+              <button
+                className="rounded-lg px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                type="button"
+                onClick={clearDate}
+              >
                 Clear
               </button>
-              <button className="rounded-lg bg-violet-50 px-3 py-2 text-sm font-bold text-[var(--primary)] transition hover:bg-violet-100" type="button" onClick={() => selectDate(today)}>
+              <button
+                className="rounded-lg bg-violet-50 px-3 py-2 text-sm font-bold text-[var(--primary)] transition hover:bg-violet-100"
+                type="button"
+                onClick={() => selectDate(today)}
+              >
                 Today
               </button>
             </div>
@@ -223,7 +305,9 @@ export default function DateField({
         </div>
       ) : null}
 
-      {error ? <span className="text-xs font-bold text-red-600">{error}</span> : null}
+      {error ? (
+        <span className="text-xs font-bold text-red-600">{error}</span>
+      ) : null}
     </div>
   );
 }

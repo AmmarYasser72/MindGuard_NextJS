@@ -51,13 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  const value = useMemo(() => ({
-    authLoading,
-    register,
-    signIn,
-    signOut,
-    user,
-  }), [authLoading, register, signIn, signOut, user]);
+  const value = useMemo(
+    () => ({
+      authLoading,
+      register,
+      signIn,
+      signOut,
+      user,
+    }),
+    [authLoading, register, signIn, signOut, user],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

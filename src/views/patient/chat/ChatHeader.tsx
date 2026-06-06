@@ -26,8 +26,12 @@ function ChatHeader({ connectionMode, onBack }: ChatHeaderProps) {
           <Icon name="bot-message-square" size={17} color="#fff" />
         </span>
         <div className="min-w-0">
-          <h1 className="patient-chat-title text-[1rem] font-black leading-none tracking-[-0.03em] text-[#7560c9] md:text-[1.18rem] xl:text-[1.26rem]">Smart AI Chat</h1>
-          <p className="patient-chat-status mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#9b8ad4]">{statusCopy(connectionMode)}</p>
+          <h1 className="patient-chat-title text-[1rem] font-black leading-none tracking-[-0.03em] text-[#7560c9] md:text-[1.18rem] xl:text-[1.26rem]">
+            Smart AI Chat
+          </h1>
+          <p className="patient-chat-status mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#9b8ad4]">
+            {statusCopy(connectionMode)}
+          </p>
         </div>
       </div>
     </header>

@@ -1,6 +1,12 @@
 import { storage } from "./storage";
 
-export const moodEmojis = ["\u{1F620}", "\u{1F622}", "\u{1F610}", "\u{1F60A}", "\u{1F60D}"];
+export const moodEmojis = [
+  "\u{1F620}",
+  "\u{1F622}",
+  "\u{1F610}",
+  "\u{1F60A}",
+  "\u{1F60D}",
+];
 export const moodLabels = ["Very low", "Low", "Balanced", "Good", "Excellent"];
 export const calendarLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -20,8 +26,19 @@ export const moodHighlights = [
   "This is a strong day to repeat the habits that helped you feel good.",
 ];
 
-const moodCheckInTimes = ["08:15 AM", "09:40 AM", "11:10 AM", "01:20 PM", "03:05 PM", "05:30 PM", "08:10 PM"];
-const moodPattern = [4, 5, 3, 4, 2, 3, 4, 5, 4, 3, 2, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 2, 3, 4, 5, 4, 3, 4, 5, 4];
+const moodCheckInTimes = [
+  "08:15 AM",
+  "09:40 AM",
+  "11:10 AM",
+  "01:20 PM",
+  "03:05 PM",
+  "05:30 PM",
+  "08:10 PM",
+];
+const moodPattern = [
+  4, 5, 3, 4, 2, 3, 4, 5, 4, 3, 2, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 2, 3, 4, 5,
+  4, 3, 4, 5, 4,
+];
 
 export type MoodEntry = {
   checkInTime: string;
@@ -35,18 +52,27 @@ export type MoodEntry = {
 };
 
 export function moodColor(mood: number) {
-  return ["#ef4444", "#f59e0b", "#6b7280", "#10b981", "#3b82f6"][mood - 1] || "#6b7280";
+  return (
+    ["#ef4444", "#f59e0b", "#6b7280", "#10b981", "#3b82f6"][mood - 1] ||
+    "#6b7280"
+  );
 }
 
 export function moodCalendarMonthKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export function moodCalendarStorageKey(patientKey: string, monthKey = moodCalendarMonthKey()) {
+export function moodCalendarStorageKey(
+  patientKey: string,
+  monthKey = moodCalendarMonthKey(),
+) {
   return `patient_mood_calendar_${patientKey}_${monthKey}`;
 }
 
-export function createMonthEntries(daysInMonth: number, todayDay: number): MoodEntry[] {
+export function createMonthEntries(
+  daysInMonth: number,
+  todayDay: number,
+): MoodEntry[] {
   return Array.from({ length: daysInMonth }, (_, index) => {
     const mood = moodPattern[index % moodPattern.length];
     const day = index + 1;
@@ -64,7 +90,11 @@ export function createMonthEntries(daysInMonth: number, todayDay: number): MoodE
   });
 }
 
-export function hydrateMonthEntries(savedEntries: unknown, daysInMonth: number, todayDay: number): MoodEntry[] {
+export function hydrateMonthEntries(
+  savedEntries: unknown,
+  daysInMonth: number,
+  todayDay: number,
+): MoodEntry[] {
   const defaultEntries = createMonthEntries(daysInMonth, todayDay);
 
   if (!Array.isArray(savedEntries)) {
@@ -79,7 +109,8 @@ export function hydrateMonthEntries(savedEntries: unknown, daysInMonth: number, 
     }
 
     const mood = Number(savedEntry.mood);
-    const safeMood = Number.isInteger(mood) && mood >= 1 && mood <= 5 ? mood : entry.mood;
+    const safeMood =
+      Number.isInteger(mood) && mood >= 1 && mood <= 5 ? mood : entry.mood;
     const isFutureDay = entry.day > todayDay;
 
     return {
@@ -90,7 +121,10 @@ export function hydrateMonthEntries(savedEntries: unknown, daysInMonth: number, 
       label: moodLabels[safeMood - 1],
       summary: moodSummaries[safeMood - 1],
       highlight: moodHighlights[safeMood - 1],
-      checkInTime: typeof savedEntry.checkInTime === "string" && savedEntry.checkInTime ? savedEntry.checkInTime : entry.checkInTime,
+      checkInTime:
+        typeof savedEntry.checkInTime === "string" && savedEntry.checkInTime
+          ? savedEntry.checkInTime
+          : entry.checkInTime,
     };
   });
 }
@@ -100,21 +134,39 @@ export function readMoodCalendarEntries(patientKey: string, date = new Date()) {
   const month = date.getMonth();
   const todayDay = date.getDate();
   const monthDays = new Date(year, month + 1, 0).getDate();
-  const storageKey = moodCalendarStorageKey(patientKey, moodCalendarMonthKey(date));
+  const storageKey = moodCalendarStorageKey(
+    patientKey,
+    moodCalendarMonthKey(date),
+  );
 
   return {
-    entries: hydrateMonthEntries(storage.get(storageKey, null), monthDays, todayDay),
+    entries: hydrateMonthEntries(
+      storage.get(storageKey, null),
+      monthDays,
+      todayDay,
+    ),
     monthDays,
     storageKey,
     todayDay,
   };
 }
 
-export function saveMoodCalendarEntries(patientKey: string, entries: MoodEntry[], date = new Date()) {
-  storage.set(moodCalendarStorageKey(patientKey, moodCalendarMonthKey(date)), entries);
+export function saveMoodCalendarEntries(
+  patientKey: string,
+  entries: MoodEntry[],
+  date = new Date(),
+) {
+  storage.set(
+    moodCalendarStorageKey(patientKey, moodCalendarMonthKey(date)),
+    entries,
+  );
 }
 
-export function recordMoodForToday(patientKey: string, mood: number, date = new Date()) {
+export function recordMoodForToday(
+  patientKey: string,
+  mood: number,
+  date = new Date(),
+) {
   const { entries, todayDay } = readMoodCalendarEntries(patientKey, date);
   const nextEntries = entries.map((entry) => {
     if (entry.day !== todayDay) return entry;
@@ -142,13 +194,26 @@ export function getTodayMoodSnapshot(patientKey: string, date = new Date()) {
   };
 }
 
-export function getSevenDayStrip(entries: MoodEntry[], selectedDay: number, daysInMonth: number) {
-  const start = Math.min(Math.max(1, selectedDay - 3), Math.max(1, daysInMonth - 6));
+export function getSevenDayStrip(
+  entries: MoodEntry[],
+  selectedDay: number,
+  daysInMonth: number,
+) {
+  const start = Math.min(
+    Math.max(1, selectedDay - 3),
+    Math.max(1, daysInMonth - 6),
+  );
   return entries.slice(start - 1, start + 6);
 }
 
-export function createCalendarCells(entries: MoodEntry[], firstDayOfMonth: number) {
-  const leadingPlaceholders = Array.from({ length: firstDayOfMonth }, () => null);
+export function createCalendarCells(
+  entries: MoodEntry[],
+  firstDayOfMonth: number,
+) {
+  const leadingPlaceholders = Array.from(
+    { length: firstDayOfMonth },
+    () => null,
+  );
   const cells = [...leadingPlaceholders, ...entries];
   const trailingCount = (7 - (cells.length % 7)) % 7;
   return [...cells, ...Array.from({ length: trailingCount }, () => null)];
@@ -177,7 +242,11 @@ export function formatCheckInTime(date: Date) {
   });
 }
 
-function moodEntryForDay(entry: MoodEntry, mood: number, checkInTime: string): MoodEntry {
+function moodEntryForDay(
+  entry: MoodEntry,
+  mood: number,
+  checkInTime: string,
+): MoodEntry {
   return {
     ...entry,
     checkInTime,

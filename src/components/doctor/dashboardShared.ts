@@ -6,11 +6,15 @@ export const destinations = [
 ];
 
 export const primaryPurple = "var(--primary)";
-export const surfaceClass = "doctor-surface dashboard-surface rounded-lg border p-5";
-export const primaryButtonClass = "dashboard-primary-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition focus:outline-none focus:ring-4 focus:ring-violet-200";
-export const secondaryButtonClass = "dashboard-outline-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-violet-100";
+export const surfaceClass =
+  "doctor-surface dashboard-surface rounded-lg border p-5";
+export const primaryButtonClass =
+  "dashboard-primary-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition focus:outline-none focus:ring-4 focus:ring-violet-200";
+export const secondaryButtonClass =
+  "dashboard-outline-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-violet-100";
 export const fieldClass = "grid gap-2 text-sm font-bold text-slate-700";
-export const inputClass = "doctor-input min-h-12 w-full rounded-lg border border-violet-100 bg-white px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100";
+export const inputClass =
+  "doctor-input min-h-12 w-full rounded-lg border border-violet-100 bg-white px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100";
 
 export function greeting() {
   const hour = new Date().getHours();
@@ -41,11 +45,20 @@ export function tabButtonClass(active) {
 }
 
 export function formatDateTime(date) {
-  return new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
 export function formatTime(date) {
-  return new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
 export function time(date) {

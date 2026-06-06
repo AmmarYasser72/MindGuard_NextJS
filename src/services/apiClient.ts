@@ -10,7 +10,11 @@ function trimTrailingSlash(value: string) {
 
 export const API_BASE_URL = trimTrailingSlash(RAW_API_BASE_URL || "/api");
 
-function createHttpError(message: string, status: number, data: unknown = null) {
+function createHttpError(
+  message: string,
+  status: number,
+  data: unknown = null,
+) {
   const error = new Error(message) as ApiError;
   error.status = status;
   error.data = data;
@@ -30,9 +34,17 @@ export function getAuthToken() {
   return normalizeToken(getSession()?.token || "");
 }
 
-export async function request<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function request<T = unknown>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const controller = new AbortController();
-  const { auth = false, headers, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+  const {
+    auth = false,
+    headers,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    ...fetchOptions
+  } = options;
   const timer = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   const token = auth ? getAuthToken() : null;
 
@@ -48,7 +60,11 @@ export async function request<T = unknown>(path: string, options: RequestOptions
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw createHttpError(data.message || data.error || "Request failed", response.status, data);
+      throw createHttpError(
+        data.message || data.error || "Request failed",
+        response.status,
+        data,
+      );
     }
     return data as T;
   } catch (error) {

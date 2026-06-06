@@ -57,7 +57,9 @@ function readChatThreadId(userId: string) {
 function createObjectIdString() {
   const bytes = new Uint8Array(12);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }
 
 function getOrCreateChatThreadId(userId: string) {
@@ -97,31 +99,49 @@ function normalizeMessages(messages: unknown): ChatMessage[] {
 
   return list.map((message) => ({
     text: String(message.content || message.text || ""),
-    isUser: message.sender === "user" || message.isUser === true || message.isSenderUser === true,
-    time: message.createdAt ? formatMessageTime(message.createdAt) : String(message.time || formatTime()),
+    isUser:
+      message.sender === "user" ||
+      message.isUser === true ||
+      message.isSenderUser === true,
+    time: message.createdAt
+      ? formatMessageTime(message.createdAt)
+      : String(message.time || formatTime()),
   }));
 }
 
 function pickLatestChatId(data: unknown, fallbackChatId: string | null = null) {
   const list = toArrayPayload(data);
   if (list.length === 0) return fallbackChatId;
-  if (fallbackChatId && list.some((item) => item._id === fallbackChatId || item.id === fallbackChatId)) {
+  if (
+    fallbackChatId &&
+    list.some(
+      (item) => item._id === fallbackChatId || item.id === fallbackChatId,
+    )
+  ) {
     return fallbackChatId;
   }
   return String(list[0]?._id || list[0]?.id || fallbackChatId || "");
 }
 
 function toArrayPayload(data: unknown): ApiRecord[] {
-  if (Array.isArray(data)) return data.filter((item) => item && typeof item === "object" && !Array.isArray(item)) as ApiRecord[];
+  if (Array.isArray(data))
+    return data.filter(
+      (item) => item && typeof item === "object" && !Array.isArray(item),
+    ) as ApiRecord[];
   if (!data || typeof data !== "object") return [];
   const record = data as ApiRecord;
-  if (Array.isArray(record.data)) return record.data.filter((item) => item && typeof item === "object" && !Array.isArray(item)) as ApiRecord[];
+  if (Array.isArray(record.data))
+    return record.data.filter(
+      (item) => item && typeof item === "object" && !Array.isArray(item),
+    ) as ApiRecord[];
 
   return Object.keys(record)
     .filter((key) => /^\d+$/.test(key))
     .sort((a, b) => Number(a) - Number(b))
     .map((key) => record[key])
-    .filter((item) => item && typeof item === "object" && !Array.isArray(item)) as ApiRecord[];
+    .filter(
+      (item) => item && typeof item === "object" && !Array.isArray(item),
+    ) as ApiRecord[];
 }
 
 function socketBaseUrl() {
@@ -131,7 +151,10 @@ function socketBaseUrl() {
   if (publicBackendUrl) return publicBackendUrl.replace(/\/$/, "");
   if (typeof window !== "undefined") {
     const { hostname, protocol, port } = window.location;
-    if ((hostname === "localhost" || hostname === "127.0.0.1") && port !== "3000") {
+    if (
+      (hostname === "localhost" || hostname === "127.0.0.1") &&
+      port !== "3000"
+    ) {
       return `${protocol}//${hostname}:3000`;
     }
   }
@@ -147,12 +170,16 @@ function normalizeSocketChunk(payload: unknown) {
 
 function isNoChatsError(error: unknown) {
   const typedError = error as ApiError;
-  return typedError.status === 400 && /no chats found/i.test(typedError.message);
+  return (
+    typedError.status === 400 && /no chats found/i.test(typedError.message)
+  );
 }
 
 function isNoMessagesError(error: unknown) {
   const typedError = error as ApiError;
-  return typedError.status === 400 && /no messages found/i.test(typedError.message);
+  return (
+    typedError.status === 400 && /no messages found/i.test(typedError.message)
+  );
 }
 
 function shouldRefreshStoredChat(error: unknown) {
@@ -166,9 +193,12 @@ async function createRemoteChat(userId: string) {
     method: "POST",
   });
   const createdRecord = created as ApiRecord;
-  const nested = createdRecord.data && typeof createdRecord.data === "object" && !Array.isArray(createdRecord.data)
-    ? createdRecord.data as ApiRecord
-    : {};
+  const nested =
+    createdRecord.data &&
+    typeof createdRecord.data === "object" &&
+    !Array.isArray(createdRecord.data)
+      ? (createdRecord.data as ApiRecord)
+      : {};
   const chatId = String(createdRecord.chatId || nested.chatId || "");
   if (chatId) {
     saveChatThreadId(userId, chatId);
@@ -183,7 +213,10 @@ type RemoteChatThread = {
   source: "backend" | "stored";
 };
 
-async function ensureRemoteChat(userId: string, { skipStored = false } = {}): Promise<RemoteChatThread | null> {
+async function ensureRemoteChat(
+  userId: string,
+  { skipStored = false } = {},
+): Promise<RemoteChatThread | null> {
   const existingChatId = skipStored ? null : readChatThreadId(userId);
   if (existingChatId) return { chatId: existingChatId, source: "stored" };
 
@@ -211,44 +244,80 @@ export async function loadChatState(userId: string): Promise<ChatState> {
   const localMessages = readLocalChatMessages(userId);
 
   if (shouldUseDemoData()) {
-    return { chatId: getOrCreateChatThreadId(userId), messages: localMessages, mode: "local" };
+    return {
+      chatId: getOrCreateChatThreadId(userId),
+      messages: localMessages,
+      mode: "local",
+    };
   }
 
   try {
     const thread = await ensureRemoteChat(userId);
     if (!thread) {
-      return { chatId: getOrCreateChatThreadId(userId), messages: localMessages, mode: "local" };
+      return {
+        chatId: getOrCreateChatThreadId(userId),
+        messages: localMessages,
+        mode: "local",
+      };
     }
 
     try {
-      return { chatId: thread.chatId, messages: await loadRemoteMessages(thread.chatId), mode: "remote" };
+      return {
+        chatId: thread.chatId,
+        messages: await loadRemoteMessages(thread.chatId),
+        mode: "remote",
+      };
     } catch (error) {
       if (thread.source === "stored" && shouldRefreshStoredChat(error)) {
         removeChatThreadId(userId);
-        const freshThread = await ensureRemoteChat(userId, { skipStored: true });
+        const freshThread = await ensureRemoteChat(userId, {
+          skipStored: true,
+        });
         if (!freshThread) {
-          return { chatId: getOrCreateChatThreadId(userId), messages: localMessages, mode: "local" };
+          return {
+            chatId: getOrCreateChatThreadId(userId),
+            messages: localMessages,
+            mode: "local",
+          };
         }
 
         try {
-          return { chatId: freshThread.chatId, messages: await loadRemoteMessages(freshThread.chatId), mode: "remote" };
+          return {
+            chatId: freshThread.chatId,
+            messages: await loadRemoteMessages(freshThread.chatId),
+            mode: "remote",
+          };
         } catch {
-          return { chatId: freshThread.chatId, messages: localMessages, mode: "remote" };
+          return {
+            chatId: freshThread.chatId,
+            messages: localMessages,
+            mode: "remote",
+          };
         }
       }
 
       if (isNoMessagesError(error)) {
-        return { chatId: thread.chatId, messages: localMessages, mode: "remote" };
+        return {
+          chatId: thread.chatId,
+          messages: localMessages,
+          mode: "remote",
+        };
       }
 
       return { chatId: thread.chatId, messages: localMessages, mode: "remote" };
     }
   } catch {
-    return { chatId: getOrCreateChatThreadId(userId), messages: localMessages, mode: "local" };
+    return {
+      chatId: getOrCreateChatThreadId(userId),
+      messages: localMessages,
+      mode: "local",
+    };
   }
 }
 
-export function createLocalChatClient(onMessage: (message: ChatMessage) => void): ChatClient {
+export function createLocalChatClient(
+  onMessage: (message: ChatMessage) => void,
+): ChatClient {
   return {
     send(text) {
       window.setTimeout(() => {

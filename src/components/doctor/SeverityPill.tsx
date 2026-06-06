@@ -8,5 +8,11 @@ export default function SeverityPill({ severity }) {
     normal: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
   };
 
-  return <span className={`inline-flex min-h-6 items-center rounded-lg px-2 text-xs font-bold ${styles[severity] || "bg-slate-100 text-slate-600"}`}>{severityLabels[severity] || "Unknown"}</span>;
+  return (
+    <span
+      className={`inline-flex min-h-6 items-center rounded-lg px-2 text-xs font-bold ${styles[severity] || "bg-slate-100 text-slate-600"}`}
+    >
+      {severityLabels[severity] || "Unknown"}
+    </span>
+  );
 }

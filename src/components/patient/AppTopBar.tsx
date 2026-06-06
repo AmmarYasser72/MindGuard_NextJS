@@ -10,7 +10,14 @@ type AppTopBarProps = {
   title: string;
 };
 
-export default function AppTopBar({ title, subtitle, onBack, actionIcon, actionLabel, onAction }: AppTopBarProps) {
+export default function AppTopBar({
+  title,
+  subtitle,
+  onBack,
+  actionIcon,
+  actionLabel,
+  onAction,
+}: AppTopBarProps) {
   return (
     <header className="app-topbar dashboard-glass sticky top-0 z-20 border-b px-4 py-3 [html:not([data-theme='dark'])_&]:border-[rgba(203,213,225,0.76)] [html:not([data-theme='dark'])_&]:bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,252,255,0.9))] [html:not([data-theme='dark'])_&]:py-2 [html:not([data-theme='dark'])_&]:shadow-[0_0.7rem_1.8rem_rgba(55,65,118,0.07)] sm:px-6">
       <div className="app-topbar-inner mx-auto grid max-w-5xl grid-cols-[44px_1fr_44px] items-center gap-3 [html:not([data-theme='dark'])_&]:min-h-[3.85rem] [html:not([data-theme='dark'])_&]:max-w-[82rem] [html:not([data-theme='dark'])_&]:grid-cols-[auto_minmax(0,1fr)_auto] [html:not([data-theme='dark'])_&]:rounded-[1.35rem] [html:not([data-theme='dark'])_&]:border [html:not([data-theme='dark'])_&]:border-[rgba(203,213,225,0.72)] [html:not([data-theme='dark'])_&]:bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(236,254,255,0.54)_48%,rgba(245,243,255,0.58))] [html:not([data-theme='dark'])_&]:px-[0.55rem] [html:not([data-theme='dark'])_&]:py-[0.45rem] [html:not([data-theme='dark'])_&]:shadow-[0_0.85rem_2rem_rgba(55,65,118,0.08),inset_0_0_0_1px_rgba(255,255,255,0.62)] max-sm:[html:not([data-theme='dark'])_&]:rounded-[1.15rem]">
@@ -39,7 +46,9 @@ export default function AppTopBar({ title, subtitle, onBack, actionIcon, actionL
           >
             <Icon name={actionIcon} size={20} color="#fff" />
           </button>
-        ) : <span aria-hidden="true" />}
+        ) : (
+          <span aria-hidden="true" />
+        )}
       </div>
     </header>
   );

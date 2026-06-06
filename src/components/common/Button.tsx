@@ -4,10 +4,14 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 const variantClasses = {
   blue: "bg-app-blue text-white shadow-sm shadow-blue-950/10 hover:bg-blue-600 focus:ring-4 focus:ring-blue-200",
-  ghost: "bg-transparent text-app-text-soft hover:bg-[var(--surface-soft)] focus:ring-4 focus:ring-slate-200",
-  green: "bg-app-green text-white shadow-sm shadow-emerald-950/10 hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-200",
-  indigo: "bg-app-primary text-white shadow-sm shadow-indigo-950/10 hover:bg-app-primary-strong focus:ring-4 focus:ring-violet-200",
-  primary: "bg-app-primary text-white shadow-sm shadow-indigo-950/10 hover:bg-app-primary-strong focus:ring-4 focus:ring-violet-200",
+  ghost:
+    "bg-transparent text-app-text-soft hover:bg-[var(--surface-soft)] focus:ring-4 focus:ring-slate-200",
+  green:
+    "bg-app-green text-white shadow-sm shadow-emerald-950/10 hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-200",
+  indigo:
+    "bg-app-primary text-white shadow-sm shadow-indigo-950/10 hover:bg-app-primary-strong focus:ring-4 focus:ring-violet-200",
+  primary:
+    "bg-app-primary text-white shadow-sm shadow-indigo-950/10 hover:bg-app-primary-strong focus:ring-4 focus:ring-violet-200",
 } as const;
 
 type ButtonVariant = keyof typeof variantClasses;

@@ -1,7 +1,13 @@
-import { curatedDoctorProfiles, patientConditionOptions } from "../data/doctorRecommendations";
+import {
+  curatedDoctorProfiles,
+  patientConditionOptions,
+} from "../data/doctorRecommendations";
 import { shouldUseDemoData } from "../config/demoMode";
 import { doctorService } from "./doctorService";
-import { getSignedUpDoctors, type SignedUpDoctor } from "./localDoctorDirectory";
+import {
+  getSignedUpDoctors,
+  type SignedUpDoctor,
+} from "./localDoctorDirectory";
 import type { ApiRecord } from "../types/api";
 import type {
   DoctorProfile,
@@ -12,16 +18,23 @@ import type {
 
 const MINIMUM_VISIBLE_DOCTORS = 3;
 
-const keywordByCondition = patientConditionOptions.reduce<Record<PatientConditionId, string[]>>((map, condition) => {
-  map[condition.id] = condition.keywords.map((keyword) => keyword.toLowerCase());
-  return map;
-}, {
-  anxiety: [],
-  depression: [],
-  stress: [],
-  sleep: [],
-  mixed: [],
-});
+const keywordByCondition = patientConditionOptions.reduce<
+  Record<PatientConditionId, string[]>
+>(
+  (map, condition) => {
+    map[condition.id] = condition.keywords.map((keyword) =>
+      keyword.toLowerCase(),
+    );
+    return map;
+  },
+  {
+    anxiety: [],
+    depression: [],
+    stress: [],
+    sleep: [],
+    mixed: [],
+  },
+);
 
 function asString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -38,7 +51,12 @@ function asStringArray(value: unknown) {
 }
 
 function normalizeId(record: ApiRecord) {
-  return asString(record._id) || asString(record.id) || asString(record.uid) || crypto.randomUUID();
+  return (
+    asString(record._id) ||
+    asString(record.id) ||
+    asString(record.uid) ||
+    crypto.randomUUID()
+  );
 }
 
 function titleCaseFromIdentifier(value: string) {
@@ -46,17 +64,23 @@ function titleCaseFromIdentifier(value: string) {
     .replace(/[@._-]+/g, " ")
     .split(" ")
     .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`)
+    .map(
+      (part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`,
+    )
     .join(" ");
 }
 
 function normalizeDoctorName(record: ApiRecord, id: string) {
-  const explicitName = asString(record.displayName) || asString(record.name) || asString(record.fullName);
+  const explicitName =
+    asString(record.displayName) ||
+    asString(record.name) ||
+    asString(record.fullName);
   if (explicitName) return explicitName;
 
   const firstName = asString(record.firstName);
   const lastName = asString(record.lastName);
-  if (firstName || lastName) return `Dr. ${[firstName, lastName].filter(Boolean).join(" ")}`;
+  if (firstName || lastName)
+    return `Dr. ${[firstName, lastName].filter(Boolean).join(" ")}`;
 
   const emailName = asString(record.email).split("@")[0];
   if (emailName) return `Dr. ${titleCaseFromIdentifier(emailName)}`;
@@ -64,49 +88,69 @@ function normalizeDoctorName(record: ApiRecord, id: string) {
   return `MindGuard Doctor ${id.slice(-4).toUpperCase()}`;
 }
 
-function inferConditionsFromSpecialization(specialization: string): PatientConditionId[] {
+function inferConditionsFromSpecialization(
+  specialization: string,
+): PatientConditionId[] {
   const normalized = specialization.toLowerCase();
   const matches = patientConditionOptions
-    .filter((condition) => keywordByCondition[condition.id].some((keyword) => normalized.includes(keyword)))
+    .filter((condition) =>
+      keywordByCondition[condition.id].some((keyword) =>
+        normalized.includes(keyword),
+      ),
+    )
     .map((condition) => condition.id);
 
   if (matches.length) return matches;
-  if (/psych|therapy|mental|behavioral|counsel/.test(normalized)) return ["mixed"];
+  if (/psych|therapy|mental|behavioral|counsel/.test(normalized))
+    return ["mixed"];
   return ["mixed"];
 }
 
 function normalizeBackendDoctor(record: ApiRecord): DoctorProfile {
   const id = normalizeId(record);
-  const specialization = asString(record.specialization) || "Mental health specialist";
+  const specialization =
+    asString(record.specialization) || "Mental health specialist";
   const inferredConditions = inferConditionsFromSpecialization(specialization);
-  const explicitConditions = asStringArray(record.conditions)
-    .filter((condition): condition is PatientConditionId => patientConditionOptions.some((option) => option.id === condition));
+  const explicitConditions = asStringArray(record.conditions).filter(
+    (condition): condition is PatientConditionId =>
+      patientConditionOptions.some((option) => option.id === condition),
+  );
 
   return {
     id,
     displayName: normalizeDoctorName(record, id),
     specialization,
     yearsOfExperience: asNumber(record.yearsOfExperience || record.experience),
-    conditions: explicitConditions.length ? explicitConditions : inferredConditions,
-    careModes: asStringArray(record.careModes).length ? asStringArray(record.careModes) : ["Video", "Chat"],
-    languages: asStringArray(record.languages).length ? asStringArray(record.languages) : ["English", "Arabic"],
+    conditions: explicitConditions.length
+      ? explicitConditions
+      : inferredConditions,
+    careModes: asStringArray(record.careModes).length
+      ? asStringArray(record.careModes)
+      : ["Video", "Chat"],
+    languages: asStringArray(record.languages).length
+      ? asStringArray(record.languages)
+      : ["English", "Arabic"],
     email: asString(record.email) || null,
     phone: asString(record.phone || record.phoneNumber) || null,
     clinicAddress: asString(record.clinicAddress || record.address) || null,
     sessionTime: asString(record.sessionTime) || null,
     source: "backend",
-    bio: asString(record.bio) || `Specializes in ${specialization.toLowerCase()} with care plans tailored to patient progress.`,
+    bio:
+      asString(record.bio) ||
+      `Specializes in ${specialization.toLowerCase()} with care plans tailored to patient progress.`,
     raw: record,
   };
 }
 
 function normalizeSignedUpDoctor(record: SignedUpDoctor): DoctorProfile {
-  const specialization = asString(record.specialization) || "Mental health specialist";
+  const specialization =
+    asString(record.specialization) || "Mental health specialist";
   const rawRecord = record as unknown as ApiRecord;
 
   return {
     id: record.id,
-    displayName: asString(record.displayName) || normalizeDoctorName(rawRecord, record.id),
+    displayName:
+      asString(record.displayName) || normalizeDoctorName(rawRecord, record.id),
     specialization,
     yearsOfExperience: asNumber(record.yearsOfExperience),
     conditions: inferConditionsFromSpecialization(specialization),
@@ -123,16 +167,26 @@ function normalizeSignedUpDoctor(record: SignedUpDoctor): DoctorProfile {
 }
 
 function keywordScore(doctor: DoctorProfile, conditionId: PatientConditionId) {
-  const searchable = `${doctor.specialization} ${doctor.bio} ${doctor.conditions.join(" ")}`.toLowerCase();
-  return keywordByCondition[conditionId].filter((keyword) => searchable.includes(keyword)).length;
+  const searchable =
+    `${doctor.specialization} ${doctor.bio} ${doctor.conditions.join(" ")}`.toLowerCase();
+  return keywordByCondition[conditionId].filter((keyword) =>
+    searchable.includes(keyword),
+  ).length;
 }
 
-function buildMatchReasons(doctor: DoctorProfile, conditionId: PatientConditionId) {
+function buildMatchReasons(
+  doctor: DoctorProfile,
+  conditionId: PatientConditionId,
+) {
   const reasons: string[] = [];
-  const condition = patientConditionOptions.find((option) => option.id === conditionId);
+  const condition = patientConditionOptions.find(
+    (option) => option.id === conditionId,
+  );
 
   if (doctor.conditions.includes(conditionId)) {
-    reasons.push(`Direct match for ${condition?.label.toLowerCase() || "your condition"}`);
+    reasons.push(
+      `Direct match for ${condition?.label.toLowerCase() || "your condition"}`,
+    );
   } else if (doctor.conditions.includes("mixed")) {
     reasons.push("Good fit for mixed or unclear symptoms");
   }
@@ -150,23 +204,28 @@ function buildMatchReasons(doctor: DoctorProfile, conditionId: PatientConditionI
   return reasons.slice(0, 3);
 }
 
-function scoreDoctor(doctor: DoctorProfile, conditionId: PatientConditionId): DoctorRecommendation {
+function scoreDoctor(
+  doctor: DoctorProfile,
+  conditionId: PatientConditionId,
+): DoctorRecommendation {
   const directMatch = doctor.conditions.includes(conditionId);
   const broadMatch = doctor.conditions.includes("mixed");
   const specializationMatches = keywordScore(doctor, conditionId);
-  const matchStatus = directMatch || specializationMatches > 0
-    ? "matched"
-    : broadMatch
-      ? "broad"
-      : "not-matched";
+  const matchStatus =
+    directMatch || specializationMatches > 0
+      ? "matched"
+      : broadMatch
+        ? "broad"
+        : "not-matched";
   const experienceScore = Math.min(doctor.yearsOfExperience, 15);
   const contactScore = doctor.email || doctor.phone ? 6 : 0;
-  const score = 42
-    + (directMatch ? 34 : 0)
-    + (!directMatch && broadMatch ? 14 : 0)
-    + Math.min(specializationMatches * 6, 18)
-    + experienceScore
-    + contactScore;
+  const score =
+    42 +
+    (directMatch ? 34 : 0) +
+    (!directMatch && broadMatch ? 14 : 0) +
+    Math.min(specializationMatches * 6, 18) +
+    experienceScore +
+    contactScore;
 
   return {
     ...doctor,
@@ -208,7 +267,9 @@ function loadSignedUpDoctorProfiles() {
   return getSignedUpDoctors().map(normalizeSignedUpDoctor);
 }
 
-export async function getDoctorRecommendations(conditionId: PatientConditionId): Promise<DoctorRecommendationResult> {
+export async function getDoctorRecommendations(
+  conditionId: PatientConditionId,
+): Promise<DoctorRecommendationResult> {
   const signedUpDoctors = loadSignedUpDoctorProfiles();
   let backendDoctors: DoctorProfile[] = [];
   let backendAvailable = false;

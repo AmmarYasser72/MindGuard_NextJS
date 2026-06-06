@@ -10,10 +10,15 @@ export default function ActionGrid({ actions, onAction }) {
           key={action.title}
           onClick={() => onAction(action)}
         >
-          <span className="grid h-11 w-11 place-items-center rounded-2xl" style={{ backgroundColor: `${action.color}1a` }}>
+          <span
+            className="grid h-11 w-11 place-items-center rounded-2xl"
+            style={{ backgroundColor: `${action.color}1a` }}
+          >
             <Icon name={action.icon} size={24} color={action.color} />
           </span>
-          <strong className="text-sm font-bold text-slate-900">{action.title}</strong>
+          <strong className="text-sm font-bold text-slate-900">
+            {action.title}
+          </strong>
         </button>
       ))}
     </div>

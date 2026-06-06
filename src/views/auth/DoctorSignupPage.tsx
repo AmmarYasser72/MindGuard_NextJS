@@ -38,7 +38,10 @@ export default function DoctorSignupPage() {
   const { register, authLoading } = useAuth();
   const { back, navigate } = useRouter();
 
-  function update<Key extends keyof DoctorSignupForm>(key: Key, value: DoctorSignupForm[Key]) {
+  function update<Key extends keyof DoctorSignupForm>(
+    key: Key,
+    value: DoctorSignupForm[Key],
+  ) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
@@ -54,7 +57,11 @@ export default function DoctorSignupPage() {
       await register({ ...form, role: "doctor" });
       navigate("/doctor-dashboard");
     } catch (authError) {
-      setError(authError instanceof Error ? authError.message : "Unable to create doctor account");
+      setError(
+        authError instanceof Error
+          ? authError.message
+          : "Unable to create doctor account",
+      );
     }
   }
 
@@ -63,7 +70,10 @@ export default function DoctorSignupPage() {
       <section className="mx-auto grid w-full max-w-3xl gap-6">
         <AuthProfileHeader
           backLabel="Back to patient signup"
-          badge={{ icon: "badge-check", label: "Healthcare Professional Account" }}
+          badge={{
+            icon: "badge-check",
+            label: "Healthcare Professional Account",
+          }}
           description="Join MindGuard as a healthcare professional."
           eyebrow="Doctor account"
           icon="stethoscope"
@@ -85,76 +95,80 @@ export default function DoctorSignupPage() {
           onFooterAction={() => navigate("/login")}
           onSubmit={onSubmit}
         >
-            <NameFields
-              firstName={form.firstName}
-              lastName={form.lastName}
-              onChange={update}
-              disabled={authLoading}
-            />
-            <DateField
-              label="Date of Birth"
-              value={form.dateOfBirth}
-              onChange={(value) => update("dateOfBirth", value)}
-              autoComplete="bday"
-              disabled={authLoading}
-            />
-            <SegmentedChoiceField
-              label="Gender"
-              value={form.gender}
-              choices={genderChoices}
-              onChange={(value) => update("gender", value)}
-              disabled={authLoading}
-              tone="emerald"
-            />
-            <SelectField
-              label="Specialization"
-              icon="brain"
-              value={form.specialization}
-              placeholder="Select your specialization"
-              onChange={(value) => update("specialization", value)}
-              disabled={authLoading}
-            >
-              {doctorSpecializations.map((item) => <option key={item} value={item}>{item}</option>)}
-            </SelectField>
-            <TextField
-              label="License Number"
-              icon="badge"
-              placeholder="Enter your license number"
-              value={form.licenseNumber}
-              onChange={(value) => update("licenseNumber", value)}
-              autoComplete="off"
-              disabled={authLoading}
-            />
-            <TextField
-              label="Years of Experience"
-              icon="briefcase-business"
-              type="number"
-              placeholder="e.g 5"
-              value={form.yearsOfExperience}
-              onChange={(value) => update("yearsOfExperience", value)}
-              min="0"
-              disabled={authLoading}
-            />
-            <TextField
-              label="Professional Email"
-              icon="mail"
-              type="email"
-              placeholder="Dr.ammar@gmail.com"
-              value={form.email}
-              onChange={(value) => update("email", value)}
-              autoComplete="email"
-              disabled={authLoading}
-            />
-            <PasswordConfirmationFields
-              confirmPassword={form.confirmPassword}
-              password={form.password}
-              onChange={update}
-              disabled={authLoading}
-            />
-            <SubmitButton loading={authLoading} tone="green">
-              Create Doctor Account
-              <Icon name="arrow-right" size={18} color="#fff" />
-            </SubmitButton>
+          <NameFields
+            firstName={form.firstName}
+            lastName={form.lastName}
+            onChange={update}
+            disabled={authLoading}
+          />
+          <DateField
+            label="Date of Birth"
+            value={form.dateOfBirth}
+            onChange={(value) => update("dateOfBirth", value)}
+            autoComplete="bday"
+            disabled={authLoading}
+          />
+          <SegmentedChoiceField
+            label="Gender"
+            value={form.gender}
+            choices={genderChoices}
+            onChange={(value) => update("gender", value)}
+            disabled={authLoading}
+            tone="emerald"
+          />
+          <SelectField
+            label="Specialization"
+            icon="brain"
+            value={form.specialization}
+            placeholder="Select your specialization"
+            onChange={(value) => update("specialization", value)}
+            disabled={authLoading}
+          >
+            {doctorSpecializations.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </SelectField>
+          <TextField
+            label="License Number"
+            icon="badge"
+            placeholder="Enter your license number"
+            value={form.licenseNumber}
+            onChange={(value) => update("licenseNumber", value)}
+            autoComplete="off"
+            disabled={authLoading}
+          />
+          <TextField
+            label="Years of Experience"
+            icon="briefcase-business"
+            type="number"
+            placeholder="e.g 5"
+            value={form.yearsOfExperience}
+            onChange={(value) => update("yearsOfExperience", value)}
+            min="0"
+            disabled={authLoading}
+          />
+          <TextField
+            label="Professional Email"
+            icon="mail"
+            type="email"
+            placeholder="Dr.ammar@gmail.com"
+            value={form.email}
+            onChange={(value) => update("email", value)}
+            autoComplete="email"
+            disabled={authLoading}
+          />
+          <PasswordConfirmationFields
+            confirmPassword={form.confirmPassword}
+            password={form.password}
+            onChange={update}
+            disabled={authLoading}
+          />
+          <SubmitButton loading={authLoading} tone="green">
+            Create Doctor Account
+            <Icon name="arrow-right" size={18} color="#fff" />
+          </SubmitButton>
         </SignupFormCard>
 
         <AuthRoleCard

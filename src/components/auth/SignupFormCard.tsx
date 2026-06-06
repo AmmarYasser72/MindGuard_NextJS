@@ -40,7 +40,9 @@ export default function SignupFormCard({
             <h2 className="text-2xl font-bold text-app-text">{heading}</h2>
             <p className="mt-1 text-sm text-app-muted">{description}</p>
           </div>
-          <span className={`auth-field-icon grid h-11 w-11 place-items-center rounded-2xl ${iconSurfaceClassName}`}>
+          <span
+            className={`auth-field-icon grid h-11 w-11 place-items-center rounded-2xl ${iconSurfaceClassName}`}
+          >
             <Icon name={icon} size={22} color={iconColor} />
           </span>
         </div>
@@ -49,7 +51,11 @@ export default function SignupFormCard({
       </form>
       <p className="mt-5 text-center text-sm text-app-muted">
         {footerPrompt}{" "}
-        <button className={`font-bold ${footerActionClassName}`} type="button" onClick={onFooterAction}>
+        <button
+          className={`font-bold ${footerActionClassName}`}
+          type="button"
+          onClick={onFooterAction}
+        >
           {footerActionLabel}
         </button>
       </p>

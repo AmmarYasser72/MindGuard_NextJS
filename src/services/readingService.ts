@@ -1,4 +1,8 @@
-import { ensureObjectData, ensureRecordHasAnyField, isBackendServerError } from "./apiResponse";
+import {
+  ensureObjectData,
+  ensureRecordHasAnyField,
+  isBackendServerError,
+} from "./apiResponse";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
 
@@ -38,7 +42,11 @@ export const readingService = {
         auth: true,
         method: "POST",
       });
-      return ensureRecordHasAnyField(ensureObjectData(response, "Mood reading"), "Mood reading", moodReadingFields);
+      return ensureRecordHasAnyField(
+        ensureObjectData(response, "Mood reading"),
+        "Mood reading",
+        moodReadingFields,
+      );
     } catch (error) {
       if (!isBackendServerError(error)) throw error;
 

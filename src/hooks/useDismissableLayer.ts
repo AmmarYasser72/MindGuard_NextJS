@@ -7,7 +7,11 @@ type DismissableLayerOptions = {
   ref: RefObject<HTMLElement | null>;
 };
 
-export function useDismissableLayer({ active, onDismiss, ref }: DismissableLayerOptions) {
+export function useDismissableLayer({
+  active,
+  onDismiss,
+  ref,
+}: DismissableLayerOptions) {
   useEffect(() => {
     if (!active) return undefined;
 

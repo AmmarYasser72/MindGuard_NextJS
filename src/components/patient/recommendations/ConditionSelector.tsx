@@ -2,7 +2,10 @@
 
 import Icon from "../../common/Icon";
 import { cn } from "../../../utils/cn";
-import type { PatientConditionId, PatientConditionOption } from "../../../types/recommendations";
+import type {
+  PatientConditionId,
+  PatientConditionOption,
+} from "../../../types/recommendations";
 
 type ConditionSelectorProps = {
   options: PatientConditionOption[];
@@ -10,9 +13,16 @@ type ConditionSelectorProps = {
   onSelect: (condition: PatientConditionId) => void;
 };
 
-export default function ConditionSelector({ options, selectedCondition, onSelect }: ConditionSelectorProps) {
+export default function ConditionSelector({
+  options,
+  selectedCondition,
+  onSelect,
+}: ConditionSelectorProps) {
   return (
-    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Choose your current condition">
+    <section
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+      aria-label="Choose your current condition"
+    >
       {options.map((option) => {
         const isSelected = option.id === selectedCondition;
 
@@ -33,7 +43,9 @@ export default function ConditionSelector({ options, selectedCondition, onSelect
               <span
                 className={cn(
                   "patient-condition-icon grid h-10 w-10 place-items-center rounded-2xl bg-[var(--patient-condition-icon-bg)] text-[var(--patient-doctor-accent)] transition",
-                  isSelected ? "is-active bg-[var(--patient-condition-icon-active-bg)] text-white" : "",
+                  isSelected
+                    ? "is-active bg-[var(--patient-condition-icon-active-bg)] text-white"
+                    : "",
                 )}
               >
                 <Icon name={option.icon} size={20} color="currentColor" />
@@ -44,8 +56,12 @@ export default function ConditionSelector({ options, selectedCondition, onSelect
                 </span>
               ) : null}
             </span>
-            <strong className="mt-4 block text-base font-black text-app-text">{option.label}</strong>
-            <span className="mt-1.5 block text-sm leading-6 text-app-text-soft">{option.description}</span>
+            <strong className="mt-4 block text-base font-black text-app-text">
+              {option.label}
+            </strong>
+            <span className="mt-1.5 block text-sm leading-6 text-app-text-soft">
+              {option.description}
+            </span>
           </button>
         );
       })}

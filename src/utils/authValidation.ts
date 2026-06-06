@@ -15,7 +15,8 @@ export type DoctorSignupForm = PatientSignupForm & {
 };
 
 export function validatePatientSignup(form: PatientSignupForm) {
-  if (form.firstName.trim().length < 2 || form.lastName.trim().length < 2) return "First and last name are required";
+  if (form.firstName.trim().length < 2 || form.lastName.trim().length < 2)
+    return "First and last name are required";
   if (!form.dateOfBirth) return "Please select your date of birth";
   if (!form.email.includes("@")) return "Please enter a valid email";
   if (!form.gender) return "Please select gender";
@@ -29,6 +30,7 @@ export function validateDoctorSignup(form: DoctorSignupForm) {
   if (base) return base;
   if (!form.specialization) return "Please select your specialization";
   if (!form.licenseNumber.trim()) return "License number is required";
-  if (!form.yearsOfExperience || Number.isNaN(Number(form.yearsOfExperience))) return "Enter a valid number";
+  if (!form.yearsOfExperience || Number.isNaN(Number(form.yearsOfExperience)))
+    return "Enter a valid number";
   return "";
 }

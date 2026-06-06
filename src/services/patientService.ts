@@ -1,11 +1,23 @@
-import { ensureArrayRecords, isBackendServerError, shortId } from "./apiResponse";
+import {
+  ensureArrayRecords,
+  isBackendServerError,
+  shortId,
+} from "./apiResponse";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
 import { patients as demoPatients } from "../data/doctorData";
 import type { ApiRecord } from "../types/api";
 import type { DoctorPatient } from "../types/doctor";
 
-const patientFields = ["_id", "id", "user", "diagnosis", "medicalHistory", "currentMedications", "treatingDoctor"];
+const patientFields = [
+  "_id",
+  "id",
+  "user",
+  "diagnosis",
+  "medicalHistory",
+  "currentMedications",
+  "treatingDoctor",
+];
 
 function safeDate(value: unknown) {
   const date = new Date(String(value || ""));
@@ -18,8 +30,9 @@ function ageFromBirthDate(value: unknown) {
 
   const today = new Date();
   let age = today.getFullYear() - date.getFullYear();
-  const birthdayPassed = today.getMonth() > date.getMonth()
-    || (today.getMonth() === date.getMonth() && today.getDate() >= date.getDate());
+  const birthdayPassed =
+    today.getMonth() > date.getMonth() ||
+    (today.getMonth() === date.getMonth() && today.getDate() >= date.getDate());
   if (!birthdayPassed) age -= 1;
   return age >= 0 ? age : null;
 }
@@ -28,12 +41,23 @@ function splitName(name: unknown, fallbackId: unknown) {
   const cleanName = typeof name === "string" ? name.trim() : "";
   if (!cleanName) return [`Patient`, shortId(fallbackId)];
   const parts = cleanName.split(/\s+/);
-  return [parts[0] || "Patient", parts.slice(1).join(" ") || shortId(fallbackId)];
+  return [
+    parts[0] || "Patient",
+    parts.slice(1).join(" ") || shortId(fallbackId),
+  ];
 }
 
-export function normalizePatientRecord(record: ApiRecord, index = 0): DoctorPatient {
+export function normalizePatientRecord(
+  record: ApiRecord,
+  index = 0,
+): DoctorPatient {
   const id = record?._id || record?.id || `patient-${index + 1}`;
-  const user = record?.user && typeof record.user === "object" && !Array.isArray(record.user) ? record.user as ApiRecord : {};
+  const user =
+    record?.user &&
+    typeof record.user === "object" &&
+    !Array.isArray(record.user)
+      ? (record.user as ApiRecord)
+      : {};
   const sourceName = record?.name || record?.fullName || user.name;
   const [firstName, lastName] = splitName(sourceName, id);
   const displayName = `${firstName} ${lastName}`.trim();
@@ -56,7 +80,9 @@ export function normalizePatientRecord(record: ApiRecord, index = 0): DoctorPati
     hrv: null,
     hrvDeviation: null,
     sleep: null,
-    journal: String(record?.medicalHistory || record?.currentMedications || diagnosis || ""),
+    journal: String(
+      record?.medicalHistory || record?.currentMedications || diagnosis || "",
+    ),
     trend: [],
     warnings: [],
   };
@@ -74,8 +100,12 @@ export const patientService = {
     }
 
     try {
-      const response = await request(`/patients/doctor/${doctorId}`, { auth: true });
-      return ensureArrayRecords(response, "Doctor patients", patientFields).map(normalizePatientRecord);
+      const response = await request(`/patients/doctor/${doctorId}`, {
+        auth: true,
+      });
+      return ensureArrayRecords(response, "Doctor patients", patientFields).map(
+        normalizePatientRecord,
+      );
     } catch (error) {
       if (!isBackendServerError(error)) throw error;
 

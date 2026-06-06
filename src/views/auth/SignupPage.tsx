@@ -34,7 +34,10 @@ export default function SignupPage() {
   const { register, authLoading } = useAuth();
   const { back, navigate } = useRouter();
 
-  function update<Key extends keyof PatientSignupForm>(key: Key, value: PatientSignupForm[Key]) {
+  function update<Key extends keyof PatientSignupForm>(
+    key: Key,
+    value: PatientSignupForm[Key],
+  ) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
@@ -50,7 +53,11 @@ export default function SignupPage() {
       await register({ ...form, role: "patient" });
       navigate("/patient-dashboard");
     } catch (authError) {
-      setError(authError instanceof Error ? authError.message : "Unable to create account");
+      setError(
+        authError instanceof Error
+          ? authError.message
+          : "Unable to create account",
+      );
     }
   }
 
@@ -78,48 +85,48 @@ export default function SignupPage() {
           onFooterAction={() => navigate("/login")}
           onSubmit={onSubmit}
         >
-            <NameFields
-              firstName={form.firstName}
-              lastName={form.lastName}
-              onChange={update}
-              disabled={authLoading}
-            />
-            <DateField
-              label="Date of Birth"
-              name="bday"
-              value={form.dateOfBirth}
-              onChange={(value) => update("dateOfBirth", value)}
-              autoComplete="bday"
-              disabled={authLoading}
-            />
-            <TextField
-              label="Email Address"
-              icon="mail"
-              type="email"
-              name="email"
-              placeholder="ammaryasser@gmail.com"
-              value={form.email}
-              onChange={(value) => update("email", value)}
-              autoComplete="email"
-              disabled={authLoading}
-            />
-            <SegmentedChoiceField
-              label="Gender"
-              value={form.gender}
-              choices={genderChoices}
-              onChange={(value) => update("gender", value)}
-              disabled={authLoading}
-            />
-            <PasswordConfirmationFields
-              confirmPassword={form.confirmPassword}
-              password={form.password}
-              onChange={update}
-              disabled={authLoading}
-            />
-            <SubmitButton loading={authLoading}>
-              Create Account
-              <Icon name="arrow-right" size={18} color="#fff" />
-            </SubmitButton>
+          <NameFields
+            firstName={form.firstName}
+            lastName={form.lastName}
+            onChange={update}
+            disabled={authLoading}
+          />
+          <DateField
+            label="Date of Birth"
+            name="bday"
+            value={form.dateOfBirth}
+            onChange={(value) => update("dateOfBirth", value)}
+            autoComplete="bday"
+            disabled={authLoading}
+          />
+          <TextField
+            label="Email Address"
+            icon="mail"
+            type="email"
+            name="email"
+            placeholder="ammaryasser@gmail.com"
+            value={form.email}
+            onChange={(value) => update("email", value)}
+            autoComplete="email"
+            disabled={authLoading}
+          />
+          <SegmentedChoiceField
+            label="Gender"
+            value={form.gender}
+            choices={genderChoices}
+            onChange={(value) => update("gender", value)}
+            disabled={authLoading}
+          />
+          <PasswordConfirmationFields
+            confirmPassword={form.confirmPassword}
+            password={form.password}
+            onChange={update}
+            disabled={authLoading}
+          />
+          <SubmitButton loading={authLoading}>
+            Create Account
+            <Icon name="arrow-right" size={18} color="#fff" />
+          </SubmitButton>
         </SignupFormCard>
 
         <AuthRoleCard

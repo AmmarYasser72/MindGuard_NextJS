@@ -24,7 +24,10 @@ function daysAgo(days) {
 }
 
 function moodTrend(current, previous) {
-  return Array.from({ length: 7 }, (_, index) => previous + ((current - previous) * index) / 6);
+  return Array.from(
+    { length: 7 },
+    (_, index) => previous + ((current - previous) * index) / 6,
+  );
 }
 
 const seedPatients = [
@@ -42,7 +45,8 @@ const seedPatients = [
     hrv: 45,
     hrvDeviation: -15,
     sleep: 0.62,
-    journal: "Feeling overwhelmed with work deadlines and family responsibilities. The anxiety is getting harder to manage.",
+    journal:
+      "Feeling overwhelmed with work deadlines and family responsibilities. The anxiety is getting harder to manage.",
     trend: moodTrend(42, 58),
   },
   {
@@ -145,7 +149,8 @@ function generatedPatients(names, offset, severity, baseMood) {
       email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
       age: 26 + (index % 18),
       gender: index % 2 === 0 ? "M" : "F",
-      lastSeen: severity === "normal" ? daysAgo((index % 14) + 1) : hoursAgo(index + 1),
+      lastSeen:
+        severity === "normal" ? daysAgo((index % 14) + 1) : hoursAgo(index + 1),
       severity,
       condition: conditions[index % conditions.length],
       mood,
@@ -185,49 +190,149 @@ export const doctorKpis = {
 
 function schedule(hours, minutes = 0, days = 0) {
   const base = now();
-  return new Date(base.getFullYear(), base.getMonth(), base.getDate() + days, hours, minutes);
+  return new Date(
+    base.getFullYear(),
+    base.getMonth(),
+    base.getDate() + days,
+    hours,
+    minutes,
+  );
 }
 
 export const sessions = [
-  { id: "session-001", patientId: "patient-001", patientName: "John Smith", scheduledAt: schedule(14), duration: 60, status: "scheduled", type: "video", reason: "routineCheckIn", severity: "critical", condition: "anxiety" },
-  { id: "session-002", patientId: "patient-002", patientName: "Jane Doe", scheduledAt: schedule(16, 30), duration: 45, status: "scheduled", type: "inPerson", reason: "followUpCritical", severity: "moderate", condition: "depression" },
-  { id: "session-003", patientId: "patient-003", patientName: "Emma Thompson", scheduledAt: schedule(18), duration: 60, status: "scheduled", type: "inPerson", reason: "urgent", severity: "critical", condition: "stress" },
-  { id: "session-004", patientId: "patient-004", patientName: "James Wilson", scheduledAt: schedule(20), duration: 30, status: "scheduled", type: "video", reason: "routineCheckIn", severity: "moderate", condition: "anxiety" },
-  { id: "session-005", patientId: "patient-005", patientName: "Olivia Martinez", scheduledAt: schedule(21), duration: 45, status: "scheduled", type: "video", reason: "followUpCritical", severity: "moderate", condition: "stress" },
-  { id: "session-006", patientId: "patient-006", patientName: "David Anderson", scheduledAt: schedule(10, 0, 1), duration: 60, status: "scheduled", type: "video", reason: "followUpCritical", severity: "moderate", condition: "depression" },
-  { id: "session-007", patientId: "patient-007", patientName: "Sophia Taylor", scheduledAt: schedule(14, 0, 1), duration: 45, status: "scheduled", type: "inPerson", reason: "followUpCritical", severity: "moderate", condition: "mixed" },
-  { id: "session-008", patientId: "patient-010", patientName: "Benjamin Davis", scheduledAt: daysAgo(2), duration: 45, status: "completed", type: "video", reason: "routineCheckIn", severity: "moderate", condition: "mixed" },
+  {
+    id: "session-001",
+    patientId: "patient-001",
+    patientName: "John Smith",
+    scheduledAt: schedule(14),
+    duration: 60,
+    status: "scheduled",
+    type: "video",
+    reason: "routineCheckIn",
+    severity: "critical",
+    condition: "anxiety",
+  },
+  {
+    id: "session-002",
+    patientId: "patient-002",
+    patientName: "Jane Doe",
+    scheduledAt: schedule(16, 30),
+    duration: 45,
+    status: "scheduled",
+    type: "inPerson",
+    reason: "followUpCritical",
+    severity: "moderate",
+    condition: "depression",
+  },
+  {
+    id: "session-003",
+    patientId: "patient-003",
+    patientName: "Emma Thompson",
+    scheduledAt: schedule(18),
+    duration: 60,
+    status: "scheduled",
+    type: "inPerson",
+    reason: "urgent",
+    severity: "critical",
+    condition: "stress",
+  },
+  {
+    id: "session-004",
+    patientId: "patient-004",
+    patientName: "James Wilson",
+    scheduledAt: schedule(20),
+    duration: 30,
+    status: "scheduled",
+    type: "video",
+    reason: "routineCheckIn",
+    severity: "moderate",
+    condition: "anxiety",
+  },
+  {
+    id: "session-005",
+    patientId: "patient-005",
+    patientName: "Olivia Martinez",
+    scheduledAt: schedule(21),
+    duration: 45,
+    status: "scheduled",
+    type: "video",
+    reason: "followUpCritical",
+    severity: "moderate",
+    condition: "stress",
+  },
+  {
+    id: "session-006",
+    patientId: "patient-006",
+    patientName: "David Anderson",
+    scheduledAt: schedule(10, 0, 1),
+    duration: 60,
+    status: "scheduled",
+    type: "video",
+    reason: "followUpCritical",
+    severity: "moderate",
+    condition: "depression",
+  },
+  {
+    id: "session-007",
+    patientId: "patient-007",
+    patientName: "Sophia Taylor",
+    scheduledAt: schedule(14, 0, 1),
+    duration: 45,
+    status: "scheduled",
+    type: "inPerson",
+    reason: "followUpCritical",
+    severity: "moderate",
+    condition: "mixed",
+  },
+  {
+    id: "session-008",
+    patientId: "patient-010",
+    patientName: "Benjamin Davis",
+    scheduledAt: daysAgo(2),
+    duration: 45,
+    status: "completed",
+    type: "video",
+    reason: "routineCheckIn",
+    severity: "moderate",
+    condition: "mixed",
+  },
 ];
 
 export const clinicalSummaries = [
   {
     patientId: "patient-001",
-    summaryText: "Mood score has been below 30 for 6 consecutive days. HRV shows significant deviation from baseline (-27%). Sleep efficiency declining. Requires immediate attention.",
+    summaryText:
+      "Mood score has been below 30 for 6 consecutive days. HRV shows significant deviation from baseline (-27%). Sleep efficiency declining. Requires immediate attention.",
     generatedAt: new Date(now().getTime() - 15 * 60 * 1000),
     severity: "critical",
     confidenceScore: 0.92,
   },
   {
     patientId: "patient-002",
-    summaryText: "Depressive symptoms worsening. Sleep efficiency at 62% for 5 nights. HRV baseline deviation -38%. Last session was 5 days ago.",
+    summaryText:
+      "Depressive symptoms worsening. Sleep efficiency at 62% for 5 nights. HRV baseline deviation -38%. Last session was 5 days ago.",
     generatedAt: new Date(now().getTime() - 30 * 60 * 1000),
     severity: "critical",
     confidenceScore: 0.88,
   },
   {
     patientId: "patient-003",
-    summaryText: "High stress indicators. HRV significantly below baseline. Multiple anxiety spikes detected this week. Moderate intervention needed.",
+    summaryText:
+      "High stress indicators. HRV significantly below baseline. Multiple anxiety spikes detected this week. Moderate intervention needed.",
     generatedAt: hoursAgo(1),
     severity: "critical",
     confidenceScore: 0.85,
   },
-  ...generatedPatients(moderateNames, 4, "moderate", 45).map((patient, index) => ({
-    patientId: patient.id,
-    summaryText: "Moderate symptoms observed. Regular monitoring recommended. Next session scheduled.",
-    generatedAt: hoursAgo(index + 2),
-    severity: "moderate",
-    confidenceScore: 0.7 + index * 0.02,
-  })),
+  ...generatedPatients(moderateNames, 4, "moderate", 45).map(
+    (patient, index) => ({
+      patientId: patient.id,
+      summaryText:
+        "Moderate symptoms observed. Regular monitoring recommended. Next session scheduled.",
+      generatedAt: hoursAgo(index + 2),
+      severity: "moderate",
+      confidenceScore: 0.7 + index * 0.02,
+    }),
+  ),
 ];
 
 export function patientName(patient) {
@@ -243,7 +348,10 @@ export function ageGender(patient) {
 }
 
 export function lastSeenLabel(patient) {
-  const lastSeen = patient?.lastSeen instanceof Date ? patient.lastSeen : new Date(patient?.lastSeen || "");
+  const lastSeen =
+    patient?.lastSeen instanceof Date
+      ? patient.lastSeen
+      : new Date(patient?.lastSeen || "");
   if (Number.isNaN(lastSeen.getTime())) return "Last: unavailable";
   const diff = now().getTime() - lastSeen.getTime();
   const hours = Math.max(1, Math.round(diff / (60 * 60 * 1000)));
@@ -253,8 +361,10 @@ export function lastSeenLabel(patient) {
 export function timeCountdown(date) {
   const diffMinutes = Math.round((date.getTime() - now().getTime()) / 60000);
   if (diffMinutes < 0) return "Overdue";
-  if (diffMinutes >= 1440) return `${Math.floor(diffMinutes / 1440)}d ${Math.floor((diffMinutes % 1440) / 60)}h`;
-  if (diffMinutes >= 60) return `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m`;
+  if (diffMinutes >= 1440)
+    return `${Math.floor(diffMinutes / 1440)}d ${Math.floor((diffMinutes % 1440) / 60)}h`;
+  if (diffMinutes >= 60)
+    return `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m`;
   return `${diffMinutes}m`;
 }
 
@@ -273,12 +383,14 @@ export function shortReason(reason) {
 }
 
 export function sessionTypeIcon(type) {
-  return {
-    video: "video",
-    inPerson: "user",
-    audio: "phone",
-    chat: "message-circle",
-  }[type] || "calendar";
+  return (
+    {
+      video: "video",
+      inPerson: "user",
+      audio: "phone",
+      chat: "message-circle",
+    }[type] || "calendar"
+  );
 }
 
 export function createDefaultScheduleForm() {

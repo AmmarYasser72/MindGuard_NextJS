@@ -1,10 +1,21 @@
-import { Children, isValidElement, useCallback, useId, useMemo, useRef, useState } from "react";
+import {
+  Children,
+  isValidElement,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Icon from "../common/Icon";
 import { cn } from "../../utils/cn";
 import { useDismissableLayer } from "../../hooks/useDismissableLayer";
 import type { ReactElement, ReactNode, SelectHTMLAttributes } from "react";
 
-type SelectFieldProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "onChange" | "value"> & {
+type SelectFieldProps = Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "onChange" | "value"
+> & {
   children: ReactNode;
   label: string;
   onChange: (value: string) => void;
@@ -34,11 +45,13 @@ function optionsFromChildren(children: ReactNode): SelectOption[] {
     const value = option.props.value;
     if (typeof value !== "string" || !value) return [];
 
-    return [{
-      disabled: Boolean(option.props.disabled),
-      label: String(option.props.children || value),
-      value,
-    }];
+    return [
+      {
+        disabled: Boolean(option.props.disabled),
+        label: String(option.props.children || value),
+        value,
+      },
+    ];
   });
 }
 
@@ -71,10 +84,19 @@ export default function SelectField({
 
   return (
     <div className="relative grid gap-2" ref={rootRef}>
-      <label className="text-xs font-black uppercase tracking-[0.12em] text-app-muted" id={`${fieldId}-label`}>
+      <label
+        className="text-xs font-black uppercase tracking-[0.12em] text-app-muted"
+        id={`${fieldId}-label`}
+      >
         {label}
       </label>
-      <input name={name} required={required} type="hidden" value={value} readOnly />
+      <input
+        name={name}
+        required={required}
+        type="hidden"
+        value={value}
+        readOnly
+      />
       <button
         className={cn(
           "auth-field-control group flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 text-left shadow-sm shadow-slate-950/5 transition focus:outline-none",
@@ -91,10 +113,14 @@ export default function SelectField({
         onClick={() => setOpen((state) => !state)}
       >
         {icon ? (
-          <span className={cn(
-            "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
-            error ? "bg-red-100 text-red-500" : "bg-slate-100 text-slate-400 group-focus:bg-violet-50 group-focus:text-[var(--primary)]",
-          )}>
+          <span
+            className={cn(
+              "auth-field-icon grid h-9 w-9 place-items-center rounded-lg transition",
+              error
+                ? "bg-red-100 text-red-500"
+                : "bg-slate-100 text-slate-400 group-focus:bg-violet-50 group-focus:text-[var(--primary)]",
+            )}
+          >
             <Icon name={icon} size={18} />
           </span>
         ) : null}
@@ -112,10 +138,12 @@ export default function SelectField({
             {selected ? "Selected option" : "Tap to open list"}
           </span>
         </span>
-        <span className={cn(
-          "auth-field-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-app-faint transition",
-          open && "rotate-180 bg-violet-50 text-[var(--primary)]",
-        )}>
+        <span
+          className={cn(
+            "auth-field-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-app-faint transition",
+            open && "rotate-180 bg-violet-50 text-[var(--primary)]",
+          )}
+        >
           <Icon name="chevron-down" size={18} />
         </span>
       </button>
@@ -146,13 +174,19 @@ export default function SelectField({
                   disabled={option.disabled}
                   onClick={() => selectOption(option)}
                 >
-                  <span className={cn(
-                    "grid h-7 w-7 place-items-center rounded-lg",
-                    active ? "bg-violet-100 text-[var(--primary)]" : "auth-field-icon bg-slate-100 text-app-faint",
-                  )}>
+                  <span
+                    className={cn(
+                      "grid h-7 w-7 place-items-center rounded-lg",
+                      active
+                        ? "bg-violet-100 text-[var(--primary)]"
+                        : "auth-field-icon bg-slate-100 text-app-faint",
+                    )}
+                  >
                     <Icon name={active ? "check" : "circle"} size={14} />
                   </span>
-                  <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {option.label}
+                  </span>
                 </button>
               );
             })}
@@ -160,7 +194,9 @@ export default function SelectField({
         </div>
       ) : null}
 
-      {error ? <span className="text-xs font-bold text-red-600">{error}</span> : null}
+      {error ? (
+        <span className="text-xs font-bold text-red-600">{error}</span>
+      ) : null}
     </div>
   );
 }

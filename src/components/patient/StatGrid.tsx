@@ -9,8 +9,12 @@ export default function StatGrid({ items }) {
           key={`${item.label}-${item.value}`}
           style={{ backgroundColor: `${item.color}1a` }}
         >
-          {item.icon ? <Icon name={item.icon} size={20} color={item.color} /> : null}
-          <strong className="text-2xl font-bold" style={{ color: item.color }}>{item.value}</strong>
+          {item.icon ? (
+            <Icon name={item.icon} size={20} color={item.color} />
+          ) : null}
+          <strong className="text-2xl font-bold" style={{ color: item.color }}>
+            {item.value}
+          </strong>
           <span className="text-xs font-bold text-slate-600">{item.label}</span>
         </div>
       ))}

@@ -7,9 +7,17 @@ export default function MetricBlock({ label, value, note, tone }) {
 
   return (
     <div className="doctor-card-gradient rounded-lg border border-violet-100 bg-white p-4">
-      <span className="text-xs font-bold uppercase text-slate-500">{label}</span>
-      <strong className={`mt-2 block w-fit rounded-lg px-2 py-1 text-lg font-bold ${styles[tone]}`}>{value}</strong>
-      <small className="mt-2 block text-xs font-semibold text-slate-500">{note}</small>
+      <span className="text-xs font-bold uppercase text-slate-500">
+        {label}
+      </span>
+      <strong
+        className={`mt-2 block w-fit rounded-lg px-2 py-1 text-lg font-bold ${styles[tone]}`}
+      >
+        {value}
+      </strong>
+      <small className="mt-2 block text-xs font-semibold text-slate-500">
+        {note}
+      </small>
     </div>
   );
 }

@@ -1,9 +1,39 @@
 export const analyticsTabs = [
-  { key: "mood", title: "Mood Analytics", label: "Mood", icon: "smile", color: "#10b981" },
-  { key: "stress", title: "Stress Monitor", label: "Stress", icon: "triangle-alert", color: "#f59e0b" },
-  { key: "sleep", title: "Sleep Analytics", label: "Sleep", icon: "moon", color: "#8b5cf6" },
-  { key: "depression", title: "Depression", label: "Depression", icon: "brain", color: "#ef4444" },
-  { key: "anxiety", title: "Anxiety", label: "Anxiety", icon: "brain-circuit", color: "#f59e0b" },
+  {
+    key: "mood",
+    title: "Mood Analytics",
+    label: "Mood",
+    icon: "smile",
+    color: "#10b981",
+  },
+  {
+    key: "stress",
+    title: "Stress Monitor",
+    label: "Stress",
+    icon: "triangle-alert",
+    color: "#f59e0b",
+  },
+  {
+    key: "sleep",
+    title: "Sleep Analytics",
+    label: "Sleep",
+    icon: "moon",
+    color: "#8b5cf6",
+  },
+  {
+    key: "depression",
+    title: "Depression",
+    label: "Depression",
+    icon: "brain",
+    color: "#ef4444",
+  },
+  {
+    key: "anxiety",
+    title: "Anxiety",
+    label: "Anxiety",
+    icon: "brain-circuit",
+    color: "#f59e0b",
+  },
 ];
 
 export const moodInsights = [
@@ -42,7 +72,8 @@ export const stressAnalytics = {
     data: [3, 5, 4, 7, 6, 4],
     color: "#f59e0b",
     labels: ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00"],
-    description: "Mid-afternoon shows the highest pressure. Relief sessions are working best after 3 PM.",
+    description:
+      "Mid-afternoon shows the highest pressure. Relief sessions are working best after 3 PM.",
   },
   triggers: [
     { name: "Work Meetings", percentage: 50, color: "#ef4444" },
@@ -52,16 +83,55 @@ export const stressAnalytics = {
   ],
   techniquesTitle: "Stress Relief Techniques",
   techniques: [
-    { name: "4-7-8 Breathing", description: "Inhale for 4, hold for 7, exhale for 8", duration: "5 min", effectiveness: "90%", icon: "star" },
-    { name: "Progressive Relaxation", description: "Tense and relax muscle groups", duration: "10 min", effectiveness: "78%", icon: "circle-dot" },
-    { name: "Mindful Meditation", description: "Focus on present moment awareness", duration: "15 min", effectiveness: "85%", icon: "info" },
-    { name: "Quick Body Scan", description: "Rapid tension release technique", duration: "10 min", effectiveness: "70%", icon: "star" },
+    {
+      name: "4-7-8 Breathing",
+      description: "Inhale for 4, hold for 7, exhale for 8",
+      duration: "5 min",
+      effectiveness: "90%",
+      icon: "star",
+    },
+    {
+      name: "Progressive Relaxation",
+      description: "Tense and relax muscle groups",
+      duration: "10 min",
+      effectiveness: "78%",
+      icon: "circle-dot",
+    },
+    {
+      name: "Mindful Meditation",
+      description: "Focus on present moment awareness",
+      duration: "15 min",
+      effectiveness: "85%",
+      icon: "info",
+    },
+    {
+      name: "Quick Body Scan",
+      description: "Rapid tension release technique",
+      duration: "10 min",
+      effectiveness: "70%",
+      icon: "star",
+    },
   ],
   progress: [
-    { icon: "trending-down", value: "-18%", label: "Avg Stress", color: "#10b981" },
-    { icon: "check-circle", value: "14", label: "Relief Sessions", color: "#3b82f6" },
+    {
+      icon: "trending-down",
+      value: "-18%",
+      label: "Avg Stress",
+      color: "#10b981",
+    },
+    {
+      icon: "check-circle",
+      value: "14",
+      label: "Relief Sessions",
+      color: "#3b82f6",
+    },
     { icon: "flag", value: "52%", label: "Goal Progress", color: "#8b5cf6" },
-    { icon: "calendar", value: "6", label: "Stress Free Days", color: "#f59e0b" },
+    {
+      icon: "calendar",
+      value: "6",
+      label: "Stress Free Days",
+      color: "#f59e0b",
+    },
   ],
   crisis: {
     title: "Feeling Overwhelmed?",
@@ -70,7 +140,10 @@ export const stressAnalytics = {
     primary: "Quick Relief",
     secondary: "Crisis Support",
     primaryAction: { type: "navigate", path: "/breathing" },
-    secondaryAction: { type: "navigate", path: "/patient-chat/support@mindguard.app" },
+    secondaryAction: {
+      type: "navigate",
+      path: "/patient-chat/support@mindguard.app",
+    },
   },
 };
 
@@ -94,7 +167,8 @@ export const anxietyAnalytics = {
     data: [6, 7, 5, 8, 7, 4],
     color: "#f59e0b",
     labels: ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00"],
-    description: "Your anxiety tends to peak around the middle of the day, then settles after evening routines.",
+    description:
+      "Your anxiety tends to peak around the middle of the day, then settles after evening routines.",
   },
   triggers: [
     { name: "Social Situations", percentage: 65, color: "#f59e0b" },
@@ -104,20 +178,72 @@ export const anxietyAnalytics = {
   ],
   techniquesTitle: "Breathing Exercises",
   techniques: [
-    { name: "4-7-8 Breathing", description: "Inhale 4, hold 7, exhale 8", duration: "5 min", effectiveness: "95%", icon: "wind" },
-    { name: "Box Breathing", description: "Equal count inhale, hold, exhale, hold", duration: "4 min", effectiveness: "88%", icon: "square" },
-    { name: "Diaphragmatic Breathing", description: "Deep belly breathing technique", duration: "6 min", effectiveness: "82%", icon: "sparkles" },
-    { name: "Coherent Breathing", description: "Slow, steady 5-count breathing", duration: "5 min", effectiveness: "75%", icon: "waves" },
+    {
+      name: "4-7-8 Breathing",
+      description: "Inhale 4, hold 7, exhale 8",
+      duration: "5 min",
+      effectiveness: "95%",
+      icon: "wind",
+    },
+    {
+      name: "Box Breathing",
+      description: "Equal count inhale, hold, exhale, hold",
+      duration: "4 min",
+      effectiveness: "88%",
+      icon: "square",
+    },
+    {
+      name: "Diaphragmatic Breathing",
+      description: "Deep belly breathing technique",
+      duration: "6 min",
+      effectiveness: "82%",
+      icon: "sparkles",
+    },
+    {
+      name: "Coherent Breathing",
+      description: "Slow, steady 5-count breathing",
+      duration: "5 min",
+      effectiveness: "75%",
+      icon: "waves",
+    },
   ],
   secondaryTechniquesTitle: "Relaxation Techniques",
   secondaryTechniques: [
-    { name: "Progressive Muscle Relaxation", description: "Tense and release muscle groups", duration: "15 min", effectiveness: "85%", icon: "accessibility" },
-    { name: "Guided Meditation", description: "Mindfulness and awareness practice", duration: "20 min", effectiveness: "78%", icon: "sparkles" },
-    { name: "Visualization", description: "Calm imagery and peaceful scenes", duration: "10 min", effectiveness: "72%", icon: "mountain" },
+    {
+      name: "Progressive Muscle Relaxation",
+      description: "Tense and release muscle groups",
+      duration: "15 min",
+      effectiveness: "85%",
+      icon: "accessibility",
+    },
+    {
+      name: "Guided Meditation",
+      description: "Mindfulness and awareness practice",
+      duration: "20 min",
+      effectiveness: "78%",
+      icon: "sparkles",
+    },
+    {
+      name: "Visualization",
+      description: "Calm imagery and peaceful scenes",
+      duration: "10 min",
+      effectiveness: "72%",
+      icon: "mountain",
+    },
   ],
   progress: [
-    { icon: "trending-down", value: "-12%", label: "Avg Anxiety", color: "#10b981" },
-    { icon: "wind", value: "18", label: "Breathing Sessions", color: "#3b82f6" },
+    {
+      icon: "trending-down",
+      value: "-12%",
+      label: "Avg Anxiety",
+      color: "#10b981",
+    },
+    {
+      icon: "wind",
+      value: "18",
+      label: "Breathing Sessions",
+      color: "#3b82f6",
+    },
     { icon: "flag", value: "68%", label: "Goal Progress", color: "#8b5cf6" },
     { icon: "calendar", value: "4", label: "Calm Days", color: "#f59e0b" },
   ],
@@ -128,7 +254,10 @@ export const anxietyAnalytics = {
     primary: "Quick Calm",
     secondary: "Crisis Support",
     primaryAction: { type: "navigate", path: "/breathing" },
-    secondaryAction: { type: "navigate", path: "/patient-chat/support@mindguard.app" },
+    secondaryAction: {
+      type: "navigate",
+      path: "/patient-chat/support@mindguard.app",
+    },
   },
 };
 
@@ -146,16 +275,47 @@ export const sleepAnalytics = {
     { label: "Energy Level", color: "#06b6d4" },
   ],
   stages: [
-    { stage: "Deep Sleep", duration: "1h 45m", percentage: "23%", color: "#1e40af" },
-    { stage: "REM Sleep", duration: "1h 32m", percentage: "20%", color: "#7c3aed" },
-    { stage: "Light Sleep", duration: "4h 15m", percentage: "57%", color: "#8b5cf6" },
+    {
+      stage: "Deep Sleep",
+      duration: "1h 45m",
+      percentage: "23%",
+      color: "#1e40af",
+    },
+    {
+      stage: "REM Sleep",
+      duration: "1h 32m",
+      percentage: "20%",
+      color: "#7c3aed",
+    },
+    {
+      stage: "Light Sleep",
+      duration: "4h 15m",
+      percentage: "57%",
+      color: "#8b5cf6",
+    },
     { stage: "Awake", duration: "0m", percentage: "0%", color: "#ef4444" },
   ],
   tips: [
-    { title: "Consistent Sleep Schedule", description: "Go to bed and wake up at the same time every day", icon: "clock" },
-    { title: "Limit Screen Time", description: "Avoid screens 1 hour before bedtime", icon: "smartphone" },
-    { title: "Create Sleep Environment", description: "Keep bedroom cool, dark, and quiet", icon: "bed" },
-    { title: "Relaxation Routine", description: "Practice meditation or gentle stretching", icon: "sparkles" },
+    {
+      title: "Consistent Sleep Schedule",
+      description: "Go to bed and wake up at the same time every day",
+      icon: "clock",
+    },
+    {
+      title: "Limit Screen Time",
+      description: "Avoid screens 1 hour before bedtime",
+      icon: "smartphone",
+    },
+    {
+      title: "Create Sleep Environment",
+      description: "Keep bedroom cool, dark, and quiet",
+      icon: "bed",
+    },
+    {
+      title: "Relaxation Routine",
+      description: "Practice meditation or gentle stretching",
+      icon: "sparkles",
+    },
   ],
   goals: [
     { goal: "Sleep Duration", current: 7.5, target: 8, unit: "hours" },
@@ -170,16 +330,56 @@ export const depressionAnalytics = {
   labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   severityData: [7, 6, 5, 6, 5, 4, 3],
   strategies: [
-    { name: "Physical Exercise", effectiveness: "85%", description: "Regular physical activity boosts mood", icon: "dumbbell" },
-    { name: "Social Connection", effectiveness: "78%", description: "Spending time with loved ones", icon: "users" },
-    { name: "Mindfulness Practice", effectiveness: "72%", description: "Meditation and breathing exercises", icon: "sparkles" },
-    { name: "Creative Activities", effectiveness: "68%", description: "Art, music, or writing therapy", icon: "palette" },
+    {
+      name: "Physical Exercise",
+      effectiveness: "85%",
+      description: "Regular physical activity boosts mood",
+      icon: "dumbbell",
+    },
+    {
+      name: "Social Connection",
+      effectiveness: "78%",
+      description: "Spending time with loved ones",
+      icon: "users",
+    },
+    {
+      name: "Mindfulness Practice",
+      effectiveness: "72%",
+      description: "Meditation and breathing exercises",
+      icon: "sparkles",
+    },
+    {
+      name: "Creative Activities",
+      effectiveness: "68%",
+      description: "Art, music, or writing therapy",
+      icon: "palette",
+    },
   ],
   correlations: [
-    { factor: "Sleep Quality", value: "-0.75", text: "Strong negative correlation", color: "#8b5cf6" },
-    { factor: "Physical Activity", value: "-0.68", text: "Moderate negative correlation", color: "#10b981" },
-    { factor: "Social Interaction", value: "-0.72", text: "Strong negative correlation", color: "#3b82f6" },
-    { factor: "Stress Levels", value: "+0.85", text: "Strong positive correlation", color: "#f59e0b" },
+    {
+      factor: "Sleep Quality",
+      value: "-0.75",
+      text: "Strong negative correlation",
+      color: "#8b5cf6",
+    },
+    {
+      factor: "Physical Activity",
+      value: "-0.68",
+      text: "Moderate negative correlation",
+      color: "#10b981",
+    },
+    {
+      factor: "Social Interaction",
+      value: "-0.72",
+      text: "Strong negative correlation",
+      color: "#3b82f6",
+    },
+    {
+      factor: "Stress Levels",
+      value: "+0.85",
+      text: "Strong positive correlation",
+      color: "#f59e0b",
+    },
   ],
   support: [
     { title: "Therapy Sessions", icon: "brain", color: "#3b82f6" },

@@ -45,29 +45,54 @@ export default function MoodAnalytics() {
   const patientKey = user?.uid || user?.email || "guest-patient";
   const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
   const moodStorageKey = moodCalendarStorageKey(patientKey, monthKey);
-  const [monthEntries, setMonthEntries] = useState(() => hydrateMonthEntries(storage.get(moodStorageKey, null), monthDays, todayDay));
+  const [monthEntries, setMonthEntries] = useState(() =>
+    hydrateMonthEntries(storage.get(moodStorageKey, null), monthDays, todayDay),
+  );
   const [selectedDay, setSelectedDay] = useState(todayDay);
   const [pendingMood, setPendingMood] = useState<number | null>(null);
-  const recordedEntries = monthEntries.filter((entry) => entry.recorded && entry.day <= todayDay);
+  const recordedEntries = monthEntries.filter(
+    (entry) => entry.recorded && entry.day <= todayDay,
+  );
   const averageMood = recordedEntries.length
-    ? (recordedEntries.reduce((sum, item) => sum + item.mood, 0) / recordedEntries.length).toFixed(1)
+    ? (
+        recordedEntries.reduce((sum, item) => sum + item.mood, 0) /
+        recordedEntries.length
+      ).toFixed(1)
     : "0.0";
-  const positiveMoments = recordedEntries.filter((entry) => entry.mood >= 4).length;
+  const positiveMoments = recordedEntries.filter(
+    (entry) => entry.mood >= 4,
+  ).length;
   const days = getSevenDayStrip(monthEntries, selectedDay, monthDays);
-  const selectedEntry = monthEntries.find((entry) => entry.day === selectedDay) || monthEntries[0];
+  const selectedEntry =
+    monthEntries.find((entry) => entry.day === selectedDay) || monthEntries[0];
   const currentStreak = calculateCurrentStreak(monthEntries, todayDay);
   const viewMonthDays = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const viewMonthLabel = new Date(viewYear, viewMonth, 1).toLocaleString("en-US", { month: "long" });
+  const viewMonthLabel = new Date(viewYear, viewMonth, 1).toLocaleString(
+    "en-US",
+    { month: "long" },
+  );
   const viewMonthKey = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
   const viewStorageKey = moodCalendarStorageKey(patientKey, viewMonthKey);
-  const isViewingCurrentMonth = viewYear === currentYear && viewMonth === currentMonth;
+  const isViewingCurrentMonth =
+    viewYear === currentYear && viewMonth === currentMonth;
   const viewTodayLimit = isViewingCurrentMonth ? todayDay : viewMonthDays;
   const viewEntries = isViewingCurrentMonth
     ? monthEntries
-    : hydrateMonthEntries(storage.get(viewStorageKey, null), viewMonthDays, viewTodayLimit);
-  const viewCalendarCells = createCalendarCells(viewEntries, new Date(viewYear, viewMonth, 1).getDay());
-  const modalSelectedEntry = viewEntries.find((entry) => entry.day === modalSelectedDay) || viewEntries[0];
-  const canGoNextMonth = viewYear < currentYear || (viewYear === currentYear && viewMonth < currentMonth);
+    : hydrateMonthEntries(
+        storage.get(viewStorageKey, null),
+        viewMonthDays,
+        viewTodayLimit,
+      );
+  const viewCalendarCells = createCalendarCells(
+    viewEntries,
+    new Date(viewYear, viewMonth, 1).getDay(),
+  );
+  const modalSelectedEntry =
+    viewEntries.find((entry) => entry.day === modalSelectedDay) ||
+    viewEntries[0];
+  const canGoNextMonth =
+    viewYear < currentYear ||
+    (viewYear === currentYear && viewMonth < currentMonth);
 
   useEffect(() => {
     let isMounted = true;
@@ -75,7 +100,13 @@ export default function MoodAnalytics() {
 
     window.queueMicrotask(() => {
       if (isMounted) {
-        setMonthEntries(hydrateMonthEntries(storage.get(moodStorageKey, null), monthDays, todayDay));
+        setMonthEntries(
+          hydrateMonthEntries(
+            storage.get(moodStorageKey, null),
+            monthDays,
+            todayDay,
+          ),
+        );
       }
     });
 
@@ -107,16 +138,20 @@ export default function MoodAnalytics() {
   }, [monthEntries, moodStorageKey]);
 
   function cycle(index) {
-    setBars((current) => current.map((bar, barIndex) => {
-      if (barIndex !== index) return bar;
-      const mood = bar.mood >= 5 ? 1 : bar.mood + 1;
-      return { ...bar, mood, emoji: moodEmojis[mood - 1] };
-    }));
+    setBars((current) =>
+      current.map((bar, barIndex) => {
+        if (barIndex !== index) return bar;
+        const mood = bar.mood >= 5 ? 1 : bar.mood + 1;
+        return { ...bar, mood, emoji: moodEmojis[mood - 1] };
+      }),
+    );
   }
 
   function handleSelectDay(day) {
     if (day > todayDay) {
-      showToast("Wait until this day arrives to record your mood and continue your streak.");
+      showToast(
+        "Wait until this day arrives to record your mood and continue your streak.",
+      );
       return;
     }
     setSelectedDay(day);
@@ -124,7 +159,9 @@ export default function MoodAnalytics() {
 
   async function recordMoodForDay() {
     if (selectedDay > todayDay) {
-      showToast("Wait until this day arrives to record your mood and continue your streak.");
+      showToast(
+        "Wait until this day arrives to record your mood and continue your streak.",
+      );
       return;
     }
 
@@ -138,29 +175,40 @@ export default function MoodAnalytics() {
     try {
       await readingService.savePatientMood(pendingMood);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to save mood to the backend.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to save mood to the backend.";
       setSaveMoodError(message);
       showToast(message, "error");
       setIsSavingMood(false);
       return;
     }
 
-    setMonthEntries((currentEntries) => currentEntries.map((entry) => {
-      if (entry.day !== selectedDay) return entry;
+    setMonthEntries((currentEntries) =>
+      currentEntries.map((entry) => {
+        if (entry.day !== selectedDay) return entry;
 
-      return {
-        ...entry,
-        checkInTime: entry.day === todayDay ? formatCheckInTime(today) : entry.checkInTime,
-        emoji: moodEmojis[pendingMood - 1],
-        highlight: moodHighlights[pendingMood - 1],
-        label: moodLabels[pendingMood - 1],
-        mood: pendingMood,
-        recorded: true,
-        summary: moodSummaries[pendingMood - 1],
-      };
-    }));
+        return {
+          ...entry,
+          checkInTime:
+            entry.day === todayDay
+              ? formatCheckInTime(today)
+              : entry.checkInTime,
+          emoji: moodEmojis[pendingMood - 1],
+          highlight: moodHighlights[pendingMood - 1],
+          label: moodLabels[pendingMood - 1],
+          mood: pendingMood,
+          recorded: true,
+          summary: moodSummaries[pendingMood - 1],
+        };
+      }),
+    );
 
-    showToast(`Mood saved for ${calendarLabels[new Date(currentYear, currentMonth, selectedDay).getDay()]} ${selectedDay}.`, "success");
+    showToast(
+      `Mood saved for ${calendarLabels[new Date(currentYear, currentMonth, selectedDay).getDay()]} ${selectedDay}.`,
+      "success",
+    );
     setSaveMoodError("");
     setIsSavingMood(false);
   }
@@ -186,7 +234,10 @@ export default function MoodAnalytics() {
     const nextYear = next.getFullYear();
     const nextMonth = next.getMonth();
 
-    if (nextYear > currentYear || (nextYear === currentYear && nextMonth > currentMonth)) {
+    if (
+      nextYear > currentYear ||
+      (nextYear === currentYear && nextMonth > currentMonth)
+    ) {
       return;
     }
 
@@ -198,7 +249,9 @@ export default function MoodAnalytics() {
 
   function handleSelectModalDay(day) {
     if (day > viewTodayLimit) {
-      showToast("Wait until this day arrives to record your mood and continue your streak.");
+      showToast(
+        "Wait until this day arrives to record your mood and continue your streak.",
+      );
       return;
     }
 
@@ -211,7 +264,10 @@ export default function MoodAnalytics() {
 
   return (
     <div className="grid gap-5 p-6 sm:gap-6 sm:p-8">
-      <MoodAnalyticsHeader currentStreak={currentStreak} onOpenCalendar={openCalendar} />
+      <MoodAnalyticsHeader
+        currentStreak={currentStreak}
+        onOpenCalendar={openCalendar}
+      />
       <MoodCalendarModal
         calendarCells={viewCalendarCells}
         calendarLabels={calendarLabels}
@@ -244,14 +300,25 @@ export default function MoodAnalytics() {
         selectedDay={selectedDay}
         todayDay={todayDay}
       />
-      <MoodDaySpotlight getDayLabel={getDayLabel} monthLabel={monthLabel} selectedDay={selectedDay} selectedEntry={selectedEntry} />
+      <MoodDaySpotlight
+        getDayLabel={getDayLabel}
+        monthLabel={monthLabel}
+        selectedDay={selectedDay}
+        selectedEntry={selectedEntry}
+      />
       <MoodSummaryCards
         averageMood={averageMood}
         currentStreak={currentStreak}
         positiveMoments={positiveMoments}
         recordedCount={recordedEntries.length || 0}
       />
-      <MoodTrackerCard bars={bars} cycle={cycle} moodColor={moodColor} moodInsights={moodInsights} moodLabels={moodLabels} />
+      <MoodTrackerCard
+        bars={bars}
+        cycle={cycle}
+        moodColor={moodColor}
+        moodInsights={moodInsights}
+        moodLabels={moodLabels}
+      />
     </div>
   );
 }

@@ -10,7 +10,11 @@ type ModalProps = {
 
 export function Modal({ title, children, onClose, actions }: ModalProps) {
   return (
-    <div className="fixed inset-0 z-70 grid place-items-center bg-slate-950/45 p-5" role="presentation" onMouseDown={onClose}>
+    <div
+      className="fixed inset-0 z-70 grid place-items-center bg-slate-950/45 p-5"
+      role="presentation"
+      onMouseDown={onClose}
+    >
       <div
         className="max-h-[86vh] w-full max-w-3xl overflow-auto rounded-[1.75rem] border border-app-line bg-app-card text-app-text shadow-[0_24px_90px_rgba(15,23,42,0.24)]"
         role="dialog"
@@ -29,7 +33,11 @@ export function Modal({ title, children, onClose, actions }: ModalProps) {
           </button>
         </div>
         <div className="px-5 pb-5 sm:px-6">{children}</div>
-        {actions ? <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">{actions}</div> : null}
+        {actions ? (
+          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+            {actions}
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Modal } from "../../../components/common/Modal";
-import { fieldClass, inputClass, moodChoices, panelClass, primaryButtonClass, secondaryButtonClass } from "./constants";
+import {
+  fieldClass,
+  inputClass,
+  moodChoices,
+  panelClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "./constants";
 import { RangeField } from "./formControls";
 import type { ToolItem } from "./types";
 
@@ -31,20 +38,49 @@ export function JournalEntryForm({ onClose, onSave }: SaveToolItemProps) {
     <Modal
       title="New Journal Entry"
       onClose={onClose}
-      actions={(
+      actions={
         <>
-          <button type="button" className={secondaryButtonClass} onClick={onClose}>Cancel</button>
-          <button type="button" className={primaryButtonClass} onClick={save} disabled={!canSave}>Save entry</button>
+          <button
+            type="button"
+            className={secondaryButtonClass}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className={primaryButtonClass}
+            onClick={save}
+            disabled={!canSave}
+          >
+            Save entry
+          </button>
         </>
-      )}
+      }
     >
       <div className="grid gap-4">
-        <label className={fieldClass}>Title<input className={inputClass} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Give this reflection a title" /></label>
+        <label className={fieldClass}>
+          Title
+          <input
+            className={inputClass}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Give this reflection a title"
+          />
+        </label>
         <div className="grid gap-2">
           <span className="text-sm font-bold text-slate-700">Mood</span>
           <MoodChoiceGrid value={mood.value} onChange={setMood} />
         </div>
-        <label className={fieldClass}>Reflection<textarea className={`${inputClass} min-h-40 py-3 leading-6`} value={body} onChange={(event) => setBody(event.target.value)} placeholder="Write what happened, what you felt, and one next step." /></label>
+        <label className={fieldClass}>
+          Reflection
+          <textarea
+            className={`${inputClass} min-h-40 py-3 leading-6`}
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            placeholder="Write what happened, what you felt, and one next step."
+          />
+        </label>
       </div>
     </Modal>
   );
@@ -63,12 +99,20 @@ export function MoodCheckForm({ onClose, onSave }: MoodCheckFormProps) {
     <Modal
       title="Mood Check"
       onClose={onClose}
-      actions={(
+      actions={
         <>
-          <button type="button" className={secondaryButtonClass} onClick={onClose}>Cancel</button>
-          <button type="button" className={primaryButtonClass} onClick={onSave}>Save check-in</button>
+          <button
+            type="button"
+            className={secondaryButtonClass}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button type="button" className={primaryButtonClass} onClick={onSave}>
+            Save check-in
+          </button>
         </>
-      )}
+      }
     >
       <div className="grid gap-4">
         <MoodChoiceGrid value={mood.value} onChange={setMood} />
@@ -76,10 +120,16 @@ export function MoodCheckForm({ onClose, onSave }: MoodCheckFormProps) {
         <RangeField label="Stress" value={stress} onChange={setStress} />
         <div className={panelClass}>
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-violet-50 text-2xl">{mood.icon}</span>
+            <span className="grid h-10 w-10 place-items-center rounded-lg bg-violet-50 text-2xl">
+              {mood.icon}
+            </span>
             <span>
-              <strong className="block text-sm font-black text-slate-950">{mood.label}</strong>
-              <small className="font-semibold text-slate-500">Energy {energy}/10, stress {stress}/10</small>
+              <strong className="block text-sm font-black text-slate-950">
+                {mood.label}
+              </strong>
+              <small className="font-semibold text-slate-500">
+                Energy {energy}/10, stress {stress}/10
+              </small>
             </span>
           </div>
         </div>
@@ -95,21 +145,55 @@ type JournalDetailProps = ModalControlProps & {
 
 export function JournalDetail({ item, onClose, onFinish }: JournalDetailProps) {
   return (
-    <Modal title={item.title || "Journal Entry"} onClose={onClose} actions={<><button type="button" className={secondaryButtonClass} onClick={onClose}>Close</button><button type="button" className={primaryButtonClass} onClick={onFinish}>Mark reviewed</button></>}>
+    <Modal
+      title={item.title || "Journal Entry"}
+      onClose={onClose}
+      actions={
+        <>
+          <button
+            type="button"
+            className={secondaryButtonClass}
+            onClick={onClose}
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            className={primaryButtonClass}
+            onClick={onFinish}
+          >
+            Mark reviewed
+          </button>
+        </>
+      }
+    >
       <div className="grid gap-4">
         <section className={panelClass}>
           <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-lg bg-violet-50 text-2xl">{item.mood}</span>
+            <span className="grid h-12 w-12 place-items-center rounded-lg bg-violet-50 text-2xl">
+              {item.mood}
+            </span>
             <span>
-              <small className="block text-xs font-black uppercase text-slate-400">{item.date}</small>
-              <strong className="block text-sm text-slate-950">Reflection entry</strong>
+              <small className="block text-xs font-black uppercase text-slate-400">
+                {item.date}
+              </small>
+              <strong className="block text-sm text-slate-950">
+                Reflection entry
+              </strong>
             </span>
           </div>
-          <p className="mt-4 text-sm font-semibold leading-7 text-slate-600">{item.preview}</p>
+          <p className="mt-4 text-sm font-semibold leading-7 text-slate-600">
+            {item.preview}
+          </p>
         </section>
         <section className={panelClass}>
-          <small className="text-xs font-black uppercase text-slate-400">Follow-up prompt</small>
-          <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">What helped most today, and what would make tomorrow 10 percent easier?</p>
+          <small className="text-xs font-black uppercase text-slate-400">
+            Follow-up prompt
+          </small>
+          <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+            What helped most today, and what would make tomorrow 10 percent
+            easier?
+          </p>
         </section>
       </div>
     </Modal>

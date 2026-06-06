@@ -7,7 +7,8 @@ export const SUPPORT_PROMPTS = ["Show me what you can do"];
 
 export function getVisibleMessages(messages: ChatMessage[]) {
   return messages.filter((message, index) => {
-    const isDefaultGreeting = index === 0 && !message.isUser && message.text === WELCOME_MESSAGE_TEXT;
+    const isDefaultGreeting =
+      index === 0 && !message.isUser && message.text === WELCOME_MESSAGE_TEXT;
     return !isDefaultGreeting;
   });
 }

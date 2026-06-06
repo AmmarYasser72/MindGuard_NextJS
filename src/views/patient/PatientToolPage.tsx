@@ -8,7 +8,13 @@ import AppTopBar from "../../components/patient/AppTopBar";
 import HeaderCard from "../../components/patient/HeaderCard";
 import ToolSection from "./ToolSection";
 import ToolModal from "./toolPage/ToolModal";
-import type { ActiveToolModal, PatientToolPageConfig, ToolAction, ToolItem, ToolModalKind } from "./toolPage/types";
+import type {
+  ActiveToolModal,
+  PatientToolPageConfig,
+  ToolAction,
+  ToolItem,
+  ToolModalKind,
+} from "./toolPage/types";
 
 type PatientToolPageProps = {
   config: PatientToolPageConfig;
@@ -31,20 +37,31 @@ export default function PatientToolPage({ config }: PatientToolPageProps) {
   const [sleepEntries, setSleepEntries] = useState<ToolItem[]>([]);
 
   const headerAction = useMemo(() => {
-    if (config.title === "Journal") return config.actions?.find((action) => action.title === "New Entry");
-    if (config.title === "Sleep Log") return config.actions?.find((action) => action.title === "Log Sleep");
+    if (config.title === "Journal")
+      return config.actions?.find((action) => action.title === "New Entry");
+    if (config.title === "Sleep Log")
+      return config.actions?.find((action) => action.title === "Log Sleep");
     return null;
   }, [config.actions, config.title]);
 
-  const sections = useMemo(() => config.sections.map((section) => {
-    const items = section.items || [];
-    if (section.type === "journal") return { ...section, items: [...journalEntries, ...items] };
-    if (section.type === "sleep") return { ...section, items: [...sleepEntries, ...items] };
-    return section;
-  }), [config.sections, journalEntries, sleepEntries]);
+  const sections = useMemo(
+    () =>
+      config.sections.map((section) => {
+        const items = section.items || [];
+        if (section.type === "journal")
+          return { ...section, items: [...journalEntries, ...items] };
+        if (section.type === "sleep")
+          return { ...section, items: [...sleepEntries, ...items] };
+        return section;
+      }),
+    [config.sections, journalEntries, sleepEntries],
+  );
 
   function openAction(action: ToolAction) {
-    setActiveModal({ kind: actionModalKinds[action.title] || "item-detail", item: action });
+    setActiveModal({
+      kind: actionModalKinds[action.title] || "item-detail",
+      item: action,
+    });
   }
 
   function openItem(item: ToolItem) {
@@ -88,9 +105,16 @@ export default function PatientToolPage({ config }: PatientToolPageProps) {
           subtitle={config.headerSubtitle}
           title={config.headerTitle}
         />
-        {config.actions ? <ActionGrid actions={config.actions} onAction={openAction} /> : null}
+        {config.actions ? (
+          <ActionGrid actions={config.actions} onAction={openAction} />
+        ) : null}
         {sections.map((section) => (
-          <ToolSection key={section.title} section={section} color={config.color} onAction={openItem} />
+          <ToolSection
+            key={section.title}
+            section={section}
+            color={config.color}
+            onAction={openItem}
+          />
         ))}
       </div>
 

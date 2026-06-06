@@ -9,7 +9,12 @@ type NameFieldsProps = {
   onChange: (key: NameFieldKey, value: string) => void;
 };
 
-export default function NameFields({ disabled, firstName, lastName, onChange }: NameFieldsProps) {
+export default function NameFields({
+  disabled,
+  firstName,
+  lastName,
+  onChange,
+}: NameFieldsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <TextField

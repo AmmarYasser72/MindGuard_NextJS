@@ -15,15 +15,17 @@ import type { ConnectionMode } from "./chatView";
 
 const STREAM_IDLE_MS = 450;
 
-type WindowWithIdleCallback = Window & typeof globalThis & {
-  cancelIdleCallback?: (id: number) => void;
-  requestIdleCallback?: (callback: () => void) => number;
-};
+type WindowWithIdleCallback = Window &
+  typeof globalThis & {
+    cancelIdleCallback?: (id: number) => void;
+    requestIdleCallback?: (callback: () => void) => number;
+  };
 
 export function usePatientChat(userId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
-  const [connectionMode, setConnectionMode] = useState<ConnectionMode>("loading");
+  const [connectionMode, setConnectionMode] =
+    useState<ConnectionMode>("loading");
   const [isTyping, setIsTyping] = useState(false);
   const { user } = useAuth();
   const chatClientRef = useRef<ChatClient | null>(null);
@@ -31,15 +33,18 @@ export function usePatientChat(userId: string) {
   const streamTimerRef = useRef<number | null>(null);
   const hasRemoteConnectionRef = useRef(false);
   const pendingMessageRef = useRef("");
-  const chatOwnerId = useMemo(() => user?._id || user?.id || user?.uid || user?.email || userId, [
-    user?._id,
-    user?.email,
-    user?.id,
-    user?.uid,
-    userId,
-  ]);
-  const visibleMessages = useMemo(() => getVisibleMessages(messages), [messages]);
-  const hasUserMessage = useMemo(() => visibleMessages.some((message) => message.isUser), [visibleMessages]);
+  const chatOwnerId = useMemo(
+    () => user?._id || user?.id || user?.uid || user?.email || userId,
+    [user?._id, user?.email, user?.id, user?.uid, userId],
+  );
+  const visibleMessages = useMemo(
+    () => getVisibleMessages(messages),
+    [messages],
+  );
+  const hasUserMessage = useMemo(
+    () => visibleMessages.some((message) => message.isUser),
+    [visibleMessages],
+  );
 
   const clearStreamTimer = useCallback(() => {
     if (streamTimerRef.current) {
@@ -61,112 +66,140 @@ export function usePatientChat(userId: string) {
     }, STREAM_IDLE_MS);
   }, [clearStreamTimer]);
 
-  const appendBotMessage = useCallback((message: ChatMessage) => {
-    pendingMessageRef.current = "";
-    resetStreamingState();
-    setIsTyping(false);
-    setMessages((current) => [...current, message]);
-  }, [resetStreamingState]);
+  const appendBotMessage = useCallback(
+    (message: ChatMessage) => {
+      pendingMessageRef.current = "";
+      resetStreamingState();
+      setIsTyping(false);
+      setMessages((current) => [...current, message]);
+    },
+    [resetStreamingState],
+  );
 
-  const appendBotChunk = useCallback((chunk: string) => {
-    if (!chunk) return;
+  const appendBotChunk = useCallback(
+    (chunk: string) => {
+      if (!chunk) return;
 
-    setIsTyping(false);
-    pendingMessageRef.current = "";
-    setMessages((current) => {
-      const next = [...current];
-      const activeIndex = activeBotMessageIndexRef.current;
+      setIsTyping(false);
+      pendingMessageRef.current = "";
+      setMessages((current) => {
+        const next = [...current];
+        const activeIndex = activeBotMessageIndexRef.current;
 
-      if (activeIndex === null || !next[activeIndex] || next[activeIndex].isUser) {
-        activeBotMessageIndexRef.current = next.length;
-        next.push({
-          text: chunk,
-          isUser: false,
-          time: formatTime(),
-        });
+        if (
+          activeIndex === null ||
+          !next[activeIndex] ||
+          next[activeIndex].isUser
+        ) {
+          activeBotMessageIndexRef.current = next.length;
+          next.push({
+            text: chunk,
+            isUser: false,
+            time: formatTime(),
+          });
+          return next;
+        }
+
+        const currentMessage = next[activeIndex];
+        next[activeIndex] = {
+          ...currentMessage,
+          text: `${currentMessage.text}${chunk}`,
+        };
         return next;
-      }
+      });
 
-      const currentMessage = next[activeIndex];
-      next[activeIndex] = {
-        ...currentMessage,
-        text: `${currentMessage.text}${chunk}`,
-      };
-      return next;
-    });
-
-    scheduleStreamReset();
-  }, [scheduleStreamReset]);
+      scheduleStreamReset();
+    },
+    [scheduleStreamReset],
+  );
 
   const closeClient = useCallback(() => {
     chatClientRef.current?.close();
     chatClientRef.current = null;
   }, []);
 
-  const attachLocalClient = useCallback(({ replayPending = false } = {}) => {
-    const pendingText = pendingMessageRef.current;
-    closeClient();
-    hasRemoteConnectionRef.current = false;
-    chatClientRef.current = createLocalChatClient(appendBotMessage);
-    setConnectionMode("local");
+  const attachLocalClient = useCallback(
+    ({ replayPending = false } = {}) => {
+      const pendingText = pendingMessageRef.current;
+      closeClient();
+      hasRemoteConnectionRef.current = false;
+      chatClientRef.current = createLocalChatClient(appendBotMessage);
+      setConnectionMode("local");
 
-    if (replayPending && pendingText) {
-      pendingMessageRef.current = "";
+      if (replayPending && pendingText) {
+        pendingMessageRef.current = "";
+        setIsTyping(true);
+        chatClientRef.current?.send(pendingText);
+        return;
+      }
+
+      setIsTyping(false);
+    },
+    [appendBotMessage, closeClient],
+  );
+
+  const attachSocketClient = useCallback(
+    (chatId: string) => {
+      closeClient();
+      hasRemoteConnectionRef.current = false;
+      chatClientRef.current = createSocketChatClient({
+        chatId,
+        userId: chatOwnerId,
+        onBotChunk: appendBotChunk,
+        onConnect() {
+          hasRemoteConnectionRef.current = true;
+          setConnectionMode("remote");
+        },
+        onDisconnect() {
+          resetStreamingState();
+          setConnectionMode("connecting");
+        },
+        onError() {
+          if (!hasRemoteConnectionRef.current || pendingMessageRef.current) {
+            attachLocalClient({ replayPending: true });
+            return;
+          }
+
+          setConnectionMode("connecting");
+        },
+      });
+    },
+    [
+      appendBotChunk,
+      attachLocalClient,
+      chatOwnerId,
+      closeClient,
+      resetStreamingState,
+    ],
+  );
+
+  const sendMessage = useCallback(
+    (text: string) => {
+      if (!text) return;
+
+      resetStreamingState();
+      setMessages((current) => [
+        ...current,
+        { text, isUser: true, time: formatTime() },
+      ]);
+      pendingMessageRef.current = text;
+
+      if (!chatClientRef.current) {
+        attachLocalClient();
+      }
+
       setIsTyping(true);
-      chatClientRef.current?.send(pendingText);
-      return;
-    }
 
-    setIsTyping(false);
-  }, [appendBotMessage, closeClient]);
-
-  const attachSocketClient = useCallback((chatId: string) => {
-    closeClient();
-    hasRemoteConnectionRef.current = false;
-    chatClientRef.current = createSocketChatClient({
-      chatId,
-      userId: chatOwnerId,
-      onBotChunk: appendBotChunk,
-      onConnect() {
-        hasRemoteConnectionRef.current = true;
-        setConnectionMode("remote");
-      },
-      onDisconnect() {
-        resetStreamingState();
-        setConnectionMode("connecting");
-      },
-      onError() {
-        if (!hasRemoteConnectionRef.current || pendingMessageRef.current) {
-          attachLocalClient({ replayPending: true });
-          return;
-        }
-
-        setConnectionMode("connecting");
-      },
-    });
-  }, [appendBotChunk, attachLocalClient, chatOwnerId, closeClient, resetStreamingState]);
-
-  const sendMessage = useCallback((text: string) => {
-    if (!text) return;
-
-    resetStreamingState();
-    setMessages((current) => [...current, { text, isUser: true, time: formatTime() }]);
-    pendingMessageRef.current = text;
-
-    if (!chatClientRef.current) {
-      attachLocalClient();
-    }
-
-    setIsTyping(true);
-
-    try {
-      chatClientRef.current?.send(text);
-    } catch {
-      attachLocalClient();
-      setIsTyping(true);
-      chatClientRef.current?.send(text);
-    }
-  }, [attachLocalClient, resetStreamingState]);
+      try {
+        chatClientRef.current?.send(text);
+      } catch {
+        attachLocalClient();
+        setIsTyping(true);
+        chatClientRef.current?.send(text);
+      }
+    },
+    [attachLocalClient, resetStreamingState],
+  );
 
   const send = useCallback(() => {
     const text = draft.trim();
@@ -175,10 +208,13 @@ export function usePatientChat(userId: string) {
     setDraft("");
   }, [draft, sendMessage]);
 
-  const sendPrompt = useCallback((text: string) => {
-    sendMessage(text);
-    setDraft("");
-  }, [sendMessage]);
+  const sendPrompt = useCallback(
+    (text: string) => {
+      sendMessage(text);
+      setDraft("");
+    },
+    [sendMessage],
+  );
 
   useEffect(() => {
     let active = true;
@@ -208,7 +244,13 @@ export function usePatientChat(userId: string) {
       resetStreamingState();
       closeClient();
     };
-  }, [attachLocalClient, attachSocketClient, chatOwnerId, closeClient, resetStreamingState]);
+  }, [
+    attachLocalClient,
+    attachSocketClient,
+    chatOwnerId,
+    closeClient,
+    resetStreamingState,
+  ]);
 
   useEffect(() => {
     if (!messages.length) return;

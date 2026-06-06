@@ -26,14 +26,19 @@ export default function ConditionSelectionPanel({
       <div className="patient-recommendation-workspace-head grid gap-4 p-5 [html:not([data-theme='dark'])_&]:bg-[linear-gradient(135deg,rgba(236,254,255,0.72),rgba(255,255,255,0.82)_46%,rgba(245,243,255,0.66))] sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div className="min-w-0">
           <div className="flex flex-wrap gap-2">
-            <span className="patient-recommendation-step-pill rounded-full bg-[color-mix(in_srgb,var(--patient-doctor-accent)_10%,var(--patient-card))] px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-[var(--patient-doctor-accent)] shadow-[inset_0_0_0_1px_var(--patient-recommendation-soft-border)]">Step 1</span>
-            <span className="patient-recommendation-step-pill is-muted rounded-full bg-[color-mix(in_srgb,var(--primary)_8%,var(--patient-card))] px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-[var(--primary)] shadow-[inset_0_0_0_1px_var(--patient-recommendation-soft-border)]">Step 2 ready</span>
+            <span className="patient-recommendation-step-pill rounded-full bg-[color-mix(in_srgb,var(--patient-doctor-accent)_10%,var(--patient-card))] px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-[var(--patient-doctor-accent)] shadow-[inset_0_0_0_1px_var(--patient-recommendation-soft-border)]">
+              Step 1
+            </span>
+            <span className="patient-recommendation-step-pill is-muted rounded-full bg-[color-mix(in_srgb,var(--primary)_8%,var(--patient-card))] px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-[var(--primary)] shadow-[inset_0_0_0_1px_var(--patient-recommendation-soft-border)]">
+              Step 2 ready
+            </span>
           </div>
           <h2 className="mt-3 text-2xl font-black tracking-[-0.04em] text-app-text">
             Choose a condition and review matches
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-app-text-soft">
-            Scores update by specialization, matching keywords, experience, and available contact methods.
+            Scores update by specialization, matching keywords, experience, and
+            available contact methods.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -45,7 +50,12 @@ export default function ConditionSelectionPanel({
               Curated included
             </span>
           ) : null}
-          <Button className="patient-recommendation-reset-button [html:not([data-theme='dark'])_&]:border [html:not([data-theme='dark'])_&]:border-[rgba(203,213,225,0.82)] [html:not([data-theme='dark'])_&]:bg-white/70 [html:not([data-theme='dark'])_&]:hover:bg-white [html:not([data-theme='dark'])_&]:hover:shadow-[0_0.65rem_1.4rem_rgba(55,65,118,0.07)]" variant="ghost" icon="refresh-cw" onClick={onReset}>
+          <Button
+            className="patient-recommendation-reset-button [html:not([data-theme='dark'])_&]:border [html:not([data-theme='dark'])_&]:border-[rgba(203,213,225,0.82)] [html:not([data-theme='dark'])_&]:bg-white/70 [html:not([data-theme='dark'])_&]:hover:bg-white [html:not([data-theme='dark'])_&]:hover:shadow-[0_0.65rem_1.4rem_rgba(55,65,118,0.07)]"
+            variant="ghost"
+            icon="refresh-cw"
+            onClick={onReset}
+          >
             Reset
           </Button>
         </div>
@@ -61,7 +71,9 @@ export default function ConditionSelectionPanel({
 
       <div className="patient-recommendation-summary-row flex flex-wrap items-center justify-between gap-3 border-t border-[var(--patient-line)] bg-[color-mix(in_srgb,var(--patient-doctor-accent)_5%,var(--patient-card))] px-5 py-4 [html:not([data-theme='dark'])_&]:border-[rgba(180,197,219,0.7)] [html:not([data-theme='dark'])_&]:bg-[linear-gradient(90deg,rgba(236,254,255,0.82),rgba(245,243,255,0.78))] sm:px-6">
         <div>
-          <span className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Best matches</span>
+          <span className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">
+            Best matches
+          </span>
           <h3 className="mt-1 text-xl font-black tracking-[-0.03em] text-app-text">
             Doctors for {conditionLabel.toLowerCase()}
           </h3>

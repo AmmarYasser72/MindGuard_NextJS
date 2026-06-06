@@ -3,7 +3,10 @@ import Icon from "../common/Icon";
 import Field from "../common/Field";
 import type { InputHTMLAttributes } from "react";
 
-type PasswordFieldProps = Pick<InputHTMLAttributes<HTMLInputElement>, "autoComplete" | "disabled" | "placeholder"> & {
+type PasswordFieldProps = Pick<
+  InputHTMLAttributes<HTMLInputElement>,
+  "autoComplete" | "disabled" | "placeholder"
+> & {
   label: string;
   onChange: (value: string) => void;
   value: string;

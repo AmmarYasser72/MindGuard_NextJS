@@ -26,14 +26,16 @@ export default function RecommendationHero({
             Find supportive doctors for {conditionLabel.toLowerCase()}.
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-app-text-soft sm:text-base">
-            MindGuard compares specialties, experience, contact readiness, and condition fit so the next step feels clear and comfortable.
+            MindGuard compares specialties, experience, contact readiness, and
+            condition fit so the next step feels clear and comfortable.
           </p>
           <div className="patient-recommendation-hero-note mt-4 flex max-w-xl items-start gap-3 rounded-2xl p-3 [html:not([data-theme='dark'])_&]:border [html:not([data-theme='dark'])_&]:border-[rgba(14,116,144,0.12)] [html:not([data-theme='dark'])_&]:bg-white/60 [html:not([data-theme='dark'])_&]:shadow-[0_0.65rem_1.4rem_rgba(14,116,144,0.05)]">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl [html:not([data-theme='dark'])_&]:bg-[linear-gradient(135deg,rgba(14,116,144,0.12),rgba(99,102,241,0.12))] [html:not([data-theme='dark'])_&]:text-[var(--patient-doctor-accent)]">
               <Icon name="sparkles" size={17} />
             </span>
             <span className="text-sm font-semibold leading-6 text-app-text-soft">
-              Recommendations refresh when you choose a different condition below.
+              Recommendations refresh when you choose a different condition
+              below.
             </span>
           </div>
         </div>
@@ -44,14 +46,30 @@ export default function RecommendationHero({
               <Icon name="heart-handshake" size={20} />
             </span>
             <span>
-              <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-app-muted">Match snapshot</span>
-              <strong className="block text-base font-black text-app-text">Ready for {conditionLabel.toLowerCase()}</strong>
+              <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-app-muted">
+                Match snapshot
+              </span>
+              <strong className="block text-base font-black text-app-text">
+                Ready for {conditionLabel.toLowerCase()}
+              </strong>
             </span>
           </div>
           <div className="grid gap-2.5 sm:grid-cols-3">
-            <HeroMetric icon="users" label="Doctors shown" value={String(totalDoctors)} />
-            <HeroMetric icon="server" label="Doctor source" value={backendAvailable ? "Live checked" : "Fallback ready"} />
-            <HeroMetric icon="shield-check" label="Coverage" value={usedCuratedProfiles ? "Enhanced" : "Live"} />
+            <HeroMetric
+              icon="users"
+              label="Doctors shown"
+              value={String(totalDoctors)}
+            />
+            <HeroMetric
+              icon="server"
+              label="Doctor source"
+              value={backendAvailable ? "Live checked" : "Fallback ready"}
+            />
+            <HeroMetric
+              icon="shield-check"
+              label="Coverage"
+              value={usedCuratedProfiles ? "Enhanced" : "Live"}
+            />
           </div>
         </div>
       </div>
@@ -72,8 +90,12 @@ function HeroMetric({ icon, label, value }: HeroMetricProps) {
         <Icon name={icon} size={17} />
       </span>
       <span className="min-w-0">
-        <span className="block text-[11px] font-black uppercase tracking-[0.12em] text-app-muted">{label}</span>
-        <strong className="mt-0.5 block break-words text-lg font-black leading-5 text-app-text [html:not([data-theme='dark'])_&]:text-[0.96rem] [html:not([data-theme='dark'])_&]:leading-[1.1rem]">{value}</strong>
+        <span className="block text-[11px] font-black uppercase tracking-[0.12em] text-app-muted">
+          {label}
+        </span>
+        <strong className="mt-0.5 block break-words text-lg font-black leading-5 text-app-text [html:not([data-theme='dark'])_&]:text-[0.96rem] [html:not([data-theme='dark'])_&]:leading-[1.1rem]">
+          {value}
+        </strong>
       </span>
     </div>
   );

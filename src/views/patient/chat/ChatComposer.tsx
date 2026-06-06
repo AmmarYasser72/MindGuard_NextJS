@@ -11,7 +11,12 @@ type ChatComposerProps = {
   onSend: () => void;
 };
 
-function ChatComposer({ draft, isDisabled, onDraftChange, onSend }: ChatComposerProps) {
+function ChatComposer({
+  draft,
+  isDisabled,
+  onDraftChange,
+  onSend,
+}: ChatComposerProps) {
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();

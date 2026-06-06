@@ -1,6 +1,11 @@
 import type { ApiRecord } from "./api";
 
-export type PatientConditionId = "anxiety" | "depression" | "stress" | "sleep" | "mixed";
+export type PatientConditionId =
+  | "anxiety"
+  | "depression"
+  | "stress"
+  | "sleep"
+  | "mixed";
 
 export type PatientConditionOption = {
   id: PatientConditionId;

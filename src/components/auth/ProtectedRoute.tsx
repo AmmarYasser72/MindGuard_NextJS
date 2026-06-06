@@ -11,12 +11,16 @@ type ProtectedRouteProps = {
   roles?: string[];
 };
 
-export default function ProtectedRoute({ children, roles = [] }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  roles = [],
+}: ProtectedRouteProps) {
   const { authLoading, user } = useAuth();
   const { navigate } = useRouter();
   const allowedRoles = roles.map((role) => role.toLowerCase());
   const role = user?.role?.toLowerCase();
-  const isAllowed = !allowedRoles.length || (role ? allowedRoles.includes(role) : false);
+  const isAllowed =
+    !allowedRoles.length || (role ? allowedRoles.includes(role) : false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -27,7 +31,9 @@ export default function ProtectedRoute({ children, roles = [] }: ProtectedRouteP
     }
 
     if (!isAllowed) {
-      navigate(role === "doctor" ? "/doctor-dashboard" : "/patient-dashboard", { replace: true });
+      navigate(role === "doctor" ? "/doctor-dashboard" : "/patient-dashboard", {
+        replace: true,
+      });
     }
   }, [authLoading, isAllowed, navigate, role, user]);
 

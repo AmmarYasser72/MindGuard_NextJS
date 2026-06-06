@@ -1,6 +1,11 @@
 import Icon from "../common/Icon";
 import ThemeToggle from "../common/ThemeToggle";
-import { bottomNavClass, destinations, primaryPurple, railButtonClass } from "./dashboardShared";
+import {
+  bottomNavClass,
+  destinations,
+  primaryPurple,
+  railButtonClass,
+} from "./dashboardShared";
 
 type DoctorNavigationProps = {
   onSelect: (key: string) => void;
@@ -15,7 +20,12 @@ export function DoctorSideNav({ selected, onSelect }: DoctorNavigationProps) {
       </div>
       <nav className="grid gap-2" aria-label="Doctor navigation">
         {destinations.map((item) => (
-          <button type="button" className={railButtonClass(selected === item.key)} key={item.key} onClick={() => onSelect(item.key)}>
+          <button
+            type="button"
+            className={railButtonClass(selected === item.key)}
+            key={item.key}
+            onClick={() => onSelect(item.key)}
+          >
             <Icon name={item.icon} size={22} />
             <span>{item.label}</span>
           </button>
@@ -28,11 +38,23 @@ export function DoctorSideNav({ selected, onSelect }: DoctorNavigationProps) {
 export function DoctorMobileNav({ selected, onSelect }: DoctorNavigationProps) {
   return (
     <>
-      <nav className="dashboard-nav fixed inset-x-0 bottom-0 z-30 border-t px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 lg:hidden" aria-label="Doctor navigation">
+      <nav
+        className="dashboard-nav fixed inset-x-0 bottom-0 z-30 border-t px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 lg:hidden"
+        aria-label="Doctor navigation"
+      >
         <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
           {destinations.map((item) => (
-            <button type="button" className={bottomNavClass(selected === item.key)} key={item.key} onClick={() => onSelect(item.key)}>
-              <Icon name={item.icon} size={22} color={selected === item.key ? primaryPurple : "currentColor"} />
+            <button
+              type="button"
+              className={bottomNavClass(selected === item.key)}
+              key={item.key}
+              onClick={() => onSelect(item.key)}
+            >
+              <Icon
+                name={item.icon}
+                size={22}
+                color={selected === item.key ? primaryPurple : "currentColor"}
+              />
               <span>{item.label}</span>
             </button>
           ))}

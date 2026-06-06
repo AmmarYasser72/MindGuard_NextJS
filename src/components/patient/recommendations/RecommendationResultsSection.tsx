@@ -22,7 +22,10 @@ export default function RecommendationResultsSection({
   const hasRecommendations = recommendations.length > 0;
 
   return (
-    <section className="patient-recommendation-results space-y-4" aria-live="polite">
+    <section
+      className="patient-recommendation-results space-y-4"
+      aria-live="polite"
+    >
       {error ? (
         <ErrorState
           title="Recommendations are unavailable"
@@ -41,7 +44,11 @@ export default function RecommendationResultsSection({
       {!isLoading && !error && hasRecommendations ? (
         <div className="grid gap-4">
           {recommendations.map((doctor) => (
-            <DoctorRecommendationCard key={doctor.id} doctor={doctor} onContact={onContact} />
+            <DoctorRecommendationCard
+              key={doctor.id}
+              doctor={doctor}
+              onContact={onContact}
+            />
           ))}
         </div>
       ) : null}

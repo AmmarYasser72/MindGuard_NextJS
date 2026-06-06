@@ -37,12 +37,18 @@ export default function AuthProfileHeader({
       />
       <AuthLogo tone={tone} size={56} icon={icon} />
       <div className="grid gap-2">
-        <span className={`text-xs font-black uppercase tracking-[0.22em] ${tone === "green" ? "text-emerald-600" : "text-[var(--primary)]"}`}>
+        <span
+          className={`text-xs font-black uppercase tracking-[0.22em] ${tone === "green" ? "text-emerald-600" : "text-[var(--primary)]"}`}
+        >
           {eyebrow}
         </span>
         <div>
-          <h1 className="text-[clamp(1.9rem,5vw,2.5rem)] font-bold leading-tight text-app-text">{title}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-app-muted">{description}</p>
+          <h1 className="text-[clamp(1.9rem,5vw,2.5rem)] font-bold leading-tight text-app-text">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-app-muted">
+            {description}
+          </p>
         </div>
         {badge ? (
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
