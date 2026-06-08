@@ -156,6 +156,24 @@ export default function DoctorDashboard() {
     }
   }
 
+  function deletePatient(patient: DoctorPatient) {
+    if (!doctorId) {
+      showToast("Doctor id is missing from the current session.", "error");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete ${patient.displayName} from your patient list?`,
+    );
+    if (!confirmed) return;
+
+    patientService.hideDoctorPatient(doctorId, patient);
+    setPatientList((current) =>
+      current.filter((item) => item.id !== patient.id),
+    );
+    showToast("Patient removed from your list.", "success");
+  }
+
   return (
     <main className="doctor-shell dashboard-shell min-h-screen [background:var(--doctor-page-bg)] text-slate-950">
       <div className="flex min-h-screen w-full">
@@ -170,6 +188,7 @@ export default function DoctorDashboard() {
 
           {selected === "dashboard" ? (
             <DoctorHome
+              onEditSession={editSession}
               onNavigate={setSelected}
               onRefresh={refreshDoctorData}
               patientError={patientError}
@@ -182,6 +201,7 @@ export default function DoctorDashboard() {
             <PatientsScreen
               error={patientError}
               isLoading={patientLoading}
+              onDeletePatient={deletePatient}
               onOpenSchedule={setSchedulePatient}
               onRetry={loadPatients}
               patients={patientList}

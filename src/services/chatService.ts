@@ -240,6 +240,45 @@ async function loadRemoteMessages(chatId: string) {
   return normalizeMessages(remoteMessages);
 }
 
+export async function createBackendChat(userId: string) {
+  return createRemoteChat(userId);
+}
+
+export async function getBackendChats() {
+  const chats = await request("/chats", { auth: true });
+  return toArrayPayload(chats);
+}
+
+export async function getBackendChatMessages(chatId: string) {
+  return loadRemoteMessages(chatId);
+}
+
+export async function deleteBackendChat(userId: string, chatId: string) {
+  const deleted = await request(`/chats/${chatId}`, {
+    auth: true,
+    method: "DELETE",
+  });
+
+  if (readChatThreadId(userId) === chatId) {
+    removeChatThreadId(userId);
+    storage.remove(chatStorageKey(userId));
+  }
+
+  return deleted as ApiRecord;
+}
+
+export async function deleteAllBackendChats(userId: string) {
+  const deleted = await request(`/chats/${userId}`, {
+    auth: true,
+    method: "DELETE",
+  });
+
+  removeChatThreadId(userId);
+  storage.remove(chatStorageKey(userId));
+
+  return deleted as ApiRecord;
+}
+
 export async function loadChatState(userId: string): Promise<ChatState> {
   const localMessages = readLocalChatMessages(userId);
 

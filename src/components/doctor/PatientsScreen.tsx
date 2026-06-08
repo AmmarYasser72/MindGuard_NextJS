@@ -14,6 +14,7 @@ import type { DoctorPatient } from "../../types/doctor";
 type PatientsScreenProps = {
   error?: string;
   isLoading: boolean;
+  onDeletePatient: (patient: DoctorPatient) => void;
   onOpenSchedule: (patient: DoctorPatient | null) => void;
   onRetry: () => void;
   patients?: DoctorPatient[];
@@ -25,6 +26,7 @@ const filterOptions = ["all", ...severityOrder] as const;
 export default function PatientsScreen({
   error,
   isLoading,
+  onDeletePatient,
   onOpenSchedule,
   onRetry,
   patients = [],
@@ -213,6 +215,15 @@ export default function PatientsScreen({
                 key={patient.id}
                 patient={patient}
                 expanded={expanded === patient.id}
+                onDelete={() => {
+                  onDeletePatient(patient);
+                  setDetailPatient((current) =>
+                    current?.id === patient.id ? null : current,
+                  );
+                  setExpanded((current) =>
+                    current === patient.id ? null : current,
+                  );
+                }}
                 onToggle={() =>
                   setExpanded((current) =>
                     current === patient.id ? null : patient.id,

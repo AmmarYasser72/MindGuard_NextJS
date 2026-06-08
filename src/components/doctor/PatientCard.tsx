@@ -40,6 +40,7 @@ export default function PatientCard({
   patient,
   expanded,
   onToggle,
+  onDelete,
   onProfile,
   onSchedule,
 }) {
@@ -181,9 +182,20 @@ export default function PatientCard({
                         {riskMessage}
                       </h3>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500 shadow-sm shadow-slate-900/5">
-                      {patient.email}
-                    </span>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500 shadow-sm shadow-slate-900/5">
+                        {patient.email}
+                      </span>
+                      <button
+                        type="button"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 transition hover:border-red-300 hover:bg-red-100"
+                        aria-label={`Delete ${patientName(patient)}`}
+                        title="Delete patient"
+                        onClick={onDelete}
+                      >
+                        <Icon name="trash-2" size={16} color="currentColor" />
+                      </button>
+                    </div>
                   </div>
                   <p className="mt-4 text-sm font-medium leading-6 text-slate-600">
                     {patient.journal

@@ -38,10 +38,14 @@ export const doctorService = {
       method: "POST",
       body: JSON.stringify({ from, to }),
     });
-    return ensureRecordHasAnyField(
-      ensureObjectData<ApiRecord>(response, "Doctor session slots"),
-      "Doctor session slots",
-      sessionSlotFields,
-    );
+    try {
+      return ensureRecordHasAnyField(
+        ensureObjectData<ApiRecord>(response, "Doctor session slots"),
+        "Doctor session slots",
+        sessionSlotFields,
+      );
+    } catch {
+      return response as ApiRecord;
+    }
   },
 };

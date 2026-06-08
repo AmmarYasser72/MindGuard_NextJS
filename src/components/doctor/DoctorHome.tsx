@@ -1,14 +1,23 @@
+import { useState } from "react";
 import Icon from "../common/Icon";
 import DonutChart from "../common/DonutChart";
-import { conditionLabels } from "../../data/doctorData";
+import { Modal } from "../common/Modal";
+import {
+  ageGender,
+  conditionLabels,
+  lastSeenLabel,
+  patientName,
+} from "../../data/doctorData";
 import ActionIcon from "./ActionIcon";
 import DoctorStat from "./DoctorStat";
 import EmptyPanel from "./EmptyPanel";
 import SessionSnippet from "./SessionSnippet";
+import { EditSessionModal } from "./SessionsScreen";
 import { secondaryButtonClass, surfaceClass } from "./dashboardShared";
 import type { DoctorPatient, DoctorSession } from "../../types/doctor";
 
 type DoctorHomeProps = {
+  onEditSession: (session: DoctorSession) => Promise<void> | void;
   onNavigate: (destination: string) => void;
   onRefresh: () => void;
   patientError?: string;
@@ -27,6 +36,7 @@ function isToday(date: Date) {
 }
 
 export default function DoctorHome({
+  onEditSession,
   onNavigate,
   onRefresh,
   patientError,
@@ -34,6 +44,13 @@ export default function DoctorHome({
   sessions = [],
   slotError,
 }: DoctorHomeProps) {
+  const [selectedSession, setSelectedSession] = useState<DoctorSession | null>(
+    null,
+  );
+  const [editingSession, setEditingSession] = useState<DoctorSession | null>(
+    null,
+  );
+  const [isSavingSession, setIsSavingSession] = useState(false);
   const conditionDistribution = patients.reduce(
     (totals, patient) => {
       const condition = patient.condition || "none";
@@ -74,10 +91,8 @@ export default function DoctorHome({
     ? Math.round((leadingCondition.value / totalPanel) * 100)
     : 0;
   const upcoming = sessions
-    .filter(
-      (item) => item.scheduledAt >= new Date() && item.status !== "cancelled",
-    )
-    .slice(0, 6);
+    .filter(isConfirmedUpcomingSession)
+    .slice(0, 5);
   const activeToday = patients.filter(
     (patient) => patient.lastSeen && isToday(patient.lastSeen),
   ).length;
@@ -87,6 +102,19 @@ export default function DoctorHome({
   const sessionsToday = sessions.filter((session) =>
     isToday(session.scheduledAt),
   ).length;
+  const selectedPatient = selectedSession
+    ? findSessionPatient(selectedSession, patients)
+    : null;
+
+  async function saveSessionEdit(session: DoctorSession) {
+    setIsSavingSession(true);
+    try {
+      await onEditSession(session);
+      setEditingSession(null);
+    } finally {
+      setIsSavingSession(false);
+    }
+  }
 
   return (
     <div className="grid w-full max-w-none gap-5 p-4 sm:p-6 lg:p-8">
@@ -224,8 +252,12 @@ export default function DoctorHome({
           </div>
           {upcoming.length ? (
             <div className="grid gap-3">
-              {upcoming.slice(0, 4).map((session) => (
-                <SessionSnippet session={session} key={session.id} />
+              {upcoming.map((session) => (
+                <SessionSnippet
+                  session={session}
+                  key={session.id}
+                  onClick={() => setSelectedSession(session)}
+                />
               ))}
             </div>
           ) : (
@@ -271,6 +303,176 @@ export default function DoctorHome({
           </button>
         </div>
       </section>
+
+      {selectedSession ? (
+        <UpcomingSessionDetailsModal
+          patient={selectedPatient}
+          session={selectedSession}
+          onClose={() => setSelectedSession(null)}
+          onEdit={() => {
+            setEditingSession(selectedSession);
+            setSelectedSession(null);
+          }}
+        />
+      ) : null}
+      {editingSession ? (
+        <EditSessionModal
+          session={editingSession}
+          isSaving={isSavingSession}
+          onClose={() => setEditingSession(null)}
+          onSave={saveSessionEdit}
+        />
+      ) : null}
     </div>
   );
+}
+
+function hasSessionPatient(session: DoctorSession) {
+  const name = String(session.patientName || "").trim().toLowerCase();
+  return Boolean(
+    session.patientId ||
+      session.raw?.patient ||
+      session.raw?.patientEmail ||
+      (name && name !== "unassigned"),
+  );
+}
+
+function isConfirmedUpcomingSession(session: DoctorSession) {
+  const status = String(session.status || "").toLowerCase();
+  return (
+    session.scheduledAt >= new Date() &&
+    !["available", "cancelled", "completed"].includes(status) &&
+    hasSessionPatient(session)
+  );
+}
+
+function findSessionPatient(
+  session: DoctorSession,
+  patients: DoctorPatient[],
+) {
+  const sessionEmail = String(session.raw?.patientEmail || "").toLowerCase();
+  const sessionName = String(session.patientName || "").toLowerCase();
+  return (
+    patients.find((patient) => patient.id === session.patientId) ||
+    patients.find(
+      (patient) => sessionEmail && patient.email.toLowerCase() === sessionEmail,
+    ) ||
+    patients.find(
+      (patient) => patientName(patient).toLowerCase() === sessionName,
+    ) ||
+    null
+  );
+}
+
+function UpcomingSessionDetailsModal({
+  onClose,
+  onEdit,
+  patient,
+  session,
+}: {
+  onClose: () => void;
+  onEdit: () => void;
+  patient: DoctorPatient | null;
+  session: DoctorSession;
+}) {
+  const sleep =
+    patient?.sleep === null || patient?.sleep === undefined
+      ? "No data"
+      : `${Math.round(patient.sleep * 100)}%`;
+
+  return (
+    <Modal
+      title="Upcoming Session"
+      onClose={onClose}
+      actions={
+        <>
+          <button type="button" className={secondaryButtonClass} onClick={onClose}>
+            Close
+          </button>
+          <button type="button" className={secondaryButtonClass} onClick={onEdit}>
+            Edit session
+          </button>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        <section className="rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4">
+          <small className="text-xs font-black uppercase text-slate-400">
+            Patient profile
+          </small>
+          <div className="mt-3 flex flex-wrap items-start gap-4">
+            <span className="grid h-14 w-14 place-items-center rounded-lg bg-[var(--primary)] text-lg font-black text-white">
+              {initials(patient, session.patientName)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-xl font-black text-slate-950">
+                {patient ? patientName(patient) : session.patientName}
+              </h3>
+              <p className="mt-1 text-sm font-semibold text-slate-500">
+                {patient?.email ||
+                  String(session.raw?.patientEmail || "No email available")}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-600">
+                {patient ? (
+                  <>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1">
+                      {ageGender(patient) || "Age unavailable"}
+                    </span>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1">
+                      {conditionLabels[patient.condition] || patient.condition}
+                    </span>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1">
+                      {lastSeenLabel(patient)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="rounded-lg bg-slate-100 px-3 py-1">
+                    Profile will appear here when this patient is assigned to
+                    the doctor panel.
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-3 sm:grid-cols-3">
+          <Signal label="Mood" value={patient?.mood ? `${patient.mood}/100` : "No data"} />
+          <Signal label="Sleep" value={sleep} />
+          <Signal
+            label="HRV"
+            value={patient?.hrv ? `${Math.round(patient.hrv)} ms` : "No data"}
+          />
+        </section>
+
+        <section className="grid gap-3 rounded-lg border border-[var(--doctor-line)] bg-white p-4 sm:grid-cols-3">
+          <Signal label="Session" value={session.type || "video"} />
+          <Signal
+            label="Duration"
+            value={`${session.duration || 60} min`}
+          />
+          <Signal label="Status" value={session.status || "scheduled"} />
+        </section>
+      </div>
+    </Modal>
+  );
+}
+
+function Signal({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[var(--doctor-line)] bg-white p-4">
+      <small className="text-xs font-black uppercase text-slate-400">
+        {label}
+      </small>
+      <strong className="mt-2 block text-sm font-black text-slate-950">
+        {value}
+      </strong>
+    </div>
+  );
+}
+
+function initials(patient: DoctorPatient | null, fallbackName: string) {
+  const source = patient ? patientName(patient) : fallbackName;
+  const parts = source.trim().split(/\s+/);
+  return `${parts[0]?.charAt(0) || "P"}${parts[1]?.charAt(0) || ""}`.toUpperCase();
 }

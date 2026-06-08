@@ -205,7 +205,7 @@ function ApiErrorPanel({
   );
 }
 
-function EditSessionModal({
+export function EditSessionModal({
   session,
   isSaving,
   onClose,
