@@ -33,7 +33,7 @@ export default function DonutChart({ segments, size = 220 }: DonutChartProps) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(220px,0.55fr)_minmax(320px,1fr)] lg:items-center">
-      <div className="grid justify-items-center gap-4 rounded-lg bg-slate-50/80 p-5 ring-1 ring-slate-100">
+      <div className="grid justify-items-center gap-4 rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-5 shadow-sm shadow-slate-950/10">
         <svg
           width={size}
           height={size}
@@ -47,7 +47,9 @@ export default function DonutChart({ segments, size = 220 }: DonutChartProps) {
             cy="50"
             r={radius}
             fill="none"
-            stroke="#eef2f7"
+            style={{
+              stroke: "color-mix(in srgb, var(--doctor-line) 88%, white)",
+            }}
             strokeWidth="14"
           />
           {segmentArcs.map((segment) => {
@@ -71,7 +73,8 @@ export default function DonutChart({ segments, size = 220 }: DonutChartProps) {
             x="50"
             y="47"
             textAnchor="middle"
-            className="fill-slate-950 text-[16px] font-black"
+            className="text-[16px] font-black"
+            style={{ fill: "var(--text)" }}
           >
             {total}
           </text>
@@ -79,7 +82,8 @@ export default function DonutChart({ segments, size = 220 }: DonutChartProps) {
             x="50"
             y="58"
             textAnchor="middle"
-            className="fill-slate-500 text-[7px] font-bold uppercase"
+            className="text-[7px] font-bold uppercase"
+            style={{ fill: "var(--muted)" }}
           >
             patients
           </text>
@@ -98,13 +102,13 @@ export default function DonutChart({ segments, size = 220 }: DonutChartProps) {
         {segments.map((segment) => (
           <button
             type="button"
-            className="group grid gap-2 rounded-lg border border-slate-100 bg-white p-3 text-left shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-violet-100 hover:shadow-md"
+            className="group grid gap-2 rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-3 text-left shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-[var(--doctor-card-muted)] hover:shadow-md"
             key={segment.label}
             onClick={segment.onClick}
           >
             <span className="flex items-center gap-3">
               <span
-                className="h-3 w-3 shrink-0 rounded-full ring-4 ring-slate-100"
+                className="h-3 w-3 shrink-0 rounded-full ring-4 ring-white/80"
                 style={{ backgroundColor: segment.color }}
               />
               <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800">
