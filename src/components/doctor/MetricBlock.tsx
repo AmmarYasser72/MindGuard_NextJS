@@ -6,7 +6,7 @@ export default function MetricBlock({ label, value, note, tone }) {
   };
 
   return (
-    <div className="doctor-card-gradient rounded-lg border border-violet-100 bg-white p-4">
+    <div className="rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4">
       <span className="text-xs font-bold uppercase text-slate-500">
         {label}
       </span>

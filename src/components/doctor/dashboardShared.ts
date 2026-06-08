@@ -7,14 +7,14 @@ export const destinations = [
 
 export const primaryPurple = "var(--primary)";
 export const surfaceClass =
-  "doctor-surface dashboard-surface rounded-lg border p-5";
+  "rounded-lg border border-[var(--doctor-line)] bg-[var(--doctor-card)] p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)]";
 export const primaryButtonClass =
-  "dashboard-primary-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition focus:outline-none focus:ring-4 focus:ring-violet-200";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white shadow-sm shadow-violet-950/10 transition hover:bg-[var(--primary-strong)] focus:outline-none focus:ring-4 focus:ring-violet-200";
 export const secondaryButtonClass =
-  "dashboard-outline-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-violet-100";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[var(--doctor-line)] bg-[var(--doctor-card)] px-4 text-sm font-bold text-slate-700 shadow-sm shadow-violet-950/5 transition hover:bg-[var(--doctor-card-muted)] hover:text-[var(--primary)] focus:outline-none focus:ring-4 focus:ring-violet-100";
 export const fieldClass = "grid gap-2 text-sm font-bold text-slate-700";
 export const inputClass =
-  "doctor-input min-h-12 w-full rounded-lg border border-violet-100 bg-white px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100";
+  "min-h-12 w-full rounded-lg border border-[var(--doctor-line)] bg-[var(--doctor-card)] px-3 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100";
 
 export function greeting() {
   const hour = new Date().getHours();
@@ -37,11 +37,11 @@ export function bottomNavClass(active) {
 }
 
 export function filterButtonClass(active) {
-  return `h-10 shrink-0 rounded-lg px-4 text-sm font-bold transition ${active ? "bg-[var(--primary)] text-white shadow-sm shadow-violet-950/10" : "border border-violet-100 bg-white text-slate-600 hover:bg-violet-50 hover:text-[var(--primary)]"}`;
+  return `h-10 shrink-0 rounded-lg px-4 text-sm font-bold transition ${active ? "bg-[var(--primary)] text-white shadow-sm shadow-violet-950/10" : "border border-[var(--doctor-line)] bg-[var(--doctor-card)] text-slate-600 hover:bg-[var(--doctor-card-muted)] hover:text-[var(--primary)]"}`;
 }
 
 export function tabButtonClass(active) {
-  return `min-h-10 rounded-lg px-3 text-sm font-bold transition ${active ? "bg-[var(--primary)] text-white shadow-sm shadow-violet-950/10" : "text-slate-500 hover:bg-violet-50 hover:text-[var(--primary)]"}`;
+  return `min-h-10 rounded-lg px-3 text-sm font-bold transition ${active ? "bg-[var(--primary)] text-white shadow-sm shadow-violet-950/10" : "text-slate-500 hover:bg-[var(--doctor-card-muted)] hover:text-[var(--primary)]"}`;
 }
 
 export function formatDateTime(date) {

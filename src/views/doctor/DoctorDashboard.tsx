@@ -157,7 +157,7 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <main className="doctor-shell dashboard-shell min-h-screen text-slate-950">
+    <main className="doctor-shell dashboard-shell min-h-screen [background:var(--doctor-page-bg)] text-slate-950">
       <div className="flex min-h-screen w-full">
         <DoctorSideNav selected={selected} onSelect={setSelected} />
 

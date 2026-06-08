@@ -1098,56 +1098,6 @@
     --theme-toggle-icon-color: #cfd5ff;
   }
 
-  .doctor-shell.dashboard-shell {
-    @apply bg-[var(--doctor-page-bg)];
-  }
-
-  .doctor-shell .dashboard-surface,
-  .doctor-surface {
-    @apply border bg-[var(--doctor-card)] shadow-app;
-    border-color: var(--doctor-line);
-  }
-
-  .doctor-panel-head,
-  .doctor-card-gradient,
-  .doctor-action-card,
-  .doctor-muted-panel,
-  .doctor-empty {
-    @apply border;
-    background: linear-gradient(
-      180deg,
-      var(--doctor-card) 0%,
-      var(--doctor-card-soft) 100%
-    );
-    border-color: var(--doctor-line);
-  }
-
-  .doctor-action-card:hover,
-  .doctor-card-gradient:hover {
-    border-color: color-mix(in srgb, var(--primary) 30%, var(--doctor-line));
-    background: var(--doctor-card-muted);
-  }
-
-  .doctor-icon-button,
-  .doctor-input {
-    @apply border bg-[var(--doctor-card)] text-app-text;
-    border-color: var(--doctor-line);
-  }
-
-  .doctor-alert {
-    color: var(--text);
-  }
-
-  .doctor-alert-critical {
-    border-color: rgba(239, 68, 68, 0.32);
-    background: rgba(239, 68, 68, 0.12);
-  }
-
-  .doctor-alert-warning {
-    border-color: rgba(245, 158, 11, 0.34);
-    background: rgba(245, 158, 11, 0.12);
-  }
-
   html[data-theme="dark"] .doctor-shell .bg-white,
   html[data-theme="dark"] .doctor-shell .bg-white\/95,
   html[data-theme="dark"] .doctor-shell .bg-white\/90,
@@ -1214,33 +1164,5 @@
 
   html[data-theme="dark"] .doctor-shell .border-amber-200 {
     border-color: rgba(245, 158, 11, 0.34) !important;
-  }
-
-  html[data-theme="dark"] .doctor-shell .doctor-card-gradient,
-  html[data-theme="dark"] .doctor-shell .doctor-action-card,
-  html[data-theme="dark"] .doctor-shell .doctor-muted-panel,
-  html[data-theme="dark"] .doctor-shell .doctor-empty {
-    background: linear-gradient(
-      180deg,
-      var(--doctor-card) 0%,
-      var(--doctor-card-soft) 100%
-    ) !important;
-  }
-
-  html[data-theme="dark"] .doctor-shell .doctor-color-chip {
-    background-color: color-mix(
-      in srgb,
-      var(--doctor-chip-color) 14%,
-      var(--doctor-card-soft)
-    ) !important;
-  }
-
-  html[data-theme="dark"] .doctor-shell .doctor-input {
-    background: var(--doctor-card-muted) !important;
-    color: var(--text) !important;
-  }
-
-  html[data-theme="dark"] .doctor-shell .doctor-input::placeholder {
-    color: var(--faint);
   }
 }

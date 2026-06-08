@@ -9,7 +9,7 @@ export default function DoctorStat({ title, value, icon, helper, tone }) {
   };
 
   return (
-    <article className="doctor-surface dashboard-surface rounded-lg border p-4">
+    <article className="rounded-lg border border-[var(--doctor-line)] bg-[var(--doctor-card)] p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
       <div className="flex items-start justify-between gap-3">
         <span
           className={`grid h-10 w-10 place-items-center rounded-lg ${styles[tone]}`}

@@ -5,7 +5,7 @@ import ActionIcon from "./ActionIcon";
 import DoctorStat from "./DoctorStat";
 import EmptyPanel from "./EmptyPanel";
 import SessionSnippet from "./SessionSnippet";
-import { surfaceClass } from "./dashboardShared";
+import { secondaryButtonClass, surfaceClass } from "./dashboardShared";
 import type { DoctorPatient, DoctorSession } from "../../types/doctor";
 
 type DoctorHomeProps = {
@@ -136,8 +136,8 @@ export default function DoctorHome({
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.65fr)]">
-        <section className="doctor-surface dashboard-surface overflow-hidden rounded-lg border">
-          <div className="doctor-panel-head flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between">
+        <section className="overflow-hidden rounded-lg border border-[var(--doctor-line)] bg-[var(--doctor-card)] shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+          <div className="flex flex-col gap-4 border-b border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <span className="inline-flex min-h-7 items-center gap-2 rounded-lg bg-violet-50 px-2.5 text-xs font-black uppercase text-[var(--primary)] ring-1 ring-violet-100">
                 <Icon name="chart-no-axes-combined" size={14} />
@@ -152,7 +152,7 @@ export default function DoctorHome({
             </div>
             <button
               type="button"
-              className="dashboard-outline-btn inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-bold shadow-sm shadow-violet-950/5"
+              className={`${secondaryButtonClass} min-h-10 px-3`}
               onClick={onRefresh}
             >
               <Icon name="rotate-ccw" size={16} />
@@ -162,7 +162,7 @@ export default function DoctorHome({
 
           <div className="grid gap-5 p-5">
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="doctor-card-gradient rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div className="rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4">
                 <small className="text-xs font-black uppercase text-slate-400">
                   Panel total
                 </small>
@@ -173,7 +173,7 @@ export default function DoctorHome({
                   assigned patients
                 </span>
               </div>
-              <div className="doctor-card-gradient rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div className="rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4">
                 <small className="text-xs font-black uppercase text-slate-400">
                   Largest group
                 </small>
@@ -184,7 +184,7 @@ export default function DoctorHome({
                   {leadingPercent}% of the panel
                 </span>
               </div>
-              <div className="doctor-card-gradient rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div className="rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4">
                 <small className="text-xs font-black uppercase text-slate-400">
                   Tracked categories
                 </small>
@@ -241,30 +241,30 @@ export default function DoctorHome({
         <div className="grid gap-3 md:grid-cols-3">
           <button
             type="button"
-            className="doctor-action-card grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md"
+            className="grid min-h-32 content-between rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-[var(--doctor-card-muted)] hover:shadow-md"
             onClick={() => onNavigate("patients")}
           >
-            <ActionIcon icon="users" color="#6366f1" bg="#eef2ff" />
+            <ActionIcon icon="users" bg="#eef2ff" />
             <strong className="text-base text-slate-950">
               View All Patients
             </strong>
           </button>
           <button
             type="button"
-            className="doctor-action-card grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md"
+            className="grid min-h-32 content-between rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-pink-200 hover:bg-[var(--doctor-card-muted)] hover:shadow-md"
             onClick={() => onNavigate("monitor")}
           >
-            <ActionIcon icon="activity" color="#ec4899" bg="#fce7f3" />
+            <ActionIcon icon="activity" bg="#fce7f3" />
             <strong className="text-base text-slate-950">
               Real-Time Monitor
             </strong>
           </button>
           <button
             type="button"
-            className="doctor-action-card grid min-h-32 content-between rounded-lg border border-violet-100 bg-white p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
+            className="grid min-h-32 content-between rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4 text-left shadow-sm shadow-violet-950/5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-[var(--doctor-card-muted)] hover:shadow-md"
             onClick={() => onNavigate("sessions")}
           >
-            <ActionIcon icon="calendar-plus" color="#10b981" bg="#d1fae5" />
+            <ActionIcon icon="calendar-plus" bg="#d1fae5" />
             <strong className="text-base text-slate-950">
               Schedule Session
             </strong>

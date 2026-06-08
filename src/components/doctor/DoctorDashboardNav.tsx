@@ -14,7 +14,7 @@ type DoctorNavigationProps = {
 
 export function DoctorSideNav({ selected, onSelect }: DoctorNavigationProps) {
   return (
-    <aside className="dashboard-glass sticky top-0 hidden h-screen w-28 shrink-0 flex-col border-r px-3 py-4 lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-28 shrink-0 flex-col border-r border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-4 shadow-[var(--shadow)] backdrop-blur-[18px] lg:flex">
       <div className="mb-5 grid h-12 w-12 place-items-center self-center rounded-lg bg-[var(--primary)] text-white shadow-lg shadow-indigo-900/20">
         <Icon name="stethoscope" size={24} color="#fff" />
       </div>
@@ -39,7 +39,7 @@ export function DoctorMobileNav({ selected, onSelect }: DoctorNavigationProps) {
   return (
     <>
       <nav
-        className="dashboard-nav fixed inset-x-0 bottom-0 z-30 border-t px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[var(--nav-shadow)] backdrop-blur-[20px] lg:hidden"
         aria-label="Doctor navigation"
       >
         <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">

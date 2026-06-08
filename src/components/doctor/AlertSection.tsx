@@ -8,52 +8,70 @@ export default function AlertSection({ title, tone, items, onOpenSchedule }) {
 
   return (
     <section
-      className={`doctor-alert overflow-hidden rounded-lg border shadow-sm ${critical ? "doctor-alert-critical border-red-200 bg-red-50" : "doctor-alert-warning border-amber-200 bg-amber-50"}`}
+      className={`overflow-hidden rounded-2xl border bg-white shadow-[0_14px_34px_rgba(15,23,42,0.06)] ${
+        critical ? "border-red-200" : "border-amber-200"
+      }`}
     >
-      <header className="flex items-center gap-2 border-b border-white/80 p-3">
+      <header
+        className={`flex flex-wrap items-center gap-3 border-b p-4 ${
+          critical ? "border-red-100 bg-red-50" : "border-amber-100 bg-amber-50"
+        }`}
+      >
         <span
-          className={`grid h-7 w-7 place-items-center rounded-lg text-white ${critical ? "bg-red-600" : "bg-amber-500"}`}
+          className={`grid h-10 w-10 place-items-center rounded-xl text-white shadow-sm ${critical ? "bg-red-600" : "bg-amber-500"}`}
         >
           <Icon
             name={critical ? "triangle-alert" : "info"}
-            size={15}
+            size={18}
             color="#fff"
           />
         </span>
-        <strong className={critical ? "text-red-700" : "text-amber-700"}>
-          {title}
-        </strong>
-        <span className="ml-auto text-xs font-bold text-slate-500">
-          {items.length} patients
-        </span>
+        <div>
+          <strong
+            className={`block text-lg font-black ${critical ? "text-red-700" : "text-amber-700"}`}
+          >
+            {title}
+          </strong>
+          <span className="text-xs font-bold text-slate-500">
+            {items.length} patients require follow-up
+          </span>
+        </div>
       </header>
-      <div className="divide-y divide-white/80">
+
+      <div
+        className={`divide-y ${critical ? "divide-red-100" : "divide-amber-100"}`}
+      >
         {items.map(({ summary, patient }) => (
           <article
-            className="grid gap-3 p-3 lg:grid-cols-[auto_1fr_minmax(180px,auto)_auto] lg:items-center"
+            className="grid gap-3 p-4 transition hover:bg-white/50 lg:grid-cols-[auto_1fr_minmax(180px,auto)_auto] lg:items-center"
             key={`${summary.patientId}-${summary.generatedAt}`}
           >
-            <Icon
-              name={critical ? "circle-alert" : "bell"}
-              size={18}
-              color={critical ? "#dc2626" : "#d97706"}
-            />
-            <p className="m-0 text-sm font-medium text-slate-700">
+            <span
+              className={`grid h-9 w-9 place-items-center rounded-xl ${critical ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}
+            >
+              <Icon
+                name={critical ? "circle-alert" : "bell"}
+                size={18}
+                color="currentColor"
+              />
+            </span>
+            <p className="m-0 text-sm font-semibold leading-6 text-slate-700">
               {summary.summaryText}
             </p>
             <span className="grid gap-1 lg:justify-items-end">
-              <strong className="text-sm text-slate-950">
+              <strong className="text-sm font-black text-slate-950">
                 {patientName(patient)}
               </strong>
               <small className="text-xs font-semibold text-slate-500">
-                Last update - {time(summary.generatedAt)}
+                Updated {time(summary.generatedAt)}
               </small>
             </span>
             <button
               type="button"
-              className="doctor-icon-button grid h-10 w-10 place-items-center rounded-lg border border-white bg-white/80 text-slate-700 shadow-sm transition hover:bg-white"
+              className="grid h-11 w-11 place-items-center rounded-xl border border-[var(--doctor-line)] bg-[var(--doctor-card)] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
               onClick={() => onOpenSchedule(patient)}
               aria-label="Schedule session"
+              title="Schedule session"
             >
               <Icon name="video" size={20} />
             </button>

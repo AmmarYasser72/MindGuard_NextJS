@@ -15,6 +15,14 @@ export default function PatientDetails({ patient, onClose, onSchedule }) {
   const [tab, setTab] = useState("Overview");
   const warnings = patient.warnings || [];
   const ageGenderLabel = [patient.age, patient.gender].filter(Boolean).join("");
+  const sleepPercent =
+    patient.sleep === null || patient.sleep === undefined
+      ? null
+      : Math.round(patient.sleep * 100);
+  const trendDelta =
+    patient.trend?.length && patient.mood !== null && patient.mood !== undefined
+      ? Math.round(patient.mood - patient.trend[0])
+      : null;
 
   return (
     <Modal
@@ -23,22 +31,22 @@ export default function PatientDetails({ patient, onClose, onSchedule }) {
       actions={
         <button
           type="button"
-          className={primaryButtonClass}
+          className={`${primaryButtonClass} rounded-xl`}
           onClick={onSchedule}
         >
           Schedule Session
         </button>
       }
     >
-      <div className="grid gap-4">
+      <div className="grid gap-5">
         {warnings.length ? (
           <div className="grid gap-2">
             {warnings.map((warning) => (
               <div
-                className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700"
+                className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700"
                 key={warning}
               >
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-600 text-white">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-red-600 text-white">
                   <Icon name="triangle-alert" size={16} color="#fff" />
                 </span>
                 {warning}
@@ -47,41 +55,87 @@ export default function PatientDetails({ patient, onClose, onSchedule }) {
           </div>
         ) : null}
 
-        <section className={surfaceClass}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-slate-950">
-                {patientName(patient)}
-                {ageGenderLabel ? `, ${ageGenderLabel}` : ""}
-              </h2>
-              <p className="mt-1 text-sm font-medium text-slate-500">
-                {patient.email}
+        <section className="overflow-hidden rounded-[1.5rem] border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-5">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
+            <div className="grid gap-4">
+              <div className="flex flex-wrap items-start gap-4">
+                <span className="grid h-16 w-16 place-items-center rounded-[1.25rem] bg-[linear-gradient(135deg,var(--primary),#8b5cf6)] text-xl font-black text-white shadow-[0_16px_32px_rgba(99,102,241,0.24)]">
+                  {initials(patient)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-2xl font-black text-slate-950">
+                      {patientName(patient)}
+                      {ageGenderLabel ? `, ${ageGenderLabel}` : ""}
+                    </h2>
+                    <SeverityPill severity={patient.severity} />
+                    <ConditionPill condition={patient.condition} />
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-slate-500">
+                    {patient.email}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+                    <span className="rounded-full bg-white px-3 py-1 shadow-sm shadow-slate-900/5">
+                      {lastSeenLabel(patient)}
+                    </span>
+                    <span className="rounded-full bg-white px-3 py-1 shadow-sm shadow-slate-900/5">
+                      Next session: Not scheduled
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="max-w-2xl text-sm font-medium leading-6 text-slate-600">
+                {patient.journal
+                  ? `Latest note: "${patient.journal.slice(0, 180)}${patient.journal.length > 180 ? "..." : ""}"`
+                  : "No journal entry is attached to this patient yet, so the monitoring view is relying mainly on sensor and activity data."}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <SeverityPill severity={patient.severity} />
-              <ConditionPill condition={patient.condition} />
+
+            <div className="grid gap-3 rounded-[1.35rem] border border-white/80 bg-white/80 p-4">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+                At a glance
+              </p>
+              <OverviewStat
+                label="Mood score"
+                tone="violet"
+                value={
+                  patient.mood === null || patient.mood === undefined
+                    ? "No data"
+                    : `${patient.mood}/100`
+                }
+              />
+              <OverviewStat
+                label="Sleep efficiency"
+                tone="emerald"
+                value={sleepPercent === null ? "No data" : `${sleepPercent}%`}
+              />
+              <OverviewStat
+                label="Trend this week"
+                tone={trendDelta !== null && trendDelta < 0 ? "red" : "blue"}
+                value={
+                  trendDelta === null
+                    ? "No trend"
+                    : `${trendDelta >= 0 ? "+" : ""}${trendDelta}`
+                }
+              />
             </div>
-          </div>
-          <div className="mt-4 grid gap-2 text-sm font-semibold text-slate-500 sm:grid-cols-2">
-            <span>
-              Last active: {lastSeenLabel(patient).replace("Last: ", "")}
-            </span>
-            <span>Next session: Not scheduled</span>
           </div>
         </section>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {["Overview", "Mood", "Sleep", "HRV", "Journal"].map((item) => (
-            <button
-              type="button"
-              className={tabButtonClass(tab === item)}
-              key={item}
-              onClick={() => setTab(item)}
-            >
-              {item}
-            </button>
-          ))}
+        <div className="rounded-[1.25rem] border border-slate-100 bg-slate-50/70 p-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {["Overview", "Mood", "Sleep", "HRV", "Journal"].map((item) => (
+              <button
+                type="button"
+                className={`${tabButtonClass(tab === item)} rounded-xl`}
+                key={item}
+                onClick={() => setTab(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
         </div>
 
         <PatientDetailTab patient={patient} tab={tab} />
@@ -98,18 +152,18 @@ function PatientDetailTab({ patient, tab }) {
 
     return (
       <div className="grid gap-4">
-        <section className={surfaceClass}>
+        <section className={`${surfaceClass} rounded-[1.4rem]`}>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <small className="text-xs font-black uppercase text-[var(--primary)]">
+              <small className="text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
                 Mood trend
               </small>
-              <h3 className="mt-1 text-lg font-bold text-slate-950">
+              <h3 className="mt-1 text-lg font-black text-slate-950">
                 {currentMood || "No"} / 100 latest score
               </h3>
             </div>
             <span
-              className={`rounded-lg px-3 py-2 text-xs font-black ${trendDelta < 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}
+              className={`rounded-full px-3 py-2 text-xs font-black ${trendDelta < 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}
             >
               {trendDelta >= 0 ? "+" : ""}
               {trendDelta} this week
@@ -174,7 +228,7 @@ function PatientDetailTab({ patient, tab }) {
             ["Next step", "Review bedtime consistency", "#8b5cf6"],
           ]}
         />
-        <section className={`${surfaceClass} grid gap-3`}>
+        <section className={`${surfaceClass} grid gap-3 rounded-[1.4rem]`}>
           {[
             "Ask about awakenings and nightmares.",
             "Compare sleep changes with mood movement.",
@@ -214,8 +268,8 @@ function PatientDetailTab({ patient, tab }) {
             ],
           ]}
         />
-        <section className={surfaceClass}>
-          <small className="text-xs font-black uppercase text-slate-400">
+        <section className={`${surfaceClass} rounded-[1.4rem]`}>
+          <small className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
             Interpretation
           </small>
           <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
@@ -230,8 +284,8 @@ function PatientDetailTab({ patient, tab }) {
   if (tab === "Journal") {
     return (
       <div className="grid gap-4">
-        <section className={surfaceClass}>
-          <small className="text-xs font-black uppercase text-[var(--primary)]">
+        <section className={`${surfaceClass} rounded-[1.4rem]`}>
+          <small className="text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
             Latest journal
           </small>
           <p className="mt-3 text-sm font-semibold leading-7 text-slate-600">
@@ -287,13 +341,13 @@ function PatientDetailTab({ patient, tab }) {
           ],
         ]}
       />
-      <section className={surfaceClass}>
+      <section className={`${surfaceClass} rounded-[1.4rem]`}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <small className="text-xs font-black uppercase text-[var(--primary)]">
+            <small className="text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
               Seven day trend
             </small>
-            <h3 className="mt-1 text-lg font-bold text-slate-950">
+            <h3 className="mt-1 text-lg font-black text-slate-950">
               Mood trajectory
             </h3>
           </div>
@@ -307,7 +361,7 @@ function PatientDetailTab({ patient, tab }) {
           color="#6366f1"
         />
       </section>
-      <section className={`${surfaceClass} grid gap-3`}>
+      <section className={`${surfaceClass} grid gap-3 rounded-[1.4rem]`}>
         {carePlanItems(patient).map((item, index) => (
           <p
             className="flex items-center gap-3 text-sm font-semibold text-slate-600"
@@ -327,22 +381,46 @@ function PatientDetailTab({ patient, tab }) {
 }
 
 function InsightGrid({ items }) {
+  const colorClasses = {
+    "#10b981": "text-emerald-500",
+    "#6366f1": "text-[var(--primary)]",
+    "#8b5cf6": "text-violet-500",
+    "#ef4444": "text-red-500",
+  };
+
   return (
     <section className="grid gap-3 sm:grid-cols-3">
       {items.map(([label, value, color]) => (
-        <div className={surfaceClass} key={label}>
-          <small className="text-xs font-black uppercase text-slate-400">
+        <div className={`${surfaceClass} rounded-[1.25rem]`} key={label}>
+          <small className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
             {label}
           </small>
           <strong
-            className="mt-2 block text-lg font-black text-slate-950"
-            style={{ color }}
+            className={`mt-2 block text-lg font-black ${colorClasses[color] || "text-slate-950"}`}
           >
             {value}
           </strong>
         </div>
       ))}
     </section>
+  );
+}
+
+function OverviewStat({ label, tone, value }) {
+  const styles = {
+    blue: "bg-sky-50 text-sky-700 border-sky-200",
+    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    red: "bg-red-50 text-red-700 border-red-200",
+    violet: "bg-violet-50 text-violet-700 border-violet-200",
+  };
+
+  return (
+    <div className={`rounded-xl border p-3 ${styles[tone] || styles.violet}`}>
+      <p className="text-[11px] font-black uppercase tracking-[0.16em] opacity-70">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-bold leading-6">{value}</p>
+    </div>
   );
 }
 
@@ -364,6 +442,10 @@ function carePlanItems(patient) {
       : "Invite the patient to add a short journal note.",
   );
   return items;
+}
+
+function initials(patient) {
+  return `${patient.firstName?.charAt(0) || "P"}${patient.lastName?.charAt(0) || ""}`.toUpperCase();
 }
 
 function journalTone(text) {

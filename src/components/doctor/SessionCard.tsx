@@ -21,7 +21,7 @@ export default function SessionCard({
     : "Duration unavailable";
 
   return (
-    <article className="doctor-surface grid gap-4 rounded-lg border border-violet-100 bg-white p-5 shadow-sm shadow-violet-950/5">
+    <article className="grid gap-4 rounded-lg border border-[var(--doctor-line)] bg-[var(--doctor-card)] p-5 shadow-sm shadow-violet-950/5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-3xl font-bold text-slate-950">

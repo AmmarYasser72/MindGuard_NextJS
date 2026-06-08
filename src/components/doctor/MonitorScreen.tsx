@@ -33,6 +33,11 @@ export default function MonitorScreen({ onOpenSchedule }) {
   );
   const shownCritical = filter === "moderate" ? [] : critical;
   const shownModerate = filter === "critical" ? [] : moderate;
+  const avgConfidence = Math.round(
+    (wrappers.reduce((sum, item) => sum + item.summary.confidenceScore, 0) /
+      wrappers.length) *
+      100,
+  );
 
   function refreshNow() {
     setIsRefreshing(true);
@@ -43,57 +48,78 @@ export default function MonitorScreen({ onOpenSchedule }) {
   }
 
   return (
-    <div className="grid w-full max-w-none gap-4 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-950">
-            Realtime Monitor
-          </h1>
-          <span className="mt-1 inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
-            <b className="h-2 w-2 rounded-full bg-emerald-500" /> Live stream -
-            Every 30s
+    <div className="grid w-full max-w-none gap-5 p-4 sm:p-6 lg:gap-6 lg:p-8">
+      <section className="rounded-2xl border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-5 shadow-[0_16px_42px_rgba(15,23,42,0.07)] sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
+              <Icon name="activity" size={14} />
+              Realtime monitor
+            </span>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              Clinical signals that need attention
+            </h1>
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600">
+              <span className="inline-flex items-center gap-2">
+                <b className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_5px_rgba(16,185,129,0.12)]" />
+                Live stream
+              </span>
+              <span>Updates every 30s</span>
+              <span>{wrappers.length} active summaries</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="grid h-11 w-11 place-items-center rounded-xl border border-[var(--doctor-line)] bg-[var(--doctor-card)] text-slate-600 transition hover:bg-violet-50 hover:text-[var(--primary)]"
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Monitor filters"
+              title="Monitor filters"
+            >
+              <Icon name="sliders-horizontal" size={20} />
+            </button>
+            <button
+              type="button"
+              className="grid h-11 w-11 place-items-center rounded-xl border border-[var(--doctor-line)] bg-[var(--doctor-card)] text-slate-600 transition hover:bg-violet-50 hover:text-[var(--primary)]"
+              onClick={refreshNow}
+              aria-label="Refresh monitor"
+              title="Refresh monitor"
+            >
+              <Icon
+                name="refresh-cw"
+                size={20}
+                className={isRefreshing ? "animate-spin" : ""}
+              />
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="mt-5 grid w-full gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-left shadow-[0_10px_24px_rgba(239,68,68,0.08)] transition hover:-translate-y-0.5 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+          onClick={() => setFilter("critical")}
+        >
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-red-600 text-white shadow-[0_10px_22px_rgba(239,68,68,0.22)]">
+            <Icon name="triangle-alert" size={20} color="#fff" />
           </span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="grid h-10 w-10 place-items-center rounded-lg border border-violet-100 bg-white text-slate-600 transition hover:bg-violet-50 hover:text-[var(--primary)]"
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Monitor filters"
-            title="Monitor filters"
-          >
-            <Icon name="sliders-horizontal" size={20} />
-          </button>
-          <button
-            type="button"
-            className="grid h-10 w-10 place-items-center rounded-lg border border-violet-100 bg-white text-slate-600 transition hover:bg-violet-50 hover:text-[var(--primary)]"
-            onClick={refreshNow}
-            aria-label="Refresh monitor"
-            title="Refresh monitor"
-          >
-            <Icon
-              name="refresh-cw"
-              size={20}
-              className={isRefreshing ? "animate-spin" : ""}
-            />
-          </button>
-        </div>
-      </div>
+          <span>
+            <strong className="block text-base font-black text-red-700">
+              {critical.length} high-risk patients need review
+            </strong>
+            <span className="mt-1 block text-sm font-semibold text-red-600">
+              Acute changes in mood, HRV, or sleep were detected in the latest
+              stream.
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-1 text-sm font-black text-red-700">
+            View
+            <Icon name="chevron-right" size={18} />
+          </span>
+        </button>
+      </section>
 
-      <button
-        type="button"
-        className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-600 p-4 text-left text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
-        onClick={() => setFilter("critical")}
-      >
-        <Icon name="triangle-alert" size={18} color="#fff" />
-        <span className="min-w-0 flex-1">
-          {critical.length} high-risk patients with acute changes in mood and
-          HRV need attention.
-        </span>
-        <Icon name="chevron-right" size={18} color="#fff" />
-      </button>
-
-      <section className="doctor-surface grid gap-3 rounded-lg border border-violet-100 bg-white p-4 shadow-sm shadow-violet-950/5 lg:grid-cols-[1fr_auto] lg:items-center">
+      <section className="grid gap-4 rounded-2xl border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)] lg:grid-cols-[1fr_auto] lg:items-center">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -118,13 +144,13 @@ export default function MonitorScreen({ onOpenSchedule }) {
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+          <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-black text-emerald-700">
             <Icon name="podcast" size={16} color="#047857" />
             Live connection
           </span>
           <button
             type="button"
-            className="rounded-lg px-3 py-2 text-sm font-bold text-[var(--primary)] hover:bg-violet-50"
+            className="rounded-xl px-3 py-2 text-sm font-black text-[var(--primary)] transition hover:bg-violet-50"
             onClick={refreshNow}
             disabled={isRefreshing}
           >
@@ -134,12 +160,26 @@ export default function MonitorScreen({ onOpenSchedule }) {
       </section>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <MonitorStat label="Critical" value={critical.length} color="#ef4444" />
-        <MonitorStat label="Moderate" value={moderate.length} color="#f59e0b" />
         <MonitorStat
+          icon="triangle-alert"
+          label="Critical"
+          note="Immediate review"
+          tone="red"
+          value={critical.length}
+        />
+        <MonitorStat
+          icon="bell"
+          label="Moderate"
+          note="Watch closely"
+          tone="amber"
+          value={moderate.length}
+        />
+        <MonitorStat
+          icon="shield-check"
           label="Avg confidence"
-          value={`${Math.round((wrappers.reduce((sum, item) => sum + item.summary.confidenceScore, 0) / wrappers.length) * 100)}%`}
-          color="#6366f1"
+          note="Model signal quality"
+          tone="violet"
+          value={`${avgConfidence}%`}
         />
       </div>
 
@@ -210,19 +250,30 @@ export default function MonitorScreen({ onOpenSchedule }) {
   );
 }
 
-function MonitorStat({ label, value, color }) {
+function MonitorStat({ icon, label, note, tone, value }) {
+  const styles = {
+    amber: "bg-amber-50 text-amber-700 border-amber-200",
+    red: "bg-red-50 text-red-700 border-red-200",
+    violet: "bg-violet-50 text-[var(--primary)] border-violet-200",
+  };
+
   return (
-    <div className="doctor-surface rounded-lg border border-violet-100 bg-white p-4 shadow-sm shadow-violet-950/5">
-      <small className="text-xs font-black uppercase text-slate-400">
-        {label}
-      </small>
-      <strong
-        className="mt-2 block text-2xl font-black text-slate-950"
-        style={{ color }}
-      >
-        {value}
-      </strong>
-    </div>
+    <article className="rounded-2xl border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+      <div className="flex items-start justify-between gap-3">
+        <span
+          className={`grid h-11 w-11 place-items-center rounded-xl border ${styles[tone] || styles.violet}`}
+        >
+          <Icon name={icon} size={20} />
+        </span>
+        <strong className="text-3xl font-black text-slate-950">{value}</strong>
+      </div>
+      <div className="mt-4">
+        <small className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+          {label}
+        </small>
+        <p className="mt-1 text-sm font-semibold text-slate-500">{note}</p>
+      </div>
+    </article>
   );
 }
 
@@ -232,7 +283,7 @@ function SettingToggle({ title, description, checked }) {
   return (
     <button
       type="button"
-      className="doctor-card-gradient grid gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:bg-slate-50"
+      className="grid gap-3 rounded-xl border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4 text-left transition hover:bg-slate-50"
       onClick={() => setEnabled((current) => !current)}
     >
       <span className="flex items-start justify-between gap-3">
