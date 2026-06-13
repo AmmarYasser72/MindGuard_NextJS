@@ -120,6 +120,14 @@ export default function DoctorDashboard() {
 
   async function editSession(session: DoctorSession) {
     try {
+      const hasBookedPatient = Boolean(
+        session.patientId || session.raw?.patient || session.raw?.patientId,
+      );
+      const sessionUpdatedAt = new Date().toISOString();
+      const patientNotificationMessage = `Your doctor updated your session for ${formatPatientNotificationDate(
+        session.scheduledAt,
+      )}. Note: ${session.notes || "Session details were updated."}`;
+
       await slotService.updateSlot(session.id, {
         doctorNote: session.notes || "",
         endTime:
@@ -133,8 +141,23 @@ export default function DoctorDashboard() {
         patientEmail: session.raw?.patientEmail || undefined,
         patientId: session.patientId || session.raw?.patientId || undefined,
         patientName: session.patientName,
+        patientNotificationAt: hasBookedPatient
+          ? sessionUpdatedAt
+          : undefined,
+        patientNotificationCategory: hasBookedPatient
+          ? "Session"
+          : undefined,
+        patientNotificationMessage: hasBookedPatient
+          ? patientNotificationMessage
+          : undefined,
+        patientNotificationTitle: hasBookedPatient
+          ? "Session updated"
+          : undefined,
+        patientNotificationValue: hasBookedPatient
+          ? "Doctor note"
+          : undefined,
         reason: session.reason || undefined,
-        sessionUpdatedAt: new Date().toISOString(),
+        sessionUpdatedAt,
         startTime: session.raw?.startTime || session.scheduledAt.toISOString(),
         status: session.status || "available",
         type: session.type || undefined,
@@ -148,11 +171,41 @@ export default function DoctorDashboard() {
 
   async function deleteSession(session: DoctorSession) {
     try {
-      await slotService.deleteSlot(session.id);
+      const hasBookedPatient = Boolean(
+        session.patientId || session.raw?.patient || session.raw?.patientId,
+      );
+
+      if (hasBookedPatient) {
+        const cancelledAt = new Date().toISOString();
+        await slotService.updateSlot(session.id, {
+          cancelledAt,
+          cancelledBy: "doctor",
+          patient: session.patientId || session.raw?.patient || undefined,
+          patientEmail: session.raw?.patientEmail || undefined,
+          patientId: session.patientId || session.raw?.patientId || undefined,
+          patientName: session.patientName,
+          patientNotificationAt: cancelledAt,
+          patientNotificationCategory: "Session",
+          patientNotificationMessage: `Your doctor cancelled your session for ${formatPatientNotificationDate(
+            session.scheduledAt,
+          )}.`,
+          patientNotificationTitle: "Session cancelled",
+          patientNotificationValue: "Cancelled by doctor",
+          reason: "cancelled",
+          sessionUpdatedAt: cancelledAt,
+          status: "cancelled",
+        });
+      } else {
+        await slotService.deleteSlot(session.id);
+      }
+
       await loadSlots();
-      showToast("Slot deleted.", "success");
+      showToast(
+        hasBookedPatient ? "Session cancelled." : "Slot deleted.",
+        "success",
+      );
     } catch (error) {
-      showToast(errorMessage(error, "Unable to delete slot."), "error");
+      showToast(errorMessage(error, "Unable to update slot."), "error");
     }
   }
 
@@ -261,12 +314,15 @@ function createSlotPayload(
   const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
   return {
     doctor: doctorId || undefined,
+    doctorNote: form.notes || undefined,
     endTime: endTime.toISOString(),
+    notes: form.notes || undefined,
+    bookedAt: patient?.id ? now.toISOString() : undefined,
     patient: patient?.id || undefined,
     patientEmail: patient?.email || undefined,
     patientId: patient?.id || undefined,
     patientName: patient?.id ? patient.displayName : undefined,
-    reason: form.reason || undefined,
+    reason: patient?.id ? form.reason || undefined : "available",
     startTime: startTime.toISOString(),
     status: patient?.id ? "booked" : "available",
     type: normalizeSessionType(form.type),
@@ -279,4 +335,13 @@ function normalizeSessionType(type: string) {
   if (cleanType.includes("audio")) return "audio";
   if (cleanType.includes("chat")) return "chat";
   return "video";
+}
+
+function formatPatientNotificationDate(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }

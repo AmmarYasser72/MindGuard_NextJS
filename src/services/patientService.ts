@@ -1,4 +1,5 @@
 import { ensureArrayData, ensureArrayRecords } from "./apiResponse";
+import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import { getLocalBookedPatientRecordsForCurrentDoctor } from "./slotService";
 import { mockDoctorPatientRecords } from "../data/mockDoctorPatients";
@@ -31,7 +32,7 @@ export const patientService = {
     const bookedPatients = getLocalBookedPatientRecordsForCurrentDoctor();
 
     try {
-      const response = await request(`/patients/doctor/${doctorId}`, {
+      const response = await request(apiRoutes.patients.forDoctor(doctorId), {
         auth: true,
       });
       const records = ensureArrayData<ApiRecord>(response, "Doctor patients");
@@ -39,10 +40,9 @@ export const patientService = {
       if (!records.length) {
         return visiblePatients(
           doctorId,
-          mergePatientRecords(
-            bookedPatients,
-            mockDoctorPatientRecords,
-          ).map(normalizePatientRecord),
+          mergePatientRecords(bookedPatients, mockDoctorPatientRecords).map(
+            normalizePatientRecord,
+          ),
         );
       }
 

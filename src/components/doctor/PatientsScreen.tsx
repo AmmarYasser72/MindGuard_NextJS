@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Icon from "../common/Icon";
 import { patientName, severityLabels } from "../../data/doctorData";
 import PatientCard from "./PatientCard";
@@ -38,6 +38,7 @@ export default function PatientsScreen({
   const [detailPatient, setDetailPatient] = useState<DoctorPatient | null>(
     null,
   );
+  const patientIds = patients.map((patient) => patient.id).join("|");
 
   const severityCounts = useMemo(
     () =>
@@ -81,8 +82,21 @@ export default function PatientsScreen({
   const currentFilterLabel =
     filter === "all" ? "All levels" : severityLabels[filter];
 
+  useEffect(() => {
+    const ids = patientIds.split("|").filter(Boolean);
+
+    if (!ids.length) {
+      setExpanded(null);
+      return;
+    }
+
+    setExpanded((current) =>
+      current && ids.includes(current) ? current : ids[0],
+    );
+  }, [patientIds]);
+
   return (
-    <div className="grid w-full max-w-none gap-5 p-4 sm:p-6 lg:gap-6 lg:p-8">
+    <div className="grid w-full max-w-none gap-4 p-4 sm:p-6 lg:p-8">
       <section className="rounded-[1.25rem] border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] px-4 py-3 shadow-[0_8px_18px_rgba(15,23,42,0.06)] sm:px-4.5 sm:py-3.5">
         <div className="grid gap-3">
           <div className="flex flex-wrap items-start justify-between gap-3">

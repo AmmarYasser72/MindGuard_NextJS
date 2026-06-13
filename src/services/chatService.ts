@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { apiRoutes } from "./apiRoutes";
 import { getAuthToken, request } from "./apiClient";
 import { storage } from "./storage";
 import { shouldUseDemoData } from "../config/demoMode";
@@ -188,7 +189,7 @@ function shouldRefreshStoredChat(error: unknown) {
 }
 
 async function createRemoteChat(userId: string) {
-  const created = await request("/chats", {
+  const created = await request(apiRoutes.chats.base, {
     auth: true,
     method: "POST",
   });
@@ -221,7 +222,7 @@ async function ensureRemoteChat(
   if (existingChatId) return { chatId: existingChatId, source: "stored" };
 
   try {
-    const chats = await request("/chats", { auth: true });
+    const chats = await request(apiRoutes.chats.base, { auth: true });
     const chatId = pickLatestChatId(chats, existingChatId);
     if (chatId) {
       saveChatThreadId(userId, chatId);
@@ -236,7 +237,9 @@ async function ensureRemoteChat(
 }
 
 async function loadRemoteMessages(chatId: string) {
-  const remoteMessages = await request(`/chats/${chatId}`, { auth: true });
+  const remoteMessages = await request(apiRoutes.chats.byId(chatId), {
+    auth: true,
+  });
   return normalizeMessages(remoteMessages);
 }
 
@@ -245,7 +248,7 @@ export async function createBackendChat(userId: string) {
 }
 
 export async function getBackendChats() {
-  const chats = await request("/chats", { auth: true });
+  const chats = await request(apiRoutes.chats.base, { auth: true });
   return toArrayPayload(chats);
 }
 
@@ -254,7 +257,7 @@ export async function getBackendChatMessages(chatId: string) {
 }
 
 export async function deleteBackendChat(userId: string, chatId: string) {
-  const deleted = await request(`/chats/${chatId}`, {
+  const deleted = await request(apiRoutes.chats.byId(chatId), {
     auth: true,
     method: "DELETE",
   });
@@ -268,7 +271,7 @@ export async function deleteBackendChat(userId: string, chatId: string) {
 }
 
 export async function deleteAllBackendChats(userId: string) {
-  const deleted = await request(`/chats/${userId}`, {
+  const deleted = await request(apiRoutes.chats.allForCurrentUser(userId), {
     auth: true,
     method: "DELETE",
   });

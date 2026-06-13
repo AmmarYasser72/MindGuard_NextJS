@@ -1,4 +1,4 @@
-import { getSession } from "./session";
+import { getSession, isLocalDemoSession } from "./session";
 import type { ApiError, RequestOptions } from "../types/api";
 
 const RAW_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
@@ -31,7 +31,9 @@ function normalizeToken(token?: string | null) {
 }
 
 export function getAuthToken() {
-  return normalizeToken(getSession()?.token || "");
+  const session = getSession();
+  if (isLocalDemoSession(session)) return null;
+  return normalizeToken(session?.token || "");
 }
 
 export async function request<T = unknown>(
@@ -51,8 +53,10 @@ export async function request<T = unknown>(
   try {
     const response = await fetch(`${API_BASE_URL}${normalizePath(path)}`, {
       ...fetchOptions,
+      cache: fetchOptions.cache || "no-store",
       headers: {
         "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
         ...(token ? { authorization: token } : {}),
         ...(headers || {}),
       },

@@ -3,6 +3,7 @@ import {
   ensureObjectData,
   ensureRecordHasAnyField,
 } from "./apiResponse";
+import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import type { ApiRecord } from "../types/api";
 
@@ -19,12 +20,14 @@ const sessionSlotFields = [
 
 export const doctorService = {
   async getDoctors() {
-    const response = await request("/doctors", { auth: true });
+    const response = await request(apiRoutes.doctors.base, { auth: true });
     return ensureArrayRecords(response, "Doctors", doctorFields);
   },
 
   async getDoctor(doctorId: string) {
-    const response = await request(`/doctors/${doctorId}`, { auth: true });
+    const response = await request(apiRoutes.doctors.byId(doctorId), {
+      auth: true,
+    });
     return ensureRecordHasAnyField(
       ensureObjectData(response, "Doctor"),
       "Doctor",
@@ -33,7 +36,7 @@ export const doctorService = {
   },
 
   async createSessionSlots({ from, to }: { from: string; to: string }) {
-    const response = await request("/doctors", {
+    const response = await request(apiRoutes.doctors.base, {
       auth: true,
       method: "POST",
       body: JSON.stringify({ from, to }),

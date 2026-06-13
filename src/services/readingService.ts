@@ -3,8 +3,10 @@ import {
   ensureRecordHasAnyField,
   isBackendServerError,
 } from "./apiResponse";
+import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
+import type { ApiRecord } from "../types/api";
 
 const moodReadingFields = ["_id", "id", "patient", "type", "value", "mood"];
 
@@ -25,6 +27,21 @@ export function moodToApiValue(mood: number | string) {
 }
 
 export const readingService = {
+  async getPatientMoodHistory(params: { from?: string; to?: string } = {}) {
+    if (shouldUseDemoData()) {
+      return [] as ApiRecord[];
+    }
+
+    const query = new URLSearchParams();
+    if (params.from) query.set("from", params.from);
+    if (params.to) query.set("to", params.to);
+    const suffix = query.toString() ? `?${query.toString()}` : "";
+    const response = await request(`${apiRoutes.readings.patientMoodHistory}${suffix}`, {
+      auth: true,
+    });
+    return ensureArrayMoodReadings(response);
+  },
+
   async savePatientMood(mood: number | string) {
     if (shouldUseDemoData()) {
       return {
@@ -36,10 +53,10 @@ export const readingService = {
     }
 
     const moodValue = moodToApiValue(mood);
-    const query = new URLSearchParams({ mood: moodValue });
     try {
-      const response = await request(`/readings/patient/mood?${query}`, {
+      const response = await request(apiRoutes.readings.patientMood, {
         auth: true,
+        body: JSON.stringify({ mood: moodValue }),
         method: "POST",
       });
       return ensureRecordHasAnyField(
@@ -59,3 +76,15 @@ export const readingService = {
     }
   },
 };
+
+function ensureArrayMoodReadings(response: unknown): ApiRecord[] {
+  if (!response || typeof response !== "object" || Array.isArray(response)) {
+    return [];
+  }
+  const data = (response as ApiRecord).data;
+  return Array.isArray(data)
+    ? data.filter(
+        (item) => item && typeof item === "object" && !Array.isArray(item),
+      )
+    : [];
+}

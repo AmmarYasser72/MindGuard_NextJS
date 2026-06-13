@@ -244,21 +244,24 @@ function sessionUpdateNotification(
     cleanText(session.raw?.doctorNote) ||
     cleanText(session.raw?.notes);
   const updatedAt =
-    cleanText(session.raw?.sessionUpdatedAt) ||
-    cleanText(session.raw?.updatedAt);
+    cleanText(session.raw?.patientNotificationAt) ||
+    cleanText(session.raw?.sessionUpdatedAt);
+  const message = cleanText(session.raw?.patientNotificationMessage);
 
-  if (!note || !updatedAt) return null;
+  if (!updatedAt || (!note && !message)) return null;
 
   return {
     id: `session-update-${session.id}-${updatedAt}`,
-    title: "Session updated",
-    message: `Your doctor updated your session for ${formatNotificationDate(session.scheduledAt)}. Note: ${note}`,
+    title: cleanText(session.raw?.patientNotificationTitle) || "Session updated",
+    message:
+      message ||
+      `Your doctor updated your session for ${formatNotificationDate(session.scheduledAt)}. Note: ${note}`,
     time: relativeNotificationTime(updatedAt),
     icon: "calendar-check",
     color: "#0f766e",
     bg: "#ccfbf1",
-    category: "Session",
-    value: "Doctor note",
+    category: cleanText(session.raw?.patientNotificationCategory) || "Session",
+    value: cleanText(session.raw?.patientNotificationValue) || "Doctor note",
     unread: true,
   };
 }

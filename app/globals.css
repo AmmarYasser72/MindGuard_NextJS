@@ -1165,4 +1165,53 @@
   html[data-theme="dark"] .doctor-shell .border-amber-200 {
     border-color: rgba(245, 158, 11, 0.34) !important;
   }
+
+  .doctor-scroll-area {
+    scrollbar-color: color-mix(in srgb, var(--primary) 62%, #cbd5e1)
+      color-mix(in srgb, var(--doctor-card-soft) 86%, transparent);
+    scrollbar-width: thin;
+    scroll-behavior: smooth;
+  }
+
+  .doctor-scroll-area::-webkit-scrollbar {
+    width: 0.7rem;
+  }
+
+  .doctor-scroll-area::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--doctor-card-soft) 82%, transparent),
+        color-mix(in srgb, var(--doctor-card-muted) 70%, transparent)
+      );
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .doctor-scroll-area::-webkit-scrollbar-thumb {
+    min-height: 3rem;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 92%, #ffffff),
+        color-mix(in srgb, var(--primary-strong) 82%, #0f172a)
+      )
+      padding-box;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+      0 0.4rem 1rem rgba(99, 102, 241, 0.18);
+  }
+
+  .doctor-scroll-area::-webkit-scrollbar-thumb:hover {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 100%, #ffffff),
+        color-mix(in srgb, var(--primary-strong) 100%, #111827)
+      )
+      padding-box;
+  }
 }

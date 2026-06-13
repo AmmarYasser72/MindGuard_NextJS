@@ -1,4 +1,5 @@
 import { ensureObjectData, ensureRecordHasAnyField } from "./apiResponse";
+import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
 import type { ApiRecord } from "../types/api";
@@ -7,37 +8,50 @@ import {
   assertNoDemoConflict,
   assertSlotCanBeCreated,
   assertValidSlotRange,
-  availableFutureSlots,
-  bookDemoSlot,
   cleanString,
-  demoSlotsForDoctor,
-  ensureDoctorFallbackSlots,
   extractSlotRecords,
-  getLocalBookedPatientRecordsForCurrentDoctor,
   isConnectionFallbackError,
   isInactiveStatus,
   isPatientSlot,
-  localFallbackSlot,
-  localSlotRecordsForCurrentDoctor,
   mergeSlotRecords,
   normalizeSlotList,
   normalizeSlotRecord,
   queryString,
-  readDemoSlots,
   slotFields,
   slotWithDefaults,
   statusValue,
-  writeDemoSlots,
   type SlotDoctorDetails,
   type SlotPatientDetails,
 } from "./slotService.helpers";
+import {
+  availableFutureSlots,
+  bookDemoSlot,
+  demoSlotsForDoctor,
+  ensureDoctorFallbackSlots,
+  localFallbackSlot,
+  localSlotRecordsForCurrentDoctor,
+  readDemoSlots,
+  writeDemoSlots,
+} from "./slotService.demo";
 
 export {
-  getLocalBookedPatientRecordsForCurrentDoctor,
   normalizeSlotRecord,
   type SlotDoctorDetails,
   type SlotPatientDetails,
 } from "./slotService.helpers";
+export { getLocalBookedPatientRecordsForCurrentDoctor } from "./slotService.demo";
+
+function isMongoObjectId(value: string) {
+  return /^[a-f\d]{24}$/i.test(value);
+}
+
+function fallbackAvailableSlotsForDoctor(
+  doctorId: string,
+  doctor?: SlotDoctorDetails | null,
+) {
+  ensureDoctorFallbackSlots(doctorId, doctor);
+  return availableFutureSlots(demoSlotsForDoctor(doctorId));
+}
 
 export const slotService = {
   async createSlot(slot: ApiRecord) {
@@ -56,7 +70,7 @@ export const slotService = {
     }
 
     try {
-      const response = await request("/slots", {
+      const response = await request(apiRoutes.slots.base, {
         auth: true,
         method: "POST",
         body: JSON.stringify(candidate),
@@ -86,9 +100,12 @@ export const slotService = {
     }
 
     try {
-      const response = await request(`/slots/my${queryString(params)}`, {
-        auth: true,
-      });
+      const response = await request(
+        `${apiRoutes.slots.my}${queryString(params)}`,
+        {
+          auth: true,
+        },
+      );
       const backendRecords = extractSlotRecords(response, "Doctor slots");
       return normalizeSlotList(
         mergeSlotRecords(backendRecords, localSlotRecordsForCurrentDoctor()),
@@ -110,28 +127,19 @@ export const slotService = {
     }
 
     if (shouldUseDemoData()) {
-      ensureDoctorFallbackSlots(cleanDoctorId, doctor);
-      return availableFutureSlots(demoSlotsForDoctor(cleanDoctorId));
+      return fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
+    }
+
+    if (!isMongoObjectId(cleanDoctorId)) {
+      return fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
     }
 
     const params = queryString({
-      doctor: cleanDoctorId,
       sortBy: "startTime",
       sortOrder: "asc",
-      status: "available",
     });
     const candidatePaths = [
-      `/slots${params}`,
-      `/doctors/${encodeURIComponent(cleanDoctorId)}/slots${queryString({
-        sortBy: "startTime",
-        sortOrder: "asc",
-        status: "available",
-      })}`,
-      `/slots/doctor/${encodeURIComponent(cleanDoctorId)}${queryString({
-        sortBy: "startTime",
-        sortOrder: "asc",
-        status: "available",
-      })}`,
+      `${apiRoutes.slots.forDoctor(cleanDoctorId)}${params}`,
     ];
 
     for (const path of candidatePaths) {
@@ -142,27 +150,51 @@ export const slotService = {
             extractSlotRecords(response, "Doctor available slots"),
           ),
         );
-        if (backendSlots.length) {
-          return backendSlots;
-        }
-        ensureDoctorFallbackSlots(cleanDoctorId, doctor);
-        return availableFutureSlots(demoSlotsForDoctor(cleanDoctorId));
+        return backendSlots.length
+          ? backendSlots
+          : fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
       } catch (error) {
         if (isConnectionFallbackError(error)) {
-          ensureDoctorFallbackSlots(cleanDoctorId, doctor);
-          return availableFutureSlots(demoSlotsForDoctor(cleanDoctorId));
+          return fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
         }
+        throw error;
       }
     }
 
-    ensureDoctorFallbackSlots(cleanDoctorId, doctor);
-    return availableFutureSlots(demoSlotsForDoctor(cleanDoctorId));
+    return [];
   },
 
   async getPatientSlots(patient: Partial<SlotPatientDetails>) {
-    return normalizeSlotList(
-      readDemoSlots().filter((slot) => isPatientSlot(slot, patient)),
-    );
+    if (!cleanString(patient.patientId) && !cleanString(patient.patientEmail)) {
+      return [];
+    }
+
+    if (shouldUseDemoData()) {
+      return normalizeSlotList(
+        readDemoSlots().filter((slot) => isPatientSlot(slot, patient)),
+      );
+    }
+
+    try {
+      const response = await request(apiRoutes.slots.patientMine, {
+        auth: true,
+      });
+      const localSlots = readDemoSlots().filter((slot) =>
+        isPatientSlot(slot, patient),
+      );
+      return normalizeSlotList(
+        mergeSlotRecords(
+          extractSlotRecords(response, "Patient booked slots"),
+          localSlots,
+        ),
+      );
+    } catch (error) {
+      if (!isConnectionFallbackError(error)) throw error;
+
+      return normalizeSlotList(
+        readDemoSlots().filter((slot) => isPatientSlot(slot, patient)),
+      );
+    }
   },
 
   async getSlot(slotId: string) {
@@ -174,13 +206,10 @@ export const slotService = {
       return normalizeSlotRecord(slot);
     }
 
-    const fallbackSlot = localFallbackSlot(slotId);
-    if (fallbackSlot) {
-      return normalizeSlotRecord(fallbackSlot);
-    }
-
     try {
-      const response = await request(`/slots/${slotId}`, { auth: true });
+      const response = await request(apiRoutes.slots.byId(slotId), {
+        auth: true,
+      });
       return normalizeSlotRecord(
         ensureRecordHasAnyField(
           ensureObjectData(response, "Slot"),
@@ -210,8 +239,7 @@ export const slotService = {
       return normalizeSlotRecord(bookDemoSlot(slotId, patient));
     }
 
-    const fallbackSlot = localFallbackSlot(slotId);
-    if (fallbackSlot) {
+    if (localFallbackSlot(slotId)) {
       return normalizeSlotRecord(bookDemoSlot(slotId, patient));
     }
 
@@ -229,12 +257,13 @@ export const slotService = {
     }
 
     try {
-      const response = await request(`/slots/${slotId}`, {
+      const response = await request(apiRoutes.slots.byId(slotId), {
         auth: true,
         method: "PATCH",
         body: JSON.stringify({
           bookedAt: new Date().toISOString(),
           patient: patient.patientId,
+          patientId: patient.patientId,
           patientEmail: patient.patientEmail || "",
           patientName: patient.patientName,
           status: "booked",
@@ -297,8 +326,29 @@ export const slotService = {
       return next;
     }
 
+    if (localFallbackSlot(slotId)) {
+      const slots = readDemoSlots();
+      const index = slots.findIndex(
+        (item) => String(item.id || item._id) === slotId,
+      );
+      if (index === -1) {
+        throw new Error("Slot not found");
+      }
+      const next = {
+        ...slots[index],
+        ...updates,
+      };
+      if (!isInactiveStatus(statusValue(next))) {
+        assertFutureSlot(next);
+        assertNoDemoConflict(slots, next, slotId);
+      }
+      slots[index] = next;
+      writeDemoSlots(slots);
+      return next;
+    }
+
     try {
-      const response = await request(`/slots/${slotId}`, {
+      const response = await request(apiRoutes.slots.byId(slotId), {
         auth: true,
         method: "PATCH",
         body: JSON.stringify(updates),
@@ -342,8 +392,17 @@ export const slotService = {
       return { id: slotId };
     }
 
+    if (localFallbackSlot(slotId)) {
+      const slots = readDemoSlots();
+      const next = slots.filter(
+        (item) => String(item.id || item._id) !== slotId,
+      );
+      writeDemoSlots(next);
+      return { id: slotId };
+    }
+
     try {
-      const response = await request(`/slots/${slotId}`, {
+      const response = await request(apiRoutes.slots.byId(slotId), {
         auth: true,
         method: "DELETE",
       });

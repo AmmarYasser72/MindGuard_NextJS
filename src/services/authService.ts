@@ -1,4 +1,5 @@
 import { storage } from "./storage";
+import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import {
   LOCAL_DEMO_TOKEN,
@@ -85,20 +86,47 @@ function asRecord(value: unknown): ApiRecord {
 }
 
 function stringValue(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value : undefined;
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (value instanceof String && value.toString().trim()) {
+    return value.toString().trim();
+  }
+  return undefined;
+}
+
+function looksLikeJwtToken(value: string) {
+  return value.split(".").length === 3;
+}
+
+function tokenValue(value: unknown): string | undefined {
+  const text = stringValue(value);
+  if (!text) return undefined;
+  if (/^bearer\s+/i.test(text)) return text;
+  if (looksLikeJwtToken(text)) return `Bearer ${text}`;
+  return undefined;
 }
 
 function authToken(data: unknown): string | null {
+  const directToken = tokenValue(data);
+  if (directToken) return directToken;
+
   const record = asRecord(data);
   const nested = asRecord(record.data);
+  const nestedData = asRecord(nested.data);
   return (
-    stringValue(record.token) ||
-    stringValue(record.accessToken) ||
-    stringValue(record.access_token) ||
-    stringValue(record.data) ||
-    stringValue(nested.token) ||
-    stringValue(nested.accessToken) ||
-    stringValue(nested.access_token) ||
+    tokenValue(record.token) ||
+    tokenValue(record.accessToken) ||
+    tokenValue(record.access_token) ||
+    tokenValue(record.jwt) ||
+    tokenValue(record.data) ||
+    tokenValue(nested.token) ||
+    tokenValue(nested.accessToken) ||
+    tokenValue(nested.access_token) ||
+    tokenValue(nested.jwt) ||
+    tokenValue(nested.data) ||
+    tokenValue(nestedData.token) ||
+    tokenValue(nestedData.accessToken) ||
+    tokenValue(nestedData.access_token) ||
+    tokenValue(nestedData.jwt) ||
     null
   );
 }
@@ -224,7 +252,20 @@ function createConnectionError() {
 function createBackendAuthTokenError(action: "sign in" | "sign up") {
   return new Error(
     `The backend accepted the ${action} request but did not return a usable auth token. ` +
-      "Make sure the running backend has USER_ACCESS_JWT_SECRET set to the same value as JWT_SECRET, then restart the backend.",
+      "Please check the backend auth response and JWT configuration, then restart the backend if needed.",
+  );
+}
+
+function backendErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) return "";
+  const typedError = error as ApiError;
+  const data = asRecord(typedError.data);
+
+  return (
+    stringValue(data.message) ||
+    stringValue(data.error) ||
+    stringValue(error.message) ||
+    ""
   );
 }
 
@@ -272,7 +313,7 @@ async function remoteSignIn(
   password: string,
   fallback: Partial<AuthUser>,
 ) {
-  const auth = await request("/auth/login", {
+  const auth = await request(apiRoutes.auth.login, {
     method: "POST",
     body: JSON.stringify({ email: cleanEmail, password, rememberMe: true }),
   });
@@ -319,7 +360,10 @@ export const authService = {
         throw createConnectionError();
       }
       if (isInternalServerError(error)) {
-        throw createBackendAuthTokenError("sign in");
+        throw new Error(
+          backendErrorMessage(error) ||
+            createBackendAuthTokenError("sign in").message,
+        );
       }
       throw new Error(
         error instanceof Error ? error.message : "Invalid email or password",
@@ -357,7 +401,7 @@ export const authService = {
     }
 
     try {
-      const auth = await request("/auth/register", {
+      const auth = await request(apiRoutes.auth.register, {
         method: "POST",
         body: JSON.stringify(body),
       });
@@ -391,7 +435,10 @@ export const authService = {
           saveSignedUpDoctor(profile, nextUser);
           return nextUser;
         } catch {
-          throw createBackendAuthTokenError("sign up");
+          throw new Error(
+            backendErrorMessage(error) ||
+              createBackendAuthTokenError("sign up").message,
+          );
         }
       }
       throw new Error(

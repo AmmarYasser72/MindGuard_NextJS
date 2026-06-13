@@ -1,19 +1,20 @@
 import { useState } from "react";
 import Icon from "../common/Icon";
 import DonutChart from "../common/DonutChart";
-import { Modal } from "../common/Modal";
-import {
-  ageGender,
-  conditionLabels,
-  lastSeenLabel,
-  patientName,
-} from "../../data/doctorData";
+import { conditionLabels } from "../../data/doctorData";
 import ActionIcon from "./ActionIcon";
 import DoctorStat from "./DoctorStat";
 import EmptyPanel from "./EmptyPanel";
 import SessionSnippet from "./SessionSnippet";
-import { EditSessionModal } from "./SessionsScreen";
+import { EditSessionModal } from "./SessionModals";
 import { secondaryButtonClass, surfaceClass } from "./dashboardShared";
+import UpcomingSessionDetailsModal from "./doctorHome/UpcomingSessionDetailsModal";
+import {
+  compareSessionsByRemainingTime,
+  findSessionPatient,
+  isConfirmedUpcomingSession,
+  isToday,
+} from "./doctorHome/doctorHomeUtils";
 import type { DoctorPatient, DoctorSession } from "../../types/doctor";
 
 type DoctorHomeProps = {
@@ -25,15 +26,6 @@ type DoctorHomeProps = {
   sessions?: DoctorSession[];
   slotError?: string;
 };
-
-function isToday(date: Date) {
-  const current = new Date();
-  return (
-    date.getFullYear() === current.getFullYear() &&
-    date.getMonth() === current.getMonth() &&
-    date.getDate() === current.getDate()
-  );
-}
 
 export default function DoctorHome({
   onEditSession,
@@ -92,6 +84,7 @@ export default function DoctorHome({
     : 0;
   const upcoming = sessions
     .filter(isConfirmedUpcomingSession)
+    .sort(compareSessionsByRemainingTime)
     .slice(0, 5);
   const activeToday = patients.filter(
     (patient) => patient.lastSeen && isToday(patient.lastSeen),
@@ -229,8 +222,10 @@ export default function DoctorHome({
           </div>
         </section>
 
-        <section className={surfaceClass}>
-          <div className="mb-4 flex items-start justify-between gap-3">
+        <section
+          className={`${surfaceClass} flex max-h-[min(42rem,calc(100vh-8rem))] flex-col overflow-hidden`}
+        >
+          <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold text-slate-950">
                 Upcoming Sessions
@@ -251,7 +246,7 @@ export default function DoctorHome({
             </button>
           </div>
           {upcoming.length ? (
-            <div className="grid gap-3">
+            <div className="doctor-scroll-area -mr-2 grid gap-3 overflow-y-auto pr-2">
               {upcoming.map((session) => (
                 <SessionSnippet
                   session={session}
@@ -325,154 +320,4 @@ export default function DoctorHome({
       ) : null}
     </div>
   );
-}
-
-function hasSessionPatient(session: DoctorSession) {
-  const name = String(session.patientName || "").trim().toLowerCase();
-  return Boolean(
-    session.patientId ||
-      session.raw?.patient ||
-      session.raw?.patientEmail ||
-      (name && name !== "unassigned"),
-  );
-}
-
-function isConfirmedUpcomingSession(session: DoctorSession) {
-  const status = String(session.status || "").toLowerCase();
-  return (
-    session.scheduledAt >= new Date() &&
-    !["available", "cancelled", "completed"].includes(status) &&
-    hasSessionPatient(session)
-  );
-}
-
-function findSessionPatient(
-  session: DoctorSession,
-  patients: DoctorPatient[],
-) {
-  const sessionEmail = String(session.raw?.patientEmail || "").toLowerCase();
-  const sessionName = String(session.patientName || "").toLowerCase();
-  return (
-    patients.find((patient) => patient.id === session.patientId) ||
-    patients.find(
-      (patient) => sessionEmail && patient.email.toLowerCase() === sessionEmail,
-    ) ||
-    patients.find(
-      (patient) => patientName(patient).toLowerCase() === sessionName,
-    ) ||
-    null
-  );
-}
-
-function UpcomingSessionDetailsModal({
-  onClose,
-  onEdit,
-  patient,
-  session,
-}: {
-  onClose: () => void;
-  onEdit: () => void;
-  patient: DoctorPatient | null;
-  session: DoctorSession;
-}) {
-  const sleep =
-    patient?.sleep === null || patient?.sleep === undefined
-      ? "No data"
-      : `${Math.round(patient.sleep * 100)}%`;
-
-  return (
-    <Modal
-      title="Upcoming Session"
-      onClose={onClose}
-      actions={
-        <>
-          <button type="button" className={secondaryButtonClass} onClick={onClose}>
-            Close
-          </button>
-          <button type="button" className={secondaryButtonClass} onClick={onEdit}>
-            Edit session
-          </button>
-        </>
-      }
-    >
-      <div className="grid gap-4">
-        <section className="rounded-lg border border-[var(--doctor-line)] bg-[linear-gradient(180deg,var(--doctor-card)_0%,var(--doctor-card-soft)_100%)] p-4">
-          <small className="text-xs font-black uppercase text-slate-400">
-            Patient profile
-          </small>
-          <div className="mt-3 flex flex-wrap items-start gap-4">
-            <span className="grid h-14 w-14 place-items-center rounded-lg bg-[var(--primary)] text-lg font-black text-white">
-              {initials(patient, session.patientName)}
-            </span>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-xl font-black text-slate-950">
-                {patient ? patientName(patient) : session.patientName}
-              </h3>
-              <p className="mt-1 text-sm font-semibold text-slate-500">
-                {patient?.email ||
-                  String(session.raw?.patientEmail || "No email available")}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-600">
-                {patient ? (
-                  <>
-                    <span className="rounded-lg bg-slate-100 px-3 py-1">
-                      {ageGender(patient) || "Age unavailable"}
-                    </span>
-                    <span className="rounded-lg bg-slate-100 px-3 py-1">
-                      {conditionLabels[patient.condition] || patient.condition}
-                    </span>
-                    <span className="rounded-lg bg-slate-100 px-3 py-1">
-                      {lastSeenLabel(patient)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="rounded-lg bg-slate-100 px-3 py-1">
-                    Profile will appear here when this patient is assigned to
-                    the doctor panel.
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-3 sm:grid-cols-3">
-          <Signal label="Mood" value={patient?.mood ? `${patient.mood}/100` : "No data"} />
-          <Signal label="Sleep" value={sleep} />
-          <Signal
-            label="HRV"
-            value={patient?.hrv ? `${Math.round(patient.hrv)} ms` : "No data"}
-          />
-        </section>
-
-        <section className="grid gap-3 rounded-lg border border-[var(--doctor-line)] bg-white p-4 sm:grid-cols-3">
-          <Signal label="Session" value={session.type || "video"} />
-          <Signal
-            label="Duration"
-            value={`${session.duration || 60} min`}
-          />
-          <Signal label="Status" value={session.status || "scheduled"} />
-        </section>
-      </div>
-    </Modal>
-  );
-}
-
-function Signal({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-[var(--doctor-line)] bg-white p-4">
-      <small className="text-xs font-black uppercase text-slate-400">
-        {label}
-      </small>
-      <strong className="mt-2 block text-sm font-black text-slate-950">
-        {value}
-      </strong>
-    </div>
-  );
-}
-
-function initials(patient: DoctorPatient | null, fallbackName: string) {
-  const source = patient ? patientName(patient) : fallbackName;
-  const parts = source.trim().split(/\s+/);
-  return `${parts[0]?.charAt(0) || "P"}${parts[1]?.charAt(0) || ""}`.toUpperCase();
 }

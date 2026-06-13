@@ -25,10 +25,16 @@ export default function ScheduleSessionModal({
   onClose,
   onCreate,
 }: ScheduleSessionModalProps) {
-  const [form, setForm] = useState(() => ({
-    ...createDefaultScheduleForm(),
-    patient: patient ? patientName(patient) : "Unassigned",
-  }));
+  const isAvailabilitySlot = !patient;
+  const [form, setForm] = useState(() => {
+    const defaultForm = createDefaultScheduleForm();
+
+    return {
+      ...defaultForm,
+      patient: patient ? patientName(patient) : "Open to all patients",
+      reason: patient ? defaultForm.reason : "Available",
+    };
+  });
   const [calendarMonth, setCalendarMonth] = useState(() =>
     firstDayOfMonth(parseDateInput(form.date)),
   );
@@ -80,7 +86,12 @@ export default function ScheduleSessionModal({
     setIsSubmitting(true);
     try {
       await onCreate(form);
-      showToast(`Session scheduled for ${form.patient}`, "success");
+      showToast(
+        isAvailabilitySlot
+          ? "Available time slot created for patients."
+          : `Session scheduled for ${form.patient}`,
+        "success",
+      );
     } catch (submitError) {
       const message =
         submitError instanceof Error
@@ -95,7 +106,7 @@ export default function ScheduleSessionModal({
 
   return (
     <Modal
-      title="Schedule New Session"
+      title={isAvailabilitySlot ? "Add Available Slot" : "Schedule New Session"}
       onClose={onClose}
       actions={
         <>
@@ -113,7 +124,13 @@ export default function ScheduleSessionModal({
             onClick={submit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Scheduling..." : "Schedule Session"}
+            {isSubmitting
+              ? isAvailabilitySlot
+                ? "Creating..."
+                : "Scheduling..."
+              : isAvailabilitySlot
+                ? "Create Slot"
+                : "Schedule Session"}
           </button>
         </>
       }
@@ -125,11 +142,11 @@ export default function ScheduleSessionModal({
       ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={fieldClass}>
-          Patient
+          {isAvailabilitySlot ? "Visibility" : "Patient"}
           <input
             className={inputClass}
             value={form.patient}
-            readOnly={Boolean(patient)}
+            readOnly
             onChange={(event) => update("patient", event.target.value)}
           />
         </label>
@@ -269,6 +286,7 @@ export default function ScheduleSessionModal({
           <input
             className={inputClass}
             value={form.reason}
+            readOnly={isAvailabilitySlot}
             onChange={(event) => update("reason", event.target.value)}
           />
         </label>
@@ -278,7 +296,11 @@ export default function ScheduleSessionModal({
             className={`${inputClass} min-h-28 py-3`}
             value={form.notes}
             onChange={(event) => update("notes", event.target.value)}
-            placeholder="Add any additional notes..."
+            placeholder={
+              isAvailabilitySlot
+                ? "Add private notes about this available slot..."
+                : "Add any additional notes..."
+            }
           />
         </label>
       </div>

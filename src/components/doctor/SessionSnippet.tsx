@@ -1,8 +1,19 @@
 import { timeCountdown } from "../../data/doctorData";
+import type { DoctorSession } from "../../types/doctor";
 import { formatDateTime } from "./dashboardShared";
+import { bookedAtDate } from "./doctorHome/doctorHomeUtils";
 import SeverityPill from "./SeverityPill";
 
-export default function SessionSnippet({ onClick, session }) {
+type SessionSnippetProps = {
+  onClick?: () => void;
+  session: DoctorSession;
+};
+
+export default function SessionSnippet({
+  onClick,
+  session,
+}: SessionSnippetProps) {
+  const bookedAt = bookedAtDate(session);
   const content = (
     <>
       <div className="flex items-center justify-between gap-3">
@@ -14,6 +25,11 @@ export default function SessionSnippet({ onClick, session }) {
       <small className="text-sm font-medium text-slate-500">
         {formatDateTime(session.scheduledAt)}
       </small>
+      {bookedAt ? (
+        <small className="text-xs font-semibold text-slate-400">
+          Booked {formatDateTime(bookedAt)}
+        </small>
+      ) : null}
       <em className="w-fit rounded-lg bg-white px-3 py-1 text-xs font-bold not-italic text-[var(--primary)] shadow-sm shadow-violet-950/5">
         {timeCountdown(session.scheduledAt)}
       </em>
