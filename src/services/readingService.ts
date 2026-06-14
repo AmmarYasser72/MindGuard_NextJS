@@ -6,7 +6,7 @@ import {
 import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
-import type { ApiRecord } from "../types/api";
+import type { ApiError, ApiRecord } from "../types/api";
 
 const moodReadingFields = ["_id", "id", "patient", "type", "value", "mood"];
 
@@ -43,16 +43,11 @@ export const readingService = {
   },
 
   async savePatientMood(mood: number | string) {
+    const moodValue = moodToApiValue(mood);
     if (shouldUseDemoData()) {
-      return {
-        id: `demo-mood-${Date.now()}`,
-        mood: moodToApiValue(mood),
-        type: "mood",
-        value: Number(mood),
-      };
+      return createLocalMoodReading(moodValue, "demo");
     }
 
-    const moodValue = moodToApiValue(mood);
     try {
       const response = await request(apiRoutes.readings.patientMood, {
         auth: true,
@@ -65,17 +60,37 @@ export const readingService = {
         moodReadingFields,
       );
     } catch (error) {
-      if (!isBackendServerError(error)) throw error;
-
-      return {
-        id: `local-mood-${Date.now()}`,
-        mood: moodValue,
-        type: "mood",
-        value: moodValue,
-      };
+      if (!shouldFallbackToLocalMoodSave(error)) throw error;
+      return createLocalMoodReading(moodValue, "local");
     }
   },
 };
+
+function createLocalMoodReading(
+  moodValue: ReturnType<typeof moodToApiValue>,
+  source: "demo" | "local",
+) {
+  return {
+    id: `${source}-mood-${Date.now()}`,
+    mood: moodValue,
+    type: "mood",
+    value: moodValue,
+  };
+}
+
+function shouldFallbackToLocalMoodSave(error: unknown) {
+  if (isBackendServerError(error)) return true;
+  if (!(error instanceof Error)) return false;
+
+  const typedError = error as ApiError;
+  return (
+    error.name === "TypeError" ||
+    error.message === "Failed to fetch" ||
+    typedError.code === "REQUEST_TIMEOUT" ||
+    typedError.status === 404 ||
+    typedError.status === 405
+  );
+}
 
 function ensureArrayMoodReadings(response: unknown): ApiRecord[] {
   if (!response || typeof response !== "object" || Array.isArray(response)) {
