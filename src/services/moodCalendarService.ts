@@ -1,5 +1,7 @@
 import { storage } from "./storage";
 
+export const MOOD_CALENDAR_UPDATED_EVENT = "mindguard:mood-calendar-updated";
+
 export const moodEmojis = [
   "\u{1F620}",
   "\u{1F622}",
@@ -49,6 +51,13 @@ export type MoodEntry = {
   mood: number;
   recorded: boolean;
   summary: string;
+};
+
+export type MoodCalendarUpdateDetail = {
+  day: number;
+  mood: number;
+  monthKey: string;
+  patientKey: string;
 };
 
 export function moodColor(mood: number) {
@@ -162,23 +171,54 @@ export function saveMoodCalendarEntries(
   );
 }
 
+function emitMoodCalendarUpdated(
+  patientKey: string,
+  mood: number,
+  day: number,
+  date: Date,
+) {
+  if (typeof window === "undefined") return;
+
+  window.dispatchEvent(
+    new CustomEvent<MoodCalendarUpdateDetail>(MOOD_CALENDAR_UPDATED_EVENT, {
+      detail: {
+        day,
+        mood,
+        monthKey: moodCalendarMonthKey(date),
+        patientKey,
+      },
+    }),
+  );
+}
+
 export function recordMoodForToday(
   patientKey: string,
   mood: number,
   date = new Date(),
 ) {
+  return recordMoodForCalendarDay(patientKey, mood, date.getDate(), date);
+}
+
+export function recordMoodForCalendarDay(
+  patientKey: string,
+  mood: number,
+  day: number,
+  date = new Date(),
+) {
   const { entries, todayDay } = readMoodCalendarEntries(patientKey, date);
   const nextEntries = entries.map((entry) => {
-    if (entry.day !== todayDay) return entry;
+    if (entry.day !== day) return entry;
 
     return moodEntryForDay(entry, mood, formatCheckInTime(date));
   });
 
   saveMoodCalendarEntries(patientKey, nextEntries, date);
+  emitMoodCalendarUpdated(patientKey, mood, day, date);
 
   return {
     currentStreak: calculateCurrentStreak(nextEntries, todayDay),
     entries: nextEntries,
+    recordedEntry: nextEntries.find((entry) => entry.day === day) || null,
     todayEntry: nextEntries.find((entry) => entry.day === todayDay) || null,
   };
 }

@@ -6,6 +6,7 @@ import {
 } from "./apiResponse";
 import { shouldUseDemoData } from "../config/demoMode";
 import { getSession } from "./session";
+import { storage } from "./storage";
 import {
   patients as demoPatients,
 } from "../data/doctorData";
@@ -14,6 +15,12 @@ import type { DoctorSession } from "../types/doctor";
 import type { DoctorProfileSource } from "../types/recommendations";
 
 const DEFAULT_DEMO_DOCTOR_ID = "demo-doctor-001";
+const AUTH_USERS_KEY = "auth_users";
+const demoPatientNames = new Map([
+  ["demo-patient-001", "Demo Patient"],
+  ["patient-001", "Demo Patient"],
+  ["patient@demo.com", "Demo Patient"],
+]);
 
 export const slotFields = [
   "_id",
@@ -155,6 +162,11 @@ function isPlaceholderPatientName(value: unknown) {
   return !name || name === "unassigned";
 }
 
+function isGeneratedPatientName(value: unknown) {
+  const name = cleanString(value);
+  return /^patient\s+[a-z0-9]{4,}$/i.test(name);
+}
+
 export function shortPatientLabel(value: unknown) {
   return isPlaceholderPatientName(value) ? "" : cleanString(value);
 }
@@ -213,7 +225,18 @@ export function slotWithDefaults(slot: ApiRecord) {
 
 function patientLabel(patient: unknown, fallbackName = "") {
   const cleanFallback = cleanString(fallbackName);
-  if (cleanFallback) return cleanFallback;
+  const patientRecord = asRecord(patient);
+  const patientId =
+    recordId(patient) || cleanString(patientRecord?.patientId) || "";
+  const patientEmail = cleanString(patientRecord?.email).toLowerCase();
+
+  if (cleanFallback && !isGeneratedPatientName(cleanFallback)) {
+    return cleanFallback;
+  }
+
+  const knownName = lookupStoredPatientName(patientId, patientEmail);
+  if (knownName) return knownName;
+
   if (!patient) return "Unassigned";
   if (typeof patient === "string") {
     const matchedPatient = demoPatients.find((item) => item.id === patient);
@@ -232,6 +255,31 @@ function patientLabel(patient: unknown, fallbackName = "") {
       record.patientName ||
       (id ? `Patient ${shortId(id)}` : "Unassigned"),
   );
+}
+
+function lookupStoredPatientName(patientId: string, patientEmail: string) {
+  const cleanId = patientId.trim().toLowerCase();
+  const cleanEmail = patientEmail.trim().toLowerCase();
+
+  const demoName = demoPatientNames.get(cleanEmail) || demoPatientNames.get(cleanId);
+  if (demoName) return demoName;
+
+  const storedUsers = storage.get<ApiRecord[]>(AUTH_USERS_KEY, []);
+  const match = storedUsers.find((user) => {
+    const role = cleanString(user.role).toLowerCase();
+    const userEmail = cleanString(user.email).toLowerCase();
+    const ids = [
+      cleanString(user.uid).toLowerCase(),
+      cleanString(user._id).toLowerCase(),
+      cleanString(user.id).toLowerCase(),
+    ].filter(Boolean);
+
+    if (role && role !== "patient") return false;
+    if (cleanEmail && userEmail === cleanEmail) return true;
+    return Boolean(cleanId && ids.includes(cleanId));
+  });
+
+  return cleanString(match?.displayName) || cleanString(match?.name);
 }
 
 function patientIdentityKeys(patient: Partial<SlotPatientDetails>) {

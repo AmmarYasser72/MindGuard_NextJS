@@ -1,5 +1,6 @@
 import { sessions as demoSessions } from "../data/doctorData";
 import { curatedDoctorProfiles } from "../data/doctorRecommendations";
+import { DEMO_SLOT_STORAGE_KEY, notifySlotChange } from "./slotSync";
 import { getSignedUpDoctors } from "./localDoctorDirectory";
 import { storage } from "./storage";
 import type { ApiRecord } from "../types/api";
@@ -28,8 +29,6 @@ import { shortId } from "./apiResponse";
 
 const DEFAULT_DEMO_DOCTOR_ID = "demo-doctor-001";
 const fallbackAvailabilityTimes = ["09:00", "11:30", "15:30"];
-const DEMO_SLOTS_KEY = "demo_slots";
-
 function currentUserId() {
   const user = getSession()?.user;
   return (
@@ -364,7 +363,7 @@ export function ensureDoctorFallbackSlots(
 }
 
 export function readDemoSlots(): ApiRecord[] {
-  const stored = storage.get<ApiRecord[]>(DEMO_SLOTS_KEY, []);
+  const stored = storage.get<ApiRecord[]>(DEMO_SLOT_STORAGE_KEY, []);
   const seed: ApiRecord[] = [
     ...demoSessions.map(demoSlotRecord),
     ...doctorFallbackSlotRecords(),
@@ -381,14 +380,15 @@ export function readDemoSlots(): ApiRecord[] {
   }));
 
   if (!stored.length || merged.length !== stored.length) {
-    storage.set(DEMO_SLOTS_KEY, merged);
+    storage.set(DEMO_SLOT_STORAGE_KEY, merged);
   }
 
   return merged;
 }
 
 export function writeDemoSlots(slots: ApiRecord[]) {
-  storage.set(DEMO_SLOTS_KEY, slots);
+  storage.set(DEMO_SLOT_STORAGE_KEY, slots);
+  notifySlotChange();
 }
 
 function recordAsObject(value: unknown) {

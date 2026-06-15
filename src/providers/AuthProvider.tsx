@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "../hooks/useAuth";
 import { authService } from "../services/authService";
+import { SESSION_CHANGE_EVENT } from "../services/session";
 import type { AuthUser, RegisterProfile } from "../types/auth";
 import type { ReactNode } from "react";
 
@@ -13,14 +14,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    window.queueMicrotask(() => {
+    function syncFromSession() {
       if (!isMounted) return;
       setUser(authService.getCurrentUser());
       setAuthLoading(false);
-    });
+    }
+
+    window.queueMicrotask(syncFromSession);
+    window.addEventListener(SESSION_CHANGE_EVENT, syncFromSession);
 
     return () => {
       isMounted = false;
+      window.removeEventListener(SESSION_CHANGE_EVENT, syncFromSession);
     };
   }, []);
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../../common/Toast";
+import { useAuth } from "../../../../hooks/useAuth";
 import { slotService } from "../../../../services/slotService";
 import type { DoctorSession } from "../../../../types/doctor";
 import type { DoctorRecommendation } from "../../../../types/recommendations";
@@ -19,12 +20,14 @@ export function useDoctorSlotBooking({
   patientName,
 }: UseDoctorSlotBookingParams) {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [slots, setSlots] = useState<DoctorSession[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState("");
   const [slotError, setSlotError] = useState("");
   const [isLoadingSlots, setIsLoadingSlots] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) || null;
+  const canUseBookingSession = Boolean(user);
   const bookingPatient = useMemo(
     () => ({
       patientEmail: patientEmail || "",
@@ -100,6 +103,13 @@ export function useDoctorSlotBooking({
   }
 
   async function bookSelectedSlot() {
+    if (!canUseBookingSession) {
+      const message = "Sign in again to book a session.";
+      setSlotError(message);
+      showToast(message, "error");
+      return;
+    }
+
     if (!selectedSlot) {
       setSlotError("Choose an available future slot before booking.");
       return;
@@ -146,6 +156,7 @@ export function useDoctorSlotBooking({
 
   return {
     bookSelectedSlot,
+    canUseBookingSession,
     isBooking,
     isLoadingSlots,
     refreshSlots,

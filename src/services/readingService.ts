@@ -1,12 +1,11 @@
 import {
   ensureObjectData,
   ensureRecordHasAnyField,
-  isBackendServerError,
 } from "./apiResponse";
 import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
-import type { ApiError, ApiRecord } from "../types/api";
+import type { ApiRecord } from "../types/api";
 
 const moodReadingFields = ["_id", "id", "patient", "type", "value", "mood"];
 
@@ -48,27 +47,22 @@ export const readingService = {
       return createLocalMoodReading(moodValue, "demo");
     }
 
-    try {
-      const response = await request(apiRoutes.readings.patientMood, {
-        auth: true,
-        body: JSON.stringify({ mood: moodValue }),
-        method: "POST",
-      });
-      return ensureRecordHasAnyField(
-        ensureObjectData(response, "Mood reading"),
-        "Mood reading",
-        moodReadingFields,
-      );
-    } catch (error) {
-      if (!shouldFallbackToLocalMoodSave(error)) throw error;
-      return createLocalMoodReading(moodValue, "local");
-    }
+    const response = await request(apiRoutes.readings.patientMood, {
+      auth: true,
+      body: JSON.stringify({ mood: moodValue }),
+      method: "POST",
+    });
+    return ensureRecordHasAnyField(
+      ensureObjectData(response, "Mood reading"),
+      "Mood reading",
+      moodReadingFields,
+    );
   },
 };
 
 function createLocalMoodReading(
   moodValue: ReturnType<typeof moodToApiValue>,
-  source: "demo" | "local",
+  source: "demo",
 ) {
   return {
     id: `${source}-mood-${Date.now()}`,
@@ -76,20 +70,6 @@ function createLocalMoodReading(
     type: "mood",
     value: moodValue,
   };
-}
-
-function shouldFallbackToLocalMoodSave(error: unknown) {
-  if (isBackendServerError(error)) return true;
-  if (!(error instanceof Error)) return false;
-
-  const typedError = error as ApiError;
-  return (
-    error.name === "TypeError" ||
-    error.message === "Failed to fetch" ||
-    typedError.code === "REQUEST_TIMEOUT" ||
-    typedError.status === 404 ||
-    typedError.status === 405
-  );
 }
 
 function ensureArrayMoodReadings(response: unknown): ApiRecord[] {

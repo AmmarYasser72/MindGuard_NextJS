@@ -5,6 +5,7 @@ import {
   LOCAL_DEMO_TOKEN,
   clearSession,
   getSession,
+  hasUsableSession,
   setSession,
 } from "./session";
 import { saveSignedUpDoctor } from "./localDoctorDirectory";
@@ -57,6 +58,10 @@ function findLocalUser(email: string, password: string) {
   return savedUsers().find(
     (item) => item.email.toLowerCase() === email && item.password === password,
   );
+}
+
+function findLocalUserByEmail(email: string) {
+  return savedUsers().find((item) => item.email.toLowerCase() === email);
 }
 
 function findDemoUser(email: string, password: string) {
@@ -329,6 +334,34 @@ async function remoteSignIn(
 export const authService = {
   getCurrentUser() {
     return getSession()?.user || null;
+  },
+
+  async ensureBackendSession() {
+    const session = getSession();
+    if (!session?.user) {
+      throw new Error("Sign in before booking a session.");
+    }
+
+    if (hasUsableSession(session)) {
+      return session.user;
+    }
+
+    const email = session.user.email?.trim().toLowerCase();
+    const localUser = email ? findLocalUserByEmail(email) : null;
+    if (!email || !localUser?.password) {
+      throw new Error("Sign in again to book a session.");
+    }
+
+    try {
+      return await remoteSignIn(email, localUser.password, session.user);
+    } catch (error) {
+      if (isConnectionError(error)) {
+        throw createConnectionError();
+      }
+      throw new Error(
+        "We couldn't refresh your session. Sign in again, then book the session.",
+      );
+    }
   },
 
   async signIn(email: string, password: string) {

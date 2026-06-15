@@ -5,9 +5,13 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "../../../hooks/useRouter";
 import { readingService } from "../../../services/readingService";
 import {
+  MOOD_CALENDAR_UPDATED_EVENT,
   getTodayMoodSnapshot,
+  moodCalendarMonthKey,
   recordMoodForToday,
+  type MoodCalendarUpdateDetail,
 } from "../../../services/moodCalendarService";
+import { loadMoodCalendarEntries } from "../../../services/moodCalendarRemote";
 import {
   dailyGoals,
   moodOptions,
@@ -15,6 +19,10 @@ import {
   weeklyMood,
 } from "../../../data/patientData";
 import { slotService } from "../../../services/slotService";
+import {
+  SLOT_CHANGE_EVENT,
+  isSlotStorageEvent,
+} from "../../../services/slotSync";
 import FindDoctorSection from "./FindDoctorSection";
 import MoodCheckInPanel from "./MoodCheckInPanel";
 import MoodTrendPanel from "./MoodTrendPanel";
@@ -44,6 +52,7 @@ export default function DashboardContent({ email }: { email: string }) {
   const { signOut, user } = useAuth();
   const { showToast } = useToast();
   const patientKey = user?.uid || user?.email || email || "guest-patient";
+  const currentMoodMonthKey = moodCalendarMonthKey();
   const patientDetails = useMemo(
     () => ({
       patientEmail: user?.email || email || "",
@@ -100,17 +109,58 @@ export default function DashboardContent({ email }: { email: string }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isNotificationsOpen]);
 
-  useEffect(() => {
-    window.queueMicrotask(() => {
-      const snapshot = getTodayMoodSnapshot(patientKey);
-      setCurrentStreak(snapshot.currentStreak);
+  const syncTodayMoodSnapshot = useCallback(() => {
+    const snapshot = getTodayMoodSnapshot(patientKey);
+    setCurrentStreak(snapshot.currentStreak);
 
-      if (snapshot.todayEntry?.recorded) {
-        setSelectedMood(snapshot.todayEntry.mood - 1);
-        setRecordedMood(snapshot.todayEntry.label);
-      }
-    });
+    if (snapshot.todayEntry?.recorded) {
+      setSelectedMood(snapshot.todayEntry.mood - 1);
+      setRecordedMood(snapshot.todayEntry.label);
+      return;
+    }
+
+    setSelectedMood(null);
+    setRecordedMood(null);
   }, [patientKey]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadMoodCalendarEntries(patientKey)
+      .catch(() => null)
+      .then(() => {
+        if (!isMounted) return;
+        syncTodayMoodSnapshot();
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [patientKey, syncTodayMoodSnapshot]);
+
+  useEffect(() => {
+    function handleMoodCalendarUpdated(event: Event) {
+      const detail = (event as CustomEvent<MoodCalendarUpdateDetail>).detail;
+      if (
+        detail?.patientKey !== patientKey ||
+        detail.monthKey !== currentMoodMonthKey
+      ) {
+        return;
+      }
+
+      syncTodayMoodSnapshot();
+    }
+
+    window.addEventListener(
+      MOOD_CALENDAR_UPDATED_EVENT,
+      handleMoodCalendarUpdated,
+    );
+    return () =>
+      window.removeEventListener(
+        MOOD_CALENDAR_UPDATED_EVENT,
+        handleMoodCalendarUpdated,
+      );
+  }, [currentMoodMonthKey, patientKey, syncTodayMoodSnapshot]);
 
   const loadSessionNotifications = useCallback(async () => {
     try {
@@ -129,6 +179,24 @@ export default function DashboardContent({ email }: { email: string }) {
 
   useEffect(() => {
     window.queueMicrotask(loadSessionNotifications);
+  }, [loadSessionNotifications]);
+
+  useEffect(() => {
+    function handleSlotChange() {
+      void loadSessionNotifications();
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (!isSlotStorageEvent(event)) return;
+      void loadSessionNotifications();
+    }
+
+    window.addEventListener(SLOT_CHANGE_EVENT, handleSlotChange);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(SLOT_CHANGE_EVENT, handleSlotChange);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, [loadSessionNotifications]);
 
   function handleLogout() {

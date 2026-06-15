@@ -2,6 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "../../../../components/common/Toast";
 import { useAuth } from "../../../../hooks/useAuth";
 import { slotService } from "../../../../services/slotService";
+import {
+  SLOT_CHANGE_EVENT,
+  isSlotStorageEvent,
+} from "../../../../services/slotSync";
 import type { DoctorSession } from "../../../../types/doctor";
 import {
   compareAppointmentsByRemainingTime,
@@ -60,6 +64,24 @@ export function usePatientAppointments() {
     window.queueMicrotask(loadAppointments);
   }, [loadAppointments]);
 
+  useEffect(() => {
+    function handleSlotChange() {
+      void loadAppointments();
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (!isSlotStorageEvent(event)) return;
+      void loadAppointments();
+    }
+
+    window.addEventListener(SLOT_CHANGE_EVENT, handleSlotChange);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(SLOT_CHANGE_EVENT, handleSlotChange);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [loadAppointments]);
+
   const loadAvailableSlots = useCallback(async (appointment: DoctorSession) => {
     const doctorId = appointment.doctorId || "";
     setSelectedSlotId("");
@@ -99,11 +121,7 @@ export function usePatientAppointments() {
 
     setIsMutating(true);
     try {
-      await slotService.updateSlot(cancelTarget.id, {
-        cancelledAt: new Date().toISOString(),
-        cancelledBy: "patient",
-        status: "cancelled",
-      });
+      await slotService.cancelPatientSlot(cancelTarget, patientDetails);
       setCancelTarget(null);
       await loadAppointments();
       showToast("Appointment cancelled.", "success");
@@ -117,7 +135,7 @@ export function usePatientAppointments() {
     } finally {
       setIsMutating(false);
     }
-  }, [cancelTarget, loadAppointments, showToast]);
+  }, [cancelTarget, loadAppointments, patientDetails, showToast]);
 
   const rescheduleAppointment = useCallback(async () => {
     if (!rescheduleTarget || !selectedSlotId) return;
@@ -129,11 +147,8 @@ export function usePatientAppointments() {
         selectedSlotId,
         patientDetails,
       );
-      await slotService.updateSlot(rescheduleTarget.id, {
-        cancelledAt: new Date().toISOString(),
-        cancelledBy: "patient",
+      await slotService.cancelPatientSlot(rescheduleTarget, patientDetails, {
         rescheduledTo: bookedSlot.id,
-        status: "cancelled",
       });
       setRescheduleTarget(null);
       setSelectedSlotId("");

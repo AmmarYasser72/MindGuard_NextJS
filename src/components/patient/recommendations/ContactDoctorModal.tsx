@@ -34,6 +34,7 @@ export default function ContactDoctorModal({
   const mailToHref = buildMailTo(doctor, conditionLabel, patientEmail);
   const {
     bookSelectedSlot,
+    canUseBookingSession,
     isBooking,
     isLoadingSlots,
     refreshSlots,
@@ -80,7 +81,11 @@ export default function ContactDoctorModal({
             onClick={bookSelectedSlot}
             disabled={!selectedSlot || isBooking || isLoadingSlots}
           >
-            {isBooking ? "Booking..." : "Book selected"}
+            {isBooking
+              ? "Booking..."
+              : canUseBookingSession
+                ? "Book selected"
+                : "Sign in to book"}
           </Button>
         </>
       }

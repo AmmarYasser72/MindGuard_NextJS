@@ -1,8 +1,11 @@
 import { ensureObjectData, ensureRecordHasAnyField } from "./apiResponse";
 import { apiRoutes } from "./apiRoutes";
-import { request } from "./apiClient";
+import { getAuthToken, request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
+import { SLOT_OVERRIDE_STORAGE_KEY, notifySlotChange } from "./slotSync";
+import { storage } from "./storage";
 import type { ApiRecord } from "../types/api";
+import type { DoctorSession } from "../types/doctor";
 import {
   assertFutureSlot,
   assertNoDemoConflict,
@@ -45,12 +48,114 @@ function isMongoObjectId(value: string) {
   return /^[a-f\d]{24}$/i.test(value);
 }
 
+function isPermissionDeniedError(error: unknown) {
+  const status = (error as { status?: number } | null)?.status;
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  return (
+    (status === 401 || status === 403) &&
+    /(access denied|not authorized|unauthorized|forbidden)/i.test(message)
+  );
+}
+
+function readSlotOverrides() {
+  return storage.get<Record<string, ApiRecord>>(SLOT_OVERRIDE_STORAGE_KEY, {});
+}
+
+function writeSlotOverrides(overrides: Record<string, ApiRecord>) {
+  storage.set(SLOT_OVERRIDE_STORAGE_KEY, overrides);
+  notifySlotChange();
+}
+
+function clearSlotOverride(slotId: string) {
+  const overrides = readSlotOverrides();
+  if (!overrides[slotId]) return;
+  delete overrides[slotId];
+  writeSlotOverrides(overrides);
+}
+
+function saveSlotOverride(slotId: string, record: ApiRecord) {
+  writeSlotOverrides({
+    ...readSlotOverrides(),
+    [slotId]: {
+      ...record,
+      id: record.id || record._id || slotId,
+      _id: record._id || record.id || slotId,
+    },
+  });
+}
+
+function applySlotOverrides(records: ApiRecord[]) {
+  const overrides = readSlotOverrides();
+  const merged = new Map<string, ApiRecord>();
+
+  records.forEach((record) => {
+    const slotId = String(record.id || record._id || "");
+    const override = slotId ? overrides[slotId] : null;
+    merged.set(
+      slotId || crypto.randomUUID(),
+      override ? { ...record, ...override } : record,
+    );
+  });
+
+  Object.entries(overrides).forEach(([slotId, record]) => {
+    if (!merged.has(slotId)) {
+      merged.set(slotId, record);
+    }
+  });
+
+  return [...merged.values()];
+}
+
+function endTimeForSession(session: DoctorSession) {
+  return (
+    session.raw?.endTime ||
+    session.raw?.to ||
+    new Date(
+      session.scheduledAt.getTime() + (session.duration || 60) * 60 * 1000,
+    ).toISOString()
+  );
+}
+
+function slotSnapshotRecord(
+  session: DoctorSession,
+  patient?: Partial<SlotPatientDetails>,
+) {
+  return {
+    ...session.raw,
+    doctor: session.raw?.doctor || session.doctorId || undefined,
+    doctorId: session.raw?.doctorId || session.doctorId || undefined,
+    endTime: endTimeForSession(session),
+    id: session.raw?.id || session.id,
+    notes: session.notes || session.raw?.notes || session.raw?.doctorNote || "",
+    patient:
+      session.raw?.patient || session.patientId || patient?.patientId || undefined,
+    patientEmail:
+      session.raw?.patientEmail || patient?.patientEmail || undefined,
+    patientId:
+      session.patientId || session.raw?.patientId || patient?.patientId || undefined,
+    patientName: session.patientName || patient?.patientName || "Patient",
+    reason: session.reason || session.status || "booked",
+    startTime: session.raw?.startTime || session.scheduledAt.toISOString(),
+    status: session.status || session.raw?.status || "booked",
+    type: session.type || session.raw?.type || undefined,
+  } satisfies ApiRecord;
+}
+
 function fallbackAvailableSlotsForDoctor(
   doctorId: string,
   doctor?: SlotDoctorDetails | null,
 ) {
   ensureDoctorFallbackSlots(doctorId, doctor);
   return availableFutureSlots(demoSlotsForDoctor(doctorId));
+}
+
+function backendSlotCreatePayload(slot: ApiRecord) {
+  return {
+    endTime: slot.endTime || slot.to,
+    patient: slot.patient || slot.patientId || undefined,
+    startTime: slot.startTime || slot.from || slot.scheduledAt,
+    status: statusValue(slot) || undefined,
+  };
 }
 
 export const slotService = {
@@ -73,7 +178,7 @@ export const slotService = {
       const response = await request(apiRoutes.slots.base, {
         auth: true,
         method: "POST",
-        body: JSON.stringify(candidate),
+        body: JSON.stringify(backendSlotCreatePayload(candidate)),
       });
       return ensureRecordHasAnyField(
         ensureObjectData(response, "Slot creation"),
@@ -96,7 +201,9 @@ export const slotService = {
 
   async getDoctorSlots(params: Record<string, unknown> = {}) {
     if (shouldUseDemoData()) {
-      return normalizeSlotList(localSlotRecordsForCurrentDoctor());
+      return normalizeSlotList(
+        applySlotOverrides(localSlotRecordsForCurrentDoctor()),
+      );
     }
 
     try {
@@ -108,12 +215,16 @@ export const slotService = {
       );
       const backendRecords = extractSlotRecords(response, "Doctor slots");
       return normalizeSlotList(
-        mergeSlotRecords(backendRecords, localSlotRecordsForCurrentDoctor()),
+        applySlotOverrides(
+          mergeSlotRecords(backendRecords, localSlotRecordsForCurrentDoctor()),
+        ),
       );
     } catch (error) {
       if (!isConnectionFallbackError(error)) throw error;
 
-      return normalizeSlotList(localSlotRecordsForCurrentDoctor());
+      return normalizeSlotList(
+        applySlotOverrides(localSlotRecordsForCurrentDoctor()),
+      );
     }
   },
 
@@ -144,7 +255,7 @@ export const slotService = {
 
     for (const path of candidatePaths) {
       try {
-        const response = await request(path, { auth: true });
+        const response = await request(path);
         const backendSlots = availableFutureSlots(
           normalizeSlotList(
             extractSlotRecords(response, "Doctor available slots"),
@@ -169,31 +280,62 @@ export const slotService = {
       return [];
     }
 
+    const cleanPatientId = cleanString(patient.patientId);
+    const localSlots = readDemoSlots().filter((slot) =>
+      isPatientSlot(slot, patient),
+    );
+
     if (shouldUseDemoData()) {
-      return normalizeSlotList(
-        readDemoSlots().filter((slot) => isPatientSlot(slot, patient)),
-      );
+      return normalizeSlotList(applySlotOverrides(localSlots));
+    }
+
+    if (isMongoObjectId(cleanPatientId)) {
+      try {
+        const response = await request(apiRoutes.slots.forPatient(cleanPatientId));
+        return normalizeSlotList(
+          applySlotOverrides(
+            mergeSlotRecords(
+              extractSlotRecords(response, "Patient booked slots"),
+              localSlots,
+            ),
+          ),
+        );
+      } catch (error) {
+        if (
+          !isConnectionFallbackError(error) &&
+          !isPermissionDeniedError(error) &&
+          getAuthToken()
+        ) {
+          throw error;
+        }
+      }
+    }
+
+    if (!getAuthToken()) {
+      return normalizeSlotList(applySlotOverrides(localSlots));
     }
 
     try {
       const response = await request(apiRoutes.slots.patientMine, {
         auth: true,
       });
-      const localSlots = readDemoSlots().filter((slot) =>
-        isPatientSlot(slot, patient),
-      );
       return normalizeSlotList(
-        mergeSlotRecords(
-          extractSlotRecords(response, "Patient booked slots"),
-          localSlots,
+        applySlotOverrides(
+          mergeSlotRecords(
+            extractSlotRecords(response, "Patient booked slots"),
+            localSlots,
+          ),
         ),
       );
     } catch (error) {
-      if (!isConnectionFallbackError(error)) throw error;
+      if (
+        !isConnectionFallbackError(error) &&
+        !isPermissionDeniedError(error)
+      ) {
+        throw error;
+      }
 
-      return normalizeSlotList(
-        readDemoSlots().filter((slot) => isPatientSlot(slot, patient)),
-      );
+      return normalizeSlotList(applySlotOverrides(localSlots));
     }
   },
 
@@ -211,16 +353,18 @@ export const slotService = {
         auth: true,
       });
       return normalizeSlotRecord(
-        ensureRecordHasAnyField(
-          ensureObjectData(response, "Slot"),
-          "Slot",
-          slotFields,
-        ),
+        applySlotOverrides([
+          ensureRecordHasAnyField(
+            ensureObjectData(response, "Slot"),
+            "Slot",
+            slotFields,
+          ),
+        ])[0],
       );
     } catch (error) {
       if (!isConnectionFallbackError(error)) throw error;
 
-      const slot = readDemoSlots().find(
+      const slot = applySlotOverrides(readDemoSlots()).find(
         (item) => String(item.id || item._id) === slotId,
       );
       if (!slot) {
@@ -243,31 +387,10 @@ export const slotService = {
       return normalizeSlotRecord(bookDemoSlot(slotId, patient));
     }
 
-    const currentSlot = await this.getSlot(slotId);
-    const currentRecord = currentSlot.raw || {};
-    assertFutureSlot(currentRecord);
-
-    if (
-      String(currentSlot.status || "").toLowerCase() !== "available" ||
-      currentSlot.patientId
-    ) {
-      throw new Error(
-        "This slot is no longer available. Please choose another time.",
-      );
-    }
-
     try {
-      const response = await request(apiRoutes.slots.byId(slotId), {
-        auth: true,
+      const response = await request(apiRoutes.slots.book(slotId), {
         method: "PATCH",
-        body: JSON.stringify({
-          bookedAt: new Date().toISOString(),
-          patient: patient.patientId,
-          patientId: patient.patientId,
-          patientEmail: patient.patientEmail || "",
-          patientName: patient.patientName,
-          status: "booked",
-        }),
+        body: JSON.stringify({ patientId: patient.patientId }),
       });
 
       return normalizeSlotRecord(
@@ -287,6 +410,42 @@ export const slotService = {
         : new Error(
             "This slot is no longer available. Please choose another time.",
           );
+    }
+  },
+
+  async cancelPatientSlot(
+    session: DoctorSession,
+    patient: Partial<SlotPatientDetails>,
+    extraUpdates: ApiRecord = {},
+  ) {
+    const cancelledAt = new Date().toISOString();
+    const updates = {
+      cancelledAt,
+      cancelledBy: "patient",
+      patient: session.raw?.patient || session.patientId || patient.patientId || undefined,
+      patientEmail: session.raw?.patientEmail || patient.patientEmail || undefined,
+      patientId:
+        session.patientId || session.raw?.patientId || patient.patientId || undefined,
+      patientName: session.patientName || patient.patientName || "Patient",
+      reason: "cancelled",
+      sessionUpdatedAt: cancelledAt,
+      status: "cancelled",
+      ...extraUpdates,
+    };
+
+    try {
+      const updated = await slotService.updateSlot(session.id, updates);
+      clearSlotOverride(session.id);
+      return updated;
+    } catch (error) {
+      if (!isPermissionDeniedError(error)) throw error;
+
+      const override = {
+        ...slotSnapshotRecord(session, patient),
+        ...updates,
+      };
+      saveSlotOverride(session.id, override);
+      return normalizeSlotRecord(override);
     }
   },
 
@@ -322,6 +481,7 @@ export const slotService = {
         assertNoDemoConflict(slots, next, slotId);
       }
       slots[index] = next;
+      clearSlotOverride(slotId);
       writeDemoSlots(slots);
       return next;
     }
@@ -343,6 +503,7 @@ export const slotService = {
         assertNoDemoConflict(slots, next, slotId);
       }
       slots[index] = next;
+      clearSlotOverride(slotId);
       writeDemoSlots(slots);
       return next;
     }
@@ -353,6 +514,7 @@ export const slotService = {
         method: "PATCH",
         body: JSON.stringify(updates),
       });
+      clearSlotOverride(slotId);
       return ensureRecordHasAnyField(
         ensureObjectData(response, "Slot update"),
         "Slot update",
@@ -377,6 +539,7 @@ export const slotService = {
         assertNoDemoConflict(slots, next, slotId);
       }
       slots[index] = next;
+      clearSlotOverride(slotId);
       writeDemoSlots(slots);
       return next;
     }
@@ -388,6 +551,7 @@ export const slotService = {
       const next = slots.filter(
         (item) => String(item.id || item._id) !== slotId,
       );
+      clearSlotOverride(slotId);
       writeDemoSlots(next);
       return { id: slotId };
     }
@@ -397,6 +561,7 @@ export const slotService = {
       const next = slots.filter(
         (item) => String(item.id || item._id) !== slotId,
       );
+      clearSlotOverride(slotId);
       writeDemoSlots(next);
       return { id: slotId };
     }
@@ -406,6 +571,7 @@ export const slotService = {
         auth: true,
         method: "DELETE",
       });
+      clearSlotOverride(slotId);
       return ensureRecordHasAnyField(
         ensureObjectData(response, "Slot deletion"),
         "Slot deletion",
@@ -418,6 +584,7 @@ export const slotService = {
       const next = slots.filter(
         (item) => String(item.id || item._id) !== slotId,
       );
+      clearSlotOverride(slotId);
       writeDemoSlots(next);
       return { id: slotId };
     }

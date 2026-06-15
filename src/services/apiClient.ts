@@ -1,4 +1,4 @@
-import { getSession, isLocalDemoSession } from "./session";
+import { clearSession, getSession, isLocalDemoSession } from "./session";
 import type { ApiError, RequestOptions } from "../types/api";
 
 const RAW_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
@@ -9,6 +9,24 @@ function trimTrailingSlash(value: string) {
 }
 
 export const API_BASE_URL = trimTrailingSlash(RAW_API_BASE_URL || "/api");
+
+function shouldClearSession(status: number, data: unknown) {
+  if (status !== 401) return false;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return true;
+
+  const message = String(
+    (data as Record<string, unknown>).message ||
+      (data as Record<string, unknown>).error ||
+      "",
+  ).toLowerCase();
+
+  return (
+    !message ||
+    message.includes("user does not exist") ||
+    message.includes("invalid token") ||
+    message.includes("authorization token")
+  );
+}
 
 function createHttpError(
   message: string,
@@ -50,6 +68,14 @@ export async function request<T = unknown>(
   const timer = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   const token = auth ? getAuthToken() : null;
 
+  if (auth && !token) {
+    const sessionError = new Error(
+      "Your session is no longer active. Sign in again to continue.",
+    ) as ApiError;
+    sessionError.status = 401;
+    throw sessionError;
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}${normalizePath(path)}`, {
       ...fetchOptions,
@@ -64,6 +90,9 @@ export async function request<T = unknown>(
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
+      if (auth && shouldClearSession(response.status, data)) {
+        clearSession();
+      }
       throw createHttpError(
         data.message || data.error || "Request failed",
         response.status,

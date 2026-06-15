@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "../../components/common/Toast";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "../../hooks/useRouter";
@@ -13,6 +13,11 @@ import {
 import DoctorTopBar from "../../components/doctor/DoctorTopBar";
 import { patientService } from "../../services/patientService";
 import { slotService } from "../../services/slotService";
+import {
+  SLOT_CHANGE_EVENT,
+  isSlotStorageEvent,
+} from "../../services/slotSync";
+import { cleanString } from "../../services/slotService.helpers";
 import type {
   DoctorPatient,
   DoctorSession,
@@ -52,6 +57,10 @@ export default function DoctorDashboard() {
   const { showToast } = useToast();
   const doctorName = user?.displayName || "Doctor";
   const doctorId = user?.uid || user?._id || user?.id || "";
+  const displaySessions = useMemo(
+    () => enrichSessionPatientNames(sessionList, patientList),
+    [patientList, sessionList],
+  );
 
   function logout() {
     signOut();
@@ -101,6 +110,24 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     window.queueMicrotask(refreshDoctorData);
+  }, [refreshDoctorData]);
+
+  useEffect(() => {
+    function handleSlotChange() {
+      refreshDoctorData();
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (!isSlotStorageEvent(event)) return;
+      refreshDoctorData();
+    }
+
+    window.addEventListener(SLOT_CHANGE_EVENT, handleSlotChange);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(SLOT_CHANGE_EVENT, handleSlotChange);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, [refreshDoctorData]);
 
   useEffect(() => {
@@ -246,7 +273,7 @@ export default function DoctorDashboard() {
               onRefresh={refreshDoctorData}
               patientError={patientError}
               patients={patientList}
-              sessions={sessionList}
+              sessions={displaySessions}
               slotError={slotError}
             />
           ) : null}
@@ -271,7 +298,7 @@ export default function DoctorDashboard() {
               onEditSession={editSession}
               onOpenSchedule={() => setSchedulePatient(null)}
               onRetry={loadSlots}
-              sessions={sessionList}
+              sessions={displaySessions}
             />
           ) : null}
         </section>
@@ -344,4 +371,47 @@ function formatPatientNotificationDate(date: Date) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+}
+
+function enrichSessionPatientNames(
+  sessions: DoctorSession[],
+  patients: DoctorPatient[],
+) {
+  return sessions.map((session) => {
+    const patient = matchPatientToSession(session, patients);
+    const displayName = cleanString(patient?.displayName);
+
+    if (!displayName || displayName === session.patientName) {
+      return session;
+    }
+
+    return {
+      ...session,
+      patientId: session.patientId || patient?.id || null,
+      patientName: displayName,
+      raw: {
+        ...session.raw,
+        patientEmail: session.raw?.patientEmail || patient?.email || undefined,
+        patientId: session.raw?.patientId || patient?.id || undefined,
+        patientName: displayName,
+      },
+    };
+  });
+}
+
+function matchPatientToSession(
+  session: DoctorSession,
+  patients: DoctorPatient[],
+) {
+  const sessionEmail = cleanString(session.raw?.patientEmail).toLowerCase();
+  const sessionPatientId = cleanString(session.patientId);
+
+  return (
+    patients.find((patient) => patient.id === sessionPatientId) ||
+    patients.find(
+      (patient) =>
+        sessionEmail && cleanString(patient.email).toLowerCase() === sessionEmail,
+    ) ||
+    null
+  );
 }

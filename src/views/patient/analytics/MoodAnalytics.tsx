@@ -4,19 +4,20 @@ import { useAuth } from "../../../hooks/useAuth";
 import { moodBars, moodInsights } from "../../../data/analyticsData";
 import { readingService } from "../../../services/readingService";
 import {
+  MOOD_CALENDAR_UPDATED_EVENT,
   calendarLabels,
   calculateCurrentStreak,
   createCalendarCells,
-  formatCheckInTime,
   getSevenDayStrip,
+  moodCalendarMonthKey,
   moodCalendarStorageKey,
   moodColor,
   moodEmojis,
-  moodHighlights,
   moodLabels,
-  moodSummaries,
   readMoodCalendarEntries,
+  recordMoodForCalendarDay,
   saveMoodCalendarEntries,
+  type MoodCalendarUpdateDetail,
 } from "../../../services/moodCalendarService";
 import { loadMoodCalendarEntries } from "../../../services/moodCalendarRemote";
 import MoodCalendarModal from "./MoodCalendarModal";
@@ -118,6 +119,37 @@ export default function MoodAnalytics() {
   }, [patientKey, viewMonth, viewYear]);
 
   useEffect(() => {
+    function handleMoodCalendarUpdated(event: Event) {
+      const detail = (event as CustomEvent<MoodCalendarUpdateDetail>).detail;
+      if (!detail || detail.patientKey !== patientKey) return;
+
+      const currentMonthKey = moodCalendarMonthKey(today);
+      if (detail.monthKey === currentMonthKey) {
+        const currentCalendar = readMoodCalendarEntries(patientKey, today);
+        setMonthEntries(currentCalendar.entries);
+        if (isViewingCurrentMonth) {
+          setViewEntries(currentCalendar.entries);
+        }
+      }
+
+      const viewDate = new Date(viewYear, viewMonth, 1);
+      if (detail.monthKey === moodCalendarMonthKey(viewDate)) {
+        setViewEntries(readMoodCalendarEntries(patientKey, viewDate).entries);
+      }
+    }
+
+    window.addEventListener(
+      MOOD_CALENDAR_UPDATED_EVENT,
+      handleMoodCalendarUpdated,
+    );
+    return () =>
+      window.removeEventListener(
+        MOOD_CALENDAR_UPDATED_EVENT,
+        handleMoodCalendarUpdated,
+      );
+  }, [isViewingCurrentMonth, patientKey, today, viewMonth, viewYear]);
+
+  useEffect(() => {
     window.queueMicrotask(() => {
       setSelectedDay((currentDay) => Math.min(currentDay, todayDay, monthDays));
     });
@@ -160,7 +192,9 @@ export default function MoodAnalytics() {
   }
 
   async function recordMoodForDay() {
-    if (selectedDay > todayDay) {
+    const dayToRecord = modalSelectedDay;
+
+    if (!isViewingCurrentMonth || dayToRecord > todayDay) {
       showToast(
         "Wait until this day arrives to record your mood and continue your streak.",
       );
@@ -187,28 +221,18 @@ export default function MoodAnalytics() {
       return;
     }
 
-    setMonthEntries((currentEntries) =>
-      currentEntries.map((entry) => {
-        if (entry.day !== selectedDay) return entry;
-
-        return {
-          ...entry,
-          checkInTime:
-            entry.day === todayDay
-              ? formatCheckInTime(today)
-              : entry.checkInTime,
-          emoji: moodEmojis[pendingMood - 1],
-          highlight: moodHighlights[pendingMood - 1],
-          label: moodLabels[pendingMood - 1],
-          mood: pendingMood,
-          recorded: true,
-          summary: moodSummaries[pendingMood - 1],
-        };
-      }),
+    const moodSnapshot = recordMoodForCalendarDay(
+      patientKey,
+      pendingMood,
+      dayToRecord,
+      today,
     );
+    setSelectedDay(dayToRecord);
+    setMonthEntries(moodSnapshot.entries);
+    setViewEntries(moodSnapshot.entries);
 
     showToast(
-      `Mood saved for ${calendarLabels[new Date(currentYear, currentMonth, selectedDay).getDay()]} ${selectedDay}.`,
+      `Mood saved for ${calendarLabels[new Date(currentYear, currentMonth, dayToRecord).getDay()]} ${dayToRecord}.`,
       "success",
     );
     setSaveMoodError("");
