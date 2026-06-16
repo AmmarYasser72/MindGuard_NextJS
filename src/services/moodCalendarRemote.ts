@@ -21,7 +21,7 @@ const moodValueMap: Record<string, number> = {
 };
 
 export async function loadMoodCalendarEntries(
-  patientKey: string,
+  patientKey: string | string[],
   date = new Date(),
 ) {
   const localCalendar = readMoodCalendarEntries(patientKey, date);
@@ -31,7 +31,7 @@ export async function loadMoodCalendarEntries(
       monthRangeParams(date),
     );
     const entries = applyMoodReadings(localCalendar.entries, readings);
-    saveMoodCalendarEntries(patientKey, entries, date);
+    saveMoodCalendarEntries(localCalendar.patientKey, entries, date);
     return { ...localCalendar, entries };
   } catch {
     return localCalendar;

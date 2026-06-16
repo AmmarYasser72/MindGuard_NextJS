@@ -6,12 +6,17 @@ import { useRouter } from "../../../hooks/useRouter";
 import { readingService } from "../../../services/readingService";
 import {
   MOOD_CALENDAR_UPDATED_EVENT,
+  clearSelectedMoodDraft,
   getTodayMoodSnapshot,
   moodCalendarMonthKey,
+  readSelectedMoodDraft,
   recordMoodForToday,
+  saveSelectedMoodDraft,
   type MoodCalendarUpdateDetail,
 } from "../../../services/moodCalendarService";
 import { loadMoodCalendarEntries } from "../../../services/moodCalendarRemote";
+import { getPatientIdentityKeys } from "../../../services/patientIdentity";
+import { storage } from "../../../services/storage";
 import {
   dailyGoals,
   moodOptions,
@@ -33,7 +38,38 @@ import WellnessSidebar from "./WellnessSidebar";
 import { dashboardGreeting, nameFromEmail } from "./dashboardUtils";
 import type { DoctorSession } from "../../../types/doctor";
 
-type PatientNotification = (typeof patientNotifications)[number];
+type PatientNotification = (typeof patientNotifications)[number] & {
+  sortAt?: string;
+};
+
+function notificationReadStorageKey(patientKey: string) {
+  return `patient_notifications_read_${patientKey}`;
+}
+
+function readStoredNotificationIds(patientKeys: string[]) {
+  const primaryKey = patientKeys[0] || "guest-patient";
+  const storedIds = new Set<string>();
+
+  patientKeys.forEach((key) => {
+    storage
+      .get<string[]>(notificationReadStorageKey(key), [])
+      .forEach((id) => {
+        if (typeof id === "string" && id.trim()) {
+          storedIds.add(id);
+        }
+      });
+  });
+
+  if (storedIds.size) {
+    storage.set(notificationReadStorageKey(primaryKey), Array.from(storedIds));
+  }
+
+  return storedIds;
+}
+
+function saveStoredNotificationIds(patientKey: string, ids: Set<string>) {
+  storage.set(notificationReadStorageKey(patientKey), Array.from(ids));
+}
 
 export default function DashboardContent({ email }: { email: string }) {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
@@ -51,7 +87,11 @@ export default function DashboardContent({ email }: { email: string }) {
   const { navigate } = useRouter();
   const { signOut, user } = useAuth();
   const { showToast } = useToast();
-  const patientKey = user?.uid || user?.email || email || "guest-patient";
+  const patientKeys = useMemo(
+    () => getPatientIdentityKeys(user, email),
+    [email, user],
+  );
+  const patientKey = patientKeys[0];
   const currentMoodMonthKey = moodCalendarMonthKey();
   const patientDetails = useMemo(
     () => ({
@@ -77,13 +117,16 @@ export default function DashboardContent({ email }: { email: string }) {
   ).length;
   const notifications = useMemo(
     () =>
-      [...sessionNotifications, ...patientNotifications].map(
-        (notification) => ({
+      [...sessionNotifications, ...patientNotifications]
+        .map((notification) => ({
           ...notification,
           unread:
             notification.unread && !readNotificationIds.has(notification.id),
-        }),
-      ),
+        }))
+        .sort(
+          (left, right) =>
+            notificationSortValue(right) - notificationSortValue(left),
+        ),
     [readNotificationIds, sessionNotifications],
   );
   const unreadCount = notifications.filter(
@@ -109,8 +152,14 @@ export default function DashboardContent({ email }: { email: string }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isNotificationsOpen]);
 
+  useEffect(() => {
+    window.queueMicrotask(() => {
+      setReadNotificationIds(readStoredNotificationIds(patientKeys));
+    });
+  }, [patientKeys]);
+
   const syncTodayMoodSnapshot = useCallback(() => {
-    const snapshot = getTodayMoodSnapshot(patientKey);
+    const snapshot = getTodayMoodSnapshot(patientKeys);
     setCurrentStreak(snapshot.currentStreak);
 
     if (snapshot.todayEntry?.recorded) {
@@ -119,14 +168,14 @@ export default function DashboardContent({ email }: { email: string }) {
       return;
     }
 
-    setSelectedMood(null);
+    setSelectedMood(readSelectedMoodDraft(patientKeys));
     setRecordedMood(null);
-  }, [patientKey]);
+  }, [patientKeys]);
 
   useEffect(() => {
     let isMounted = true;
 
-    loadMoodCalendarEntries(patientKey)
+    loadMoodCalendarEntries(patientKeys)
       .catch(() => null)
       .then(() => {
         if (!isMounted) return;
@@ -136,7 +185,7 @@ export default function DashboardContent({ email }: { email: string }) {
     return () => {
       isMounted = false;
     };
-  }, [patientKey, syncTodayMoodSnapshot]);
+  }, [patientKeys, syncTodayMoodSnapshot]);
 
   useEffect(() => {
     function handleMoodCalendarUpdated(event: Event) {
@@ -205,9 +254,12 @@ export default function DashboardContent({ email }: { email: string }) {
   }
 
   function handleMarkAllRead() {
-    setReadNotificationIds(
-      new Set(notifications.map((notification) => notification.id)),
-    );
+    const nextReadIds = new Set(readNotificationIds);
+    notifications.forEach((notification) => {
+      nextReadIds.add(notification.id);
+    });
+    setReadNotificationIds(nextReadIds);
+    saveStoredNotificationIds(patientKey, nextReadIds);
     showToast("All notifications marked as read", "success");
   }
 
@@ -228,9 +280,10 @@ export default function DashboardContent({ email }: { email: string }) {
 
     try {
       await readingService.savePatientMood(moodValue);
-      const moodSnapshot = recordMoodForToday(patientKey, moodValue);
+      const moodSnapshot = recordMoodForToday(patientKeys, moodValue);
       const label =
         moodSnapshot.todayEntry?.label || moodOptions[selectedMood].label;
+      clearSelectedMoodDraft(patientKey);
       setRecordedMood(label);
       setCurrentStreak(moodSnapshot.currentStreak);
       showToast(
@@ -247,6 +300,12 @@ export default function DashboardContent({ email }: { email: string }) {
     } finally {
       setIsSavingMood(false);
     }
+  }
+
+  function handleSelectMood(index: number) {
+    setSelectedMood(index);
+    setMoodSaveError("");
+    saveSelectedMoodDraft(patientKeys, index);
   }
 
   return (
@@ -281,7 +340,7 @@ export default function DashboardContent({ email }: { email: string }) {
             isSavingMood={isSavingMood}
             moodSaveError={moodSaveError}
             onRecordMood={handleRecordMood}
-            onSelectMood={setSelectedMood}
+            onSelectMood={handleSelectMood}
             recordedMood={recordedMood}
             selectedMood={selectedMood}
           />
@@ -330,8 +389,46 @@ function sessionUpdateNotification(
     bg: "#ccfbf1",
     category: cleanText(session.raw?.patientNotificationCategory) || "Session",
     value: cleanText(session.raw?.patientNotificationValue) || "Doctor note",
+    sortAt: updatedAt,
     unread: true,
   };
+}
+
+function notificationSortValue(
+  notification: PatientNotification & { sortAt?: string },
+) {
+  const directDate = cleanText(notification.sortAt);
+  if (directDate) {
+    const parsed = new Date(directDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.getTime();
+    }
+  }
+
+  const label = cleanText(notification.time).toLowerCase();
+  if (!label) return 0;
+
+  const now = Date.now();
+  const relativeMatch = label.match(
+    /^(\d+)\s+(min|mins|minute|minutes|hour|hours|day|days)\s+ago$/,
+  );
+  if (relativeMatch) {
+    const amount = Number(relativeMatch[1]);
+    const unit = relativeMatch[2];
+    const minuteMs = 60 * 1000;
+    const hourMs = 60 * minuteMs;
+    const dayMs = 24 * hourMs;
+
+    if (unit.startsWith("min")) return now - amount * minuteMs;
+    if (unit.startsWith("hour")) return now - amount * hourMs;
+    return now - amount * dayMs;
+  }
+
+  if (label === "today") return now;
+  if (label === "yesterday") return now - 24 * 60 * 60 * 1000;
+
+  const parsed = new Date(notification.time);
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
 }
 
 function formatNotificationDate(date: Date) {

@@ -150,6 +150,7 @@ export default function DoctorDashboard() {
       const hasBookedPatient = Boolean(
         session.patientId || session.raw?.patient || session.raw?.patientId,
       );
+      const nextStatus = resolveEditedSessionStatus(session.status, hasBookedPatient);
       const sessionUpdatedAt = new Date().toISOString();
       const patientNotificationMessage = `Your doctor updated your session for ${formatPatientNotificationDate(
         session.scheduledAt,
@@ -183,10 +184,12 @@ export default function DoctorDashboard() {
         patientNotificationValue: hasBookedPatient
           ? "Doctor note"
           : undefined,
-        reason: session.reason || undefined,
+        reason: hasBookedPatient && nextStatus === "booked"
+          ? "booked"
+          : session.reason || undefined,
         sessionUpdatedAt,
         startTime: session.raw?.startTime || session.scheduledAt.toISOString(),
-        status: session.status || "available",
+        status: nextStatus,
         type: session.type || undefined,
       });
       await loadSlots();
@@ -362,6 +365,20 @@ function normalizeSessionType(type: string) {
   if (cleanType.includes("audio")) return "audio";
   if (cleanType.includes("chat")) return "chat";
   return "video";
+}
+
+function resolveEditedSessionStatus(
+  status: string | undefined,
+  hasBookedPatient: boolean,
+) {
+  const normalized = String(status || "").toLowerCase();
+  if (!hasBookedPatient) {
+    return normalized || "available";
+  }
+  if (normalized === "cancelled" || normalized === "completed") {
+    return normalized;
+  }
+  return "booked";
 }
 
 function formatPatientNotificationDate(date: Date) {

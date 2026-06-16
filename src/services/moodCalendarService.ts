@@ -78,6 +78,173 @@ export function moodCalendarStorageKey(
   return `patient_mood_calendar_${patientKey}_${monthKey}`;
 }
 
+export function moodDraftStorageKey(patientKey: string) {
+  return `patient_mood_draft_${patientKey}`;
+}
+
+export function moodRecordedEntriesStorageKey(
+  patientKey: string,
+  monthKey = moodCalendarMonthKey(),
+) {
+  return `patient_mood_records_${patientKey}_${monthKey}`;
+}
+
+function normalizePatientKeys(patientKey: string | string[]) {
+  const keys = Array.isArray(patientKey) ? patientKey : [patientKey];
+  const cleanedKeys = keys
+    .map((key) => String(key || "").trim())
+    .filter(Boolean);
+
+  return Array.from(
+    new Set(cleanedKeys.length ? cleanedKeys : ["guest-patient"]),
+  );
+}
+
+function primaryPatientKey(patientKey: string | string[]) {
+  return normalizePatientKeys(patientKey)[0];
+}
+
+function localDayKey(date = new Date(), day = date.getDate()) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(day).padStart(2, "0"),
+  ].join("-");
+}
+
+function moodDraftDayKey(date = new Date()) {
+  return localDayKey(date);
+}
+
+function readStoredMoodDraft(patientKey: string | string[], date = new Date()) {
+  const patientKeys = normalizePatientKeys(patientKey);
+  const primaryKey = patientKeys[0];
+  const expectedDay = moodDraftDayKey(date);
+
+  for (const key of patientKeys) {
+    const savedDraft = storage.get<{
+      dayKey?: string;
+      selectedMood?: unknown;
+    } | null>(moodDraftStorageKey(key), null);
+    if (!savedDraft || savedDraft.dayKey !== expectedDay) continue;
+
+    const selectedMood = Number(savedDraft.selectedMood);
+    if (!Number.isInteger(selectedMood) || selectedMood < 0 || selectedMood > 4) {
+      continue;
+    }
+
+    if (key !== primaryKey) {
+      storage.set(moodDraftStorageKey(primaryKey), {
+        dayKey: expectedDay,
+        selectedMood,
+      });
+    }
+
+    return selectedMood;
+  }
+
+  return null;
+}
+
+type StoredMoodRecord = {
+  checkInTime?: string;
+  day?: unknown;
+  mood?: unknown;
+};
+
+function normalizeStoredMoodRecord(record: unknown) {
+  if (!record || typeof record !== "object" || Array.isArray(record)) {
+    return null;
+  }
+
+  const item = record as StoredMoodRecord;
+  const day = Number(item.day);
+  const mood = Number(item.mood);
+  if (!Number.isInteger(day) || day < 1 || day > 31) return null;
+  if (!Number.isInteger(mood) || mood < 1 || mood > 5) return null;
+
+  return {
+    checkInTime:
+      typeof item.checkInTime === "string" && item.checkInTime.trim()
+        ? item.checkInTime
+        : "",
+    day,
+    mood,
+  };
+}
+
+function readStoredMoodRecords(patientKey: string | string[], date = new Date()) {
+  const patientKeys = normalizePatientKeys(patientKey);
+  const primaryKey = patientKeys[0];
+  const monthKey = moodCalendarMonthKey(date);
+  const records = new Map<number, NonNullable<ReturnType<typeof normalizeStoredMoodRecord>>>();
+
+  for (const key of patientKeys) {
+    const savedRecords = storage.get<Record<string, StoredMoodRecord> | null>(
+      moodRecordedEntriesStorageKey(key, monthKey),
+      null,
+    );
+    if (!savedRecords || typeof savedRecords !== "object") continue;
+
+    Object.values(savedRecords).forEach((record) => {
+      const normalizedRecord = normalizeStoredMoodRecord(record);
+      if (!normalizedRecord || records.has(normalizedRecord.day)) return;
+      records.set(normalizedRecord.day, normalizedRecord);
+    });
+  }
+
+  if (records.size && patientKeys.some((key) => key !== primaryKey)) {
+    const primaryRecords = Object.fromEntries(
+      Array.from(records.entries()).map(([day, record]) => [String(day), record]),
+    );
+    storage.set(moodRecordedEntriesStorageKey(primaryKey, monthKey), primaryRecords);
+  }
+
+  return records;
+}
+
+function applyRecordedMoodRecords(
+  entries: MoodEntry[],
+  records: Map<number, NonNullable<ReturnType<typeof normalizeStoredMoodRecord>>>,
+  todayDay: number,
+) {
+  if (!records.size) return entries;
+
+  return entries.map((entry) => {
+    const record = records.get(entry.day);
+    if (!record || entry.day > todayDay) return entry;
+
+    return moodEntryForDay(
+      entry,
+      record.mood,
+      record.checkInTime || entry.checkInTime,
+    );
+  });
+}
+
+function saveRecordedMoodEntry(
+  patientKey: string | string[],
+  entry: MoodEntry,
+  date = new Date(),
+) {
+  const key = primaryPatientKey(patientKey);
+  const monthKey = moodCalendarMonthKey(date);
+  const storageKey = moodRecordedEntriesStorageKey(key, monthKey);
+  const savedRecords = storage.get<Record<string, StoredMoodRecord>>(
+    storageKey,
+    {},
+  );
+
+  storage.set(storageKey, {
+    ...savedRecords,
+    [entry.day]: {
+      checkInTime: entry.checkInTime,
+      day: entry.day,
+      mood: entry.mood,
+    },
+  });
+}
+
 export function createMonthEntries(
   daysInMonth: number,
   todayDay: number,
@@ -138,35 +305,61 @@ export function hydrateMonthEntries(
   });
 }
 
-export function readMoodCalendarEntries(patientKey: string, date = new Date()) {
+export function readMoodCalendarEntries(
+  patientKey: string | string[],
+  date = new Date(),
+) {
   const year = date.getFullYear();
   const month = date.getMonth();
-  const todayDay = date.getDate();
   const monthDays = new Date(year, month + 1, 0).getDate();
-  const storageKey = moodCalendarStorageKey(
-    patientKey,
-    moodCalendarMonthKey(date),
+  const now = new Date();
+  const isCurrentMonth =
+    year === now.getFullYear() && month === now.getMonth();
+  const isFutureMonth =
+    year > now.getFullYear() ||
+    (year === now.getFullYear() && month > now.getMonth());
+  const todayDay = isCurrentMonth ? now.getDate() : isFutureMonth ? 0 : monthDays;
+  const patientKeys = normalizePatientKeys(patientKey);
+  const primaryKey = patientKeys[0];
+  const monthKey = moodCalendarMonthKey(date);
+  const storageKey = moodCalendarStorageKey(primaryKey, monthKey);
+  let savedEntries = storage.get(storageKey, null);
+
+  if (savedEntries === null) {
+    for (const key of patientKeys.slice(1)) {
+      savedEntries = storage.get(moodCalendarStorageKey(key, monthKey), null);
+      if (savedEntries !== null) {
+        storage.set(storageKey, savedEntries);
+        break;
+      }
+    }
+  }
+
+  const entries = applyRecordedMoodRecords(
+    hydrateMonthEntries(savedEntries, monthDays, todayDay),
+    readStoredMoodRecords(patientKeys, date),
+    todayDay,
   );
 
   return {
-    entries: hydrateMonthEntries(
-      storage.get(storageKey, null),
-      monthDays,
-      todayDay,
-    ),
+    entries,
     monthDays,
+    patientKey: primaryKey,
     storageKey,
     todayDay,
   };
 }
 
 export function saveMoodCalendarEntries(
-  patientKey: string,
+  patientKey: string | string[],
   entries: MoodEntry[],
   date = new Date(),
 ) {
   storage.set(
-    moodCalendarStorageKey(patientKey, moodCalendarMonthKey(date)),
+    moodCalendarStorageKey(
+      primaryPatientKey(patientKey),
+      moodCalendarMonthKey(date),
+    ),
     entries,
   );
 }
@@ -192,7 +385,7 @@ function emitMoodCalendarUpdated(
 }
 
 export function recordMoodForToday(
-  patientKey: string,
+  patientKey: string | string[],
   mood: number,
   date = new Date(),
 ) {
@@ -200,30 +393,40 @@ export function recordMoodForToday(
 }
 
 export function recordMoodForCalendarDay(
-  patientKey: string,
+  patientKey: string | string[],
   mood: number,
   day: number,
   date = new Date(),
 ) {
-  const { entries, todayDay } = readMoodCalendarEntries(patientKey, date);
+  const { entries, patientKey: resolvedPatientKey, todayDay } =
+    readMoodCalendarEntries(patientKey, date);
   const nextEntries = entries.map((entry) => {
     if (entry.day !== day) return entry;
 
     return moodEntryForDay(entry, mood, formatCheckInTime(date));
   });
 
-  saveMoodCalendarEntries(patientKey, nextEntries, date);
-  emitMoodCalendarUpdated(patientKey, mood, day, date);
+  const recordedEntry = nextEntries.find((entry) => entry.day === day) || null;
+
+  saveMoodCalendarEntries(resolvedPatientKey, nextEntries, date);
+  if (recordedEntry) {
+    saveRecordedMoodEntry(resolvedPatientKey, recordedEntry, date);
+  }
+  clearSelectedMoodDraft(patientKey);
+  emitMoodCalendarUpdated(resolvedPatientKey, mood, day, date);
 
   return {
     currentStreak: calculateCurrentStreak(nextEntries, todayDay),
     entries: nextEntries,
-    recordedEntry: nextEntries.find((entry) => entry.day === day) || null,
+    recordedEntry,
     todayEntry: nextEntries.find((entry) => entry.day === todayDay) || null,
   };
 }
 
-export function getTodayMoodSnapshot(patientKey: string, date = new Date()) {
+export function getTodayMoodSnapshot(
+  patientKey: string | string[],
+  date = new Date(),
+) {
   const { entries, todayDay } = readMoodCalendarEntries(patientKey, date);
   const todayEntry = entries.find((entry) => entry.day === todayDay) || null;
 
@@ -232,6 +435,34 @@ export function getTodayMoodSnapshot(patientKey: string, date = new Date()) {
     entries,
     todayEntry,
   };
+}
+
+export function readSelectedMoodDraft(
+  patientKey: string | string[],
+  date = new Date(),
+) {
+  return readStoredMoodDraft(patientKey, date);
+}
+
+export function saveSelectedMoodDraft(
+  patientKey: string | string[],
+  selectedMood: number,
+  date = new Date(),
+) {
+  if (!Number.isInteger(selectedMood) || selectedMood < 0 || selectedMood > 4) {
+    return;
+  }
+
+  storage.set(moodDraftStorageKey(primaryPatientKey(patientKey)), {
+    dayKey: moodDraftDayKey(date),
+    selectedMood,
+  });
+}
+
+export function clearSelectedMoodDraft(patientKey: string | string[]) {
+  normalizePatientKeys(patientKey).forEach((key) => {
+    storage.remove(moodDraftStorageKey(key));
+  });
 }
 
 export function getSevenDayStrip(

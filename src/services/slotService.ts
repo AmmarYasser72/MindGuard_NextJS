@@ -57,6 +57,40 @@ function isPermissionDeniedError(error: unknown) {
   );
 }
 
+function isAuthorizationRequiredError(error: unknown) {
+  const status = (error as { status?: number } | null)?.status;
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  return (
+    status === 401 &&
+    /(authorization token|auth token|sign in again|session is no longer active|unauthorized)/i.test(
+      message,
+    )
+  );
+}
+
+const FRONTEND_ONLY_SLOT_UPDATE_FIELDS = [
+  "patientNotificationAt",
+  "patientNotificationCategory",
+  "patientNotificationMessage",
+  "patientNotificationTitle",
+  "patientNotificationValue",
+  "sessionUpdatedAt",
+] as const;
+
+function splitSlotUpdatesForBackend(updates: ApiRecord) {
+  const backendUpdates: ApiRecord = { ...updates };
+  const localOnlyUpdates: ApiRecord = {};
+
+  FRONTEND_ONLY_SLOT_UPDATE_FIELDS.forEach((field) => {
+    if (field in backendUpdates) {
+      localOnlyUpdates[field] = backendUpdates[field];
+      delete backendUpdates[field];
+    }
+  });
+
+  return { backendUpdates, localOnlyUpdates };
+}
+
 function readSlotOverrides() {
   return storage.get<Record<string, ApiRecord>>(SLOT_OVERRIDE_STORAGE_KEY, {});
 }
@@ -158,6 +192,18 @@ function backendSlotCreatePayload(slot: ApiRecord) {
   };
 }
 
+function backendSlotBookingPayload(patient: SlotPatientDetails) {
+  return {
+    bookedAt: new Date().toISOString(),
+    patient: patient.patientId,
+    patientEmail: patient.patientEmail || undefined,
+    patientId: patient.patientId,
+    patientName: patient.patientName,
+    reason: "booked",
+    status: "booked",
+  };
+}
+
 export const slotService = {
   async createSlot(slot: ApiRecord) {
     const candidate = slotWithDefaults(slot);
@@ -252,10 +298,11 @@ export const slotService = {
     const candidatePaths = [
       `${apiRoutes.slots.forDoctor(cleanDoctorId)}${params}`,
     ];
+    const hasAuthToken = Boolean(getAuthToken());
 
     for (const path of candidatePaths) {
       try {
-        const response = await request(path);
+        const response = await request(path, hasAuthToken ? { auth: true } : {});
         const backendSlots = availableFutureSlots(
           normalizeSlotList(
             extractSlotRecords(response, "Doctor available slots"),
@@ -266,6 +313,34 @@ export const slotService = {
           : fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
       } catch (error) {
         if (isConnectionFallbackError(error)) {
+          return fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
+        }
+        if (hasAuthToken && isAuthorizationRequiredError(error)) {
+          try {
+            const response = await request(path);
+            const backendSlots = availableFutureSlots(
+              normalizeSlotList(
+                extractSlotRecords(response, "Doctor available slots"),
+              ),
+            );
+            return backendSlots.length
+              ? backendSlots
+              : fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
+          } catch (retryError) {
+            if (
+              isConnectionFallbackError(retryError) ||
+              isAuthorizationRequiredError(retryError) ||
+              isPermissionDeniedError(retryError)
+            ) {
+              return fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
+            }
+            throw retryError;
+          }
+        }
+        if (
+          isAuthorizationRequiredError(error) ||
+          isPermissionDeniedError(error)
+        ) {
           return fallbackAvailableSlotsForDoctor(cleanDoctorId, doctor);
         }
         throw error;
@@ -379,6 +454,9 @@ export const slotService = {
       throw new Error("Patient id is required before booking a session.");
     }
 
+    const bookingPayload = backendSlotBookingPayload(patient);
+    const hasAuthToken = Boolean(getAuthToken());
+
     if (shouldUseDemoData()) {
       return normalizeSlotRecord(bookDemoSlot(slotId, patient));
     }
@@ -387,26 +465,95 @@ export const slotService = {
       return normalizeSlotRecord(bookDemoSlot(slotId, patient));
     }
 
-    try {
-      const response = await request(apiRoutes.slots.book(slotId), {
-        method: "PATCH",
-        body: JSON.stringify({ patientId: patient.patientId }),
-      });
+    const bookingRequests = [
+      {
+        path: apiRoutes.slots.book(slotId),
+        options: {
+          auth: hasAuthToken,
+          method: "PATCH",
+          body: JSON.stringify({ patientId: patient.patientId }),
+        },
+      },
+      {
+        path: apiRoutes.slots.byId(slotId),
+        options: {
+          auth: hasAuthToken,
+          method: "PATCH",
+          body: JSON.stringify(bookingPayload),
+        },
+      },
+    ];
 
-      return normalizeSlotRecord(
-        ensureRecordHasAnyField(
-          ensureObjectData(response, "Slot booking"),
-          "Slot booking",
-          slotFields,
-        ),
-      );
-    } catch (error) {
-      if (isConnectionFallbackError(error)) {
-        return normalizeSlotRecord(bookDemoSlot(slotId, patient));
+    let lastError: unknown = null;
+
+    for (const bookingRequest of bookingRequests) {
+      try {
+        const response = await request(bookingRequest.path, bookingRequest.options);
+
+        return normalizeSlotRecord(
+          ensureRecordHasAnyField(
+            ensureObjectData(response, "Slot booking"),
+            "Slot booking",
+            slotFields,
+          ),
+        );
+      } catch (error) {
+        lastError = error;
+
+        if (isConnectionFallbackError(error)) {
+          continue;
+        }
+
+        if (hasAuthToken && isAuthorizationRequiredError(error)) {
+          try {
+            const response = await request(bookingRequest.path, {
+              ...bookingRequest.options,
+              auth: false,
+            });
+
+            return normalizeSlotRecord(
+              ensureRecordHasAnyField(
+                ensureObjectData(response, "Slot booking"),
+                "Slot booking",
+                slotFields,
+              ),
+            );
+          } catch (retryError) {
+            lastError = retryError;
+            if (isConnectionFallbackError(retryError)) {
+              continue;
+            }
+            throw retryError instanceof Error
+              ? retryError
+              : new Error(
+                  "This slot is no longer available. Please choose another time.",
+                );
+          }
+        }
+
+        throw error instanceof Error
+          ? error
+          : new Error(
+              "This slot is no longer available. Please choose another time.",
+            );
       }
+    }
 
-      throw error instanceof Error
-        ? error
+    if (localFallbackSlot(slotId)) {
+      return normalizeSlotRecord(bookDemoSlot(slotId, patient));
+    }
+
+    if (isConnectionFallbackError(lastError)) {
+      throw new Error(
+        "We couldn't confirm this slot with the backend right now. Refresh the slots list and try again.",
+      );
+    }
+
+    try {
+      return normalizeSlotRecord(bookDemoSlot(slotId, patient));
+    } catch {
+      throw lastError instanceof Error
+        ? lastError
         : new Error(
             "This slot is no longer available. Please choose another time.",
           );
@@ -450,6 +597,8 @@ export const slotService = {
   },
 
   async updateSlot(slotId: string, updates: ApiRecord) {
+    const { backendUpdates, localOnlyUpdates } = splitSlotUpdatesForBackend(updates);
+
     if (
       updates.startTime ||
       updates.from ||
@@ -512,14 +661,20 @@ export const slotService = {
       const response = await request(apiRoutes.slots.byId(slotId), {
         auth: true,
         method: "PATCH",
-        body: JSON.stringify(updates),
+        body: JSON.stringify(backendUpdates),
       });
-      clearSlotOverride(slotId);
-      return ensureRecordHasAnyField(
+      const updated = ensureRecordHasAnyField(
         ensureObjectData(response, "Slot update"),
         "Slot update",
         slotFields,
       );
+      const mergedUpdate = {
+        ...updated,
+        ...backendUpdates,
+        ...localOnlyUpdates,
+      };
+      saveSlotOverride(slotId, mergedUpdate);
+      return mergedUpdate;
     } catch (error) {
       if (!isConnectionFallbackError(error)) throw error;
 

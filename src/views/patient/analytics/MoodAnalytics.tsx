@@ -20,6 +20,7 @@ import {
   type MoodCalendarUpdateDetail,
 } from "../../../services/moodCalendarService";
 import { loadMoodCalendarEntries } from "../../../services/moodCalendarRemote";
+import { getPatientIdentityKeys } from "../../../services/patientIdentity";
 import MoodCalendarModal from "./MoodCalendarModal";
 import MoodAnalyticsHeader from "./MoodAnalyticsHeader";
 import MoodDaySpotlight from "./MoodDaySpotlight";
@@ -30,6 +31,8 @@ import MoodTrackerCard from "./MoodTrackerCard";
 export default function MoodAnalytics() {
   const { showToast } = useToast();
   const { user } = useAuth();
+  const patientKeys = useMemo(() => getPatientIdentityKeys(user), [user]);
+  const patientKey = patientKeys[0];
   const isHydratingRef = useRef(false);
   const [bars, setBars] = useState(moodBars);
   const today = useMemo(() => new Date(), []);
@@ -44,11 +47,10 @@ export default function MoodAnalytics() {
   const [modalSelectedDay, setModalSelectedDay] = useState(todayDay);
   const monthDays = new Date(currentYear, currentMonth + 1, 0).getDate();
   const monthLabel = today.toLocaleString("en-US", { month: "long" });
-  const patientKey = user?.uid || user?.email || "guest-patient";
   const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
   const moodStorageKey = moodCalendarStorageKey(patientKey, monthKey);
   const [monthEntries, setMonthEntries] = useState(() =>
-    readMoodCalendarEntries(patientKey, today).entries,
+    readMoodCalendarEntries(patientKeys, today).entries,
   );
   const [viewEntries, setViewEntries] = useState(monthEntries);
   const [selectedDay, setSelectedDay] = useState(todayDay);
@@ -93,7 +95,7 @@ export default function MoodAnalytics() {
     let isMounted = true;
     isHydratingRef.current = true;
 
-    loadMoodCalendarEntries(patientKey, today).then((calendar) => {
+    loadMoodCalendarEntries(patientKeys, today).then((calendar) => {
       if (!isMounted) return;
       setMonthEntries(calendar.entries);
       setViewEntries(calendar.entries);
@@ -102,13 +104,13 @@ export default function MoodAnalytics() {
     return () => {
       isMounted = false;
     };
-  }, [moodStorageKey, monthDays, patientKey, today, todayDay]);
+  }, [moodStorageKey, monthDays, patientKeys, today, todayDay]);
 
   useEffect(() => {
     let isMounted = true;
     const viewDate = new Date(viewYear, viewMonth, 1);
 
-    loadMoodCalendarEntries(patientKey, viewDate).then((calendar) => {
+    loadMoodCalendarEntries(patientKeys, viewDate).then((calendar) => {
       if (!isMounted) return;
       setViewEntries(calendar.entries);
     });
@@ -116,7 +118,7 @@ export default function MoodAnalytics() {
     return () => {
       isMounted = false;
     };
-  }, [patientKey, viewMonth, viewYear]);
+  }, [patientKeys, viewMonth, viewYear]);
 
   useEffect(() => {
     function handleMoodCalendarUpdated(event: Event) {
@@ -125,7 +127,7 @@ export default function MoodAnalytics() {
 
       const currentMonthKey = moodCalendarMonthKey(today);
       if (detail.monthKey === currentMonthKey) {
-        const currentCalendar = readMoodCalendarEntries(patientKey, today);
+        const currentCalendar = readMoodCalendarEntries(patientKeys, today);
         setMonthEntries(currentCalendar.entries);
         if (isViewingCurrentMonth) {
           setViewEntries(currentCalendar.entries);
@@ -134,7 +136,7 @@ export default function MoodAnalytics() {
 
       const viewDate = new Date(viewYear, viewMonth, 1);
       if (detail.monthKey === moodCalendarMonthKey(viewDate)) {
-        setViewEntries(readMoodCalendarEntries(patientKey, viewDate).entries);
+        setViewEntries(readMoodCalendarEntries(patientKeys, viewDate).entries);
       }
     }
 
@@ -147,7 +149,7 @@ export default function MoodAnalytics() {
         MOOD_CALENDAR_UPDATED_EVENT,
         handleMoodCalendarUpdated,
       );
-  }, [isViewingCurrentMonth, patientKey, today, viewMonth, viewYear]);
+  }, [isViewingCurrentMonth, patientKey, patientKeys, today, viewMonth, viewYear]);
 
   useEffect(() => {
     window.queueMicrotask(() => {
@@ -168,8 +170,8 @@ export default function MoodAnalytics() {
       return;
     }
 
-    saveMoodCalendarEntries(patientKey, monthEntries, today);
-  }, [monthEntries, moodStorageKey, patientKey, today]);
+    saveMoodCalendarEntries(patientKeys, monthEntries, today);
+  }, [monthEntries, moodStorageKey, patientKey, patientKeys, today]);
 
   function cycle(index) {
     setBars((current) =>
@@ -222,7 +224,7 @@ export default function MoodAnalytics() {
     }
 
     const moodSnapshot = recordMoodForCalendarDay(
-      patientKey,
+      patientKeys,
       pendingMood,
       dayToRecord,
       today,

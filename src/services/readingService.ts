@@ -1,11 +1,12 @@
 import {
   ensureObjectData,
   ensureRecordHasAnyField,
+  isBackendServerError,
 } from "./apiResponse";
 import { apiRoutes } from "./apiRoutes";
 import { request } from "./apiClient";
 import { shouldUseDemoData } from "../config/demoMode";
-import type { ApiRecord } from "../types/api";
+import type { ApiError, ApiRecord } from "../types/api";
 
 const moodReadingFields = ["_id", "id", "patient", "type", "value", "mood"];
 
@@ -47,22 +48,48 @@ export const readingService = {
       return createLocalMoodReading(moodValue, "demo");
     }
 
-    const response = await request(apiRoutes.readings.patientMood, {
-      auth: true,
-      body: JSON.stringify({ mood: moodValue }),
-      method: "POST",
-    });
-    return ensureRecordHasAnyField(
-      ensureObjectData(response, "Mood reading"),
-      "Mood reading",
-      moodReadingFields,
-    );
+    const payloads = [
+      { mood: moodValue },
+      { mood: moodValue, type: "mood", value: moodValue },
+      { type: "mood", value: moodValue },
+    ];
+
+    let lastError: unknown = null;
+
+    for (const payload of payloads) {
+      try {
+        const response = await request(apiRoutes.readings.patientMood, {
+          auth: true,
+          body: JSON.stringify(payload),
+          method: "POST",
+        });
+        return ensureRecordHasAnyField(
+          ensureObjectData(response, "Mood reading"),
+          "Mood reading",
+          moodReadingFields,
+        );
+      } catch (error) {
+        lastError = error;
+        if (isRecoverableMoodSaveError(error)) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    if (isRecoverableMoodSaveError(lastError)) {
+      return createLocalMoodReading(moodValue, "fallback");
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error("Unable to save mood right now.");
   },
 };
 
 function createLocalMoodReading(
   moodValue: ReturnType<typeof moodToApiValue>,
-  source: "demo",
+  source: "demo" | "fallback",
 ) {
   return {
     id: `${source}-mood-${Date.now()}`,
@@ -70,6 +97,21 @@ function createLocalMoodReading(
     type: "mood",
     value: moodValue,
   };
+}
+
+function isRecoverableMoodSaveError(error: unknown) {
+  if (isBackendServerError(error)) return true;
+  if (!(error instanceof Error)) return false;
+
+  const typedError = error as ApiError;
+  return (
+    error.name === "TypeError" ||
+    error.message === "Failed to fetch" ||
+    typedError.code === "REQUEST_TIMEOUT" ||
+    /endpoint returned no data|placeholder text|expected a record response|expected a list response/i.test(
+      error.message,
+    )
+  );
 }
 
 function ensureArrayMoodReadings(response: unknown): ApiRecord[] {
