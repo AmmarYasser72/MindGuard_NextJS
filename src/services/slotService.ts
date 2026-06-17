@@ -38,6 +38,7 @@ import {
 } from "./slotService.demo";
 
 export {
+  doctorNameFromRecord,
   normalizeSlotRecord,
   type SlotDoctorDetails,
   type SlotPatientDetails,
@@ -158,15 +159,22 @@ function slotSnapshotRecord(
     ...session.raw,
     doctor: session.raw?.doctor || session.doctorId || undefined,
     doctorId: session.raw?.doctorId || session.doctorId || undefined,
+    doctorName: session.raw?.doctorName || session.doctorName || undefined,
     endTime: endTimeForSession(session),
     id: session.raw?.id || session.id,
     notes: session.notes || session.raw?.notes || session.raw?.doctorNote || "",
     patient:
-      session.raw?.patient || session.patientId || patient?.patientId || undefined,
+      session.raw?.patient ||
+      session.patientId ||
+      patient?.patientId ||
+      undefined,
     patientEmail:
       session.raw?.patientEmail || patient?.patientEmail || undefined,
     patientId:
-      session.patientId || session.raw?.patientId || patient?.patientId || undefined,
+      session.patientId ||
+      session.raw?.patientId ||
+      patient?.patientId ||
+      undefined,
     patientName: session.patientName || patient?.patientName || "Patient",
     reason: session.reason || session.status || "booked",
     startTime: session.raw?.startTime || session.scheduledAt.toISOString(),
@@ -302,7 +310,10 @@ export const slotService = {
 
     for (const path of candidatePaths) {
       try {
-        const response = await request(path, hasAuthToken ? { auth: true } : {});
+        const response = await request(
+          path,
+          hasAuthToken ? { auth: true } : {},
+        );
         const backendSlots = availableFutureSlots(
           normalizeSlotList(
             extractSlotRecords(response, "Doctor available slots"),
@@ -366,7 +377,9 @@ export const slotService = {
 
     if (isMongoObjectId(cleanPatientId)) {
       try {
-        const response = await request(apiRoutes.slots.forPatient(cleanPatientId));
+        const response = await request(
+          apiRoutes.slots.forPatient(cleanPatientId),
+        );
         return normalizeSlotList(
           applySlotOverrides(
             mergeSlotRecords(
@@ -488,7 +501,10 @@ export const slotService = {
 
     for (const bookingRequest of bookingRequests) {
       try {
-        const response = await request(bookingRequest.path, bookingRequest.options);
+        const response = await request(
+          bookingRequest.path,
+          bookingRequest.options,
+        );
 
         return normalizeSlotRecord(
           ensureRecordHasAnyField(
@@ -569,10 +585,18 @@ export const slotService = {
     const updates = {
       cancelledAt,
       cancelledBy: "patient",
-      patient: session.raw?.patient || session.patientId || patient.patientId || undefined,
-      patientEmail: session.raw?.patientEmail || patient.patientEmail || undefined,
+      patient:
+        session.raw?.patient ||
+        session.patientId ||
+        patient.patientId ||
+        undefined,
+      patientEmail:
+        session.raw?.patientEmail || patient.patientEmail || undefined,
       patientId:
-        session.patientId || session.raw?.patientId || patient.patientId || undefined,
+        session.patientId ||
+        session.raw?.patientId ||
+        patient.patientId ||
+        undefined,
       patientName: session.patientName || patient.patientName || "Patient",
       reason: "cancelled",
       sessionUpdatedAt: cancelledAt,
@@ -597,7 +621,8 @@ export const slotService = {
   },
 
   async updateSlot(slotId: string, updates: ApiRecord) {
-    const { backendUpdates, localOnlyUpdates } = splitSlotUpdatesForBackend(updates);
+    const { backendUpdates, localOnlyUpdates } =
+      splitSlotUpdatesForBackend(updates);
 
     if (
       updates.startTime ||

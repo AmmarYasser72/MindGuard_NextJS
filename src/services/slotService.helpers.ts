@@ -5,11 +5,11 @@ import {
   shortId,
 } from "./apiResponse";
 import { shouldUseDemoData } from "../config/demoMode";
+import { curatedDoctorProfiles } from "../data/doctorRecommendations";
 import { getSession } from "./session";
+import { getSignedUpDoctors } from "./localDoctorDirectory";
 import { storage } from "./storage";
-import {
-  patients as demoPatients,
-} from "../data/doctorData";
+import { patients as demoPatients } from "../data/doctorData";
 import type { ApiRecord } from "../types/api";
 import type { DoctorSession } from "../types/doctor";
 import type { DoctorProfileSource } from "../types/recommendations";
@@ -27,6 +27,10 @@ export const slotFields = [
   "id",
   "doctor",
   "doctorId",
+  "doctorName",
+  "doctorDisplayName",
+  "doctorFullName",
+  "doctorProfile",
   "patient",
   "patientEmail",
   "patientName",
@@ -114,6 +118,76 @@ export function doctorIdFromRecord(record: ApiRecord) {
     cleanString(record.doctorId) ||
     cleanString(record.doctor_id) ||
     (shouldUseDemoData() ? DEFAULT_DEMO_DOCTOR_ID : "")
+  );
+}
+
+function nameFromPersonRecord(record: ApiRecord | null) {
+  if (!record) return "";
+
+  const nestedUser = asRecord(record.user);
+  const explicitName =
+    cleanString(record.displayName) ||
+    cleanString(record.name) ||
+    cleanString(record.fullName) ||
+    cleanString(record.doctorName) ||
+    cleanString(nestedUser?.displayName) ||
+    cleanString(nestedUser?.name) ||
+    cleanString(nestedUser?.fullName);
+
+  if (explicitName) return explicitName;
+
+  const firstName =
+    cleanString(record.firstName) || cleanString(nestedUser?.firstName);
+  const lastName =
+    cleanString(record.lastName) || cleanString(nestedUser?.lastName);
+
+  return [firstName, lastName].filter(Boolean).join(" ");
+}
+
+function knownDoctorName(doctorId: string) {
+  const normalizedDoctorId = doctorId.trim().toLowerCase();
+  if (!normalizedDoctorId) return "";
+
+  if (normalizedDoctorId === DEFAULT_DEMO_DOCTOR_ID) return "Jana Ismail";
+
+  const curatedDoctor = curatedDoctorProfiles.find((doctor) =>
+    [
+      doctor.id,
+      doctor.email || "",
+      doctor.displayName,
+      cleanDoctorName(doctor.displayName),
+    ]
+      .map((key) => key.trim().toLowerCase())
+      .includes(normalizedDoctorId),
+  );
+  if (curatedDoctor) return curatedDoctor.displayName;
+
+  const signedUpDoctor = getSignedUpDoctors().find((doctor) =>
+    [
+      doctor.id,
+      doctor.email,
+      doctor.displayName,
+      cleanDoctorName(doctor.displayName),
+    ]
+      .map((key) => key.trim().toLowerCase())
+      .includes(normalizedDoctorId),
+  );
+
+  return signedUpDoctor?.displayName || "";
+}
+
+export function doctorNameFromRecord(record: ApiRecord) {
+  const doctorRecord = asRecord(record.doctor);
+  const doctorProfile = asRecord(record.doctorProfile);
+  const doctorId = doctorIdFromRecord(record);
+
+  return (
+    cleanString(record.doctorName) ||
+    cleanString(record.doctorDisplayName) ||
+    cleanString(record.doctorFullName) ||
+    nameFromPersonRecord(doctorRecord) ||
+    nameFromPersonRecord(doctorProfile) ||
+    knownDoctorName(doctorId)
   );
 }
 
@@ -261,7 +335,8 @@ function lookupStoredPatientName(patientId: string, patientEmail: string) {
   const cleanId = patientId.trim().toLowerCase();
   const cleanEmail = patientEmail.trim().toLowerCase();
 
-  const demoName = demoPatientNames.get(cleanEmail) || demoPatientNames.get(cleanId);
+  const demoName =
+    demoPatientNames.get(cleanEmail) || demoPatientNames.get(cleanId);
   if (demoName) return demoName;
 
   const storedUsers = storage.get<ApiRecord[]>(AUTH_USERS_KEY, []);
@@ -345,7 +420,8 @@ export function isConnectionFallbackError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   return (
     isBackendServerError(error) ||
-    (status === 404 && /cannot\s+(get|post|patch|delete)|not found/i.test(message)) ||
+    (status === 404 &&
+      /cannot\s+(get|post|patch|delete)|not found/i.test(message)) ||
     (error instanceof Error &&
       (error.name === "TypeError" ||
         error.message === "Failed to fetch" ||
@@ -393,6 +469,7 @@ export function normalizeSlotRecord(
   return {
     id: String(id),
     doctorId: doctorIdFromRecord(record) || null,
+    doctorName: doctorNameFromRecord(record) || null,
     raw: record,
     patientId: patientRecord
       ? String(patientRecord._id || patientRecord.id || "") || null

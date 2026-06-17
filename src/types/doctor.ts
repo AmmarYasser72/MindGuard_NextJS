@@ -24,6 +24,7 @@ export type DoctorPatient = {
 export type DoctorSession = {
   id: string;
   doctorId?: string | null;
+  doctorName?: string | null;
   patientName: string;
   scheduledAt: Date;
   condition: string | null;

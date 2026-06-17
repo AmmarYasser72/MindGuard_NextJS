@@ -27,7 +27,7 @@ export default function PatientListButton({
   return (
     <button
       type="button"
-      className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4 text-left shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+      className="patient-list-row grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4 text-left shadow-sm shadow-slate-950/5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
       onClick={onClick}
     >
       {leading || (
@@ -40,20 +40,20 @@ export default function PatientListButton({
       )}
       <span className="min-w-0">
         {eyebrow ? (
-          <small className="block text-xs font-semibold text-slate-400">
+          <small className="block text-xs font-semibold text-app-faint">
             {eyebrow}
           </small>
         ) : null}
-        <strong className="block text-sm font-bold text-slate-900">
+        <strong className="block text-sm font-bold text-app-text">
           {title}
         </strong>
         {subtitle ? (
-          <small className="mt-1 block text-xs font-semibold text-slate-500">
+          <small className="mt-1 block text-xs font-semibold text-app-muted">
             {subtitle}
           </small>
         ) : null}
         {meta ? (
-          <em className="mt-1 block text-xs not-italic leading-5 text-slate-400">
+          <em className="mt-1 block text-xs not-italic leading-5 text-app-faint">
             {meta}
           </em>
         ) : null}

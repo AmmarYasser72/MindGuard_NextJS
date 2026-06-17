@@ -11,7 +11,7 @@ import StatGrid from "../../components/patient/StatGrid";
 export default function ToolSection({ section, color, onAction }) {
   return (
     <section className="grid gap-3">
-      <h2 className="text-lg font-bold text-slate-950">{section.title}</h2>
+      <h2 className="text-lg font-bold text-app-text">{section.title}</h2>
       {section.type === "list" ? (
         <ItemList items={section.items} color={color} onItem={onAction} />
       ) : null}
@@ -51,7 +51,7 @@ export default function ToolSection({ section, color, onAction }) {
               title={
                 <>
                   {item.duration}{" "}
-                  <em className="text-xs not-italic text-pink-500">
+                  <em className="text-xs not-italic text-[var(--pink)]">
                     {item.quality}
                   </em>
                 </>

@@ -36,7 +36,6 @@ MindGuard is a modern mental health support frontend built with **Next.js App Ro
 
 The application is designed for a graduation project setting, but its structure follows production-minded frontend patterns: role-protected routes, reusable UI primitives, API service layers, Socket.IO chat integration, demo fallbacks, and responsive dashboard layouts.
 
-> Important: MindGuard is a graduation project and is not a replacement for professional medical advice, diagnosis, emergency response, or clinical judgment.
 
 ---
 

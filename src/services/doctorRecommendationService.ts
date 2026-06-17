@@ -17,9 +17,19 @@ import type {
 } from "../types/recommendations";
 
 const MINIMUM_VISIBLE_DOCTORS = 3;
+const fallbackDoctorNames = [
+  "Ammar Yasser",
+  "Ahmed El Sayed",
+  "Abdallah Osama",
+  "Mahmoud Bahig",
+  "Ismail Ahmed",
+  "Jana Ismail",
+  "Ziad Yehia",
+];
+
 const demoDoctorProfile: DoctorProfile = {
-  id: "demo-doctor-001",
-  displayName: "Demo Doctor",
+  id: "ammar yasser1",
+  displayName: "ammar yasser 22",
   specialization: "Clinical Psychology and CBT",
   yearsOfExperience: 15,
   conditions: ["anxiety", "stress", "mixed"],
@@ -74,15 +84,12 @@ function normalizeId(record: ApiRecord) {
   );
 }
 
-function titleCaseFromIdentifier(value: string) {
-  return value
-    .replace(/[@._-]+/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map(
-      (part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`,
-    )
-    .join(" ");
+function fallbackDoctorName(seed: string) {
+  const hash = Array.from(seed).reduce(
+    (total, char) => total + char.charCodeAt(0),
+    0,
+  );
+  return fallbackDoctorNames[hash % fallbackDoctorNames.length];
 }
 
 function normalizeDoctorName(record: ApiRecord, id: string) {
@@ -97,10 +104,7 @@ function normalizeDoctorName(record: ApiRecord, id: string) {
   if (firstName || lastName)
     return `Dr. ${[firstName, lastName].filter(Boolean).join(" ")}`;
 
-  const emailName = asString(record.email).split("@")[0];
-  if (emailName) return `Dr. ${titleCaseFromIdentifier(emailName)}`;
-
-  return `MindGuard Doctor ${id.slice(-4).toUpperCase()}`;
+  return fallbackDoctorName(id);
 }
 
 function inferConditionsFromSpecialization(

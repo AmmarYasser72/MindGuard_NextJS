@@ -90,7 +90,7 @@ export default function PatientToolPage({ config }: PatientToolPageProps) {
   }
 
   return (
-    <main className="patient-shell dashboard-shell min-h-screen bg-[linear-gradient(180deg,#f5f3ff_0%,#f8fafc_46%,#ffffff_100%)]">
+    <main className="patient-shell patient-tool-page dashboard-shell min-h-screen">
       <AppTopBar
         title={config.title}
         onBack={() => back("/patient-dashboard")}

@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "../../../../components/common/Toast";
 import { useAuth } from "../../../../hooks/useAuth";
-import { slotService } from "../../../../services/slotService";
+import { doctorService } from "../../../../services/doctorService";
+import {
+  doctorNameFromRecord,
+  slotService,
+} from "../../../../services/slotService";
 import {
   SLOT_CHANGE_EVENT,
   isSlotStorageEvent,
@@ -12,6 +16,42 @@ import {
   getPatientAppointmentDetails,
   isUpcomingAppointment,
 } from "./appointmentUtils";
+
+async function resolveMissingDoctorNames(sessions: DoctorSession[]) {
+  const doctorIds = [
+    ...new Set(
+      sessions
+        .filter((session) => !session.doctorName && session.doctorId)
+        .map((session) => session.doctorId as string),
+    ),
+  ];
+
+  if (!doctorIds.length) return sessions;
+
+  const doctorResults = await Promise.allSettled(
+    doctorIds.map(async (doctorId) => {
+      const doctor = await doctorService.getDoctor(doctorId);
+      return [doctorId, doctorNameFromRecord({ doctor, doctorId })] as const;
+    }),
+  );
+  const namesById = new Map<string, string>();
+
+  doctorResults.forEach((result) => {
+    if (result.status !== "fulfilled") return;
+    const [doctorId, doctorName] = result.value;
+    if (doctorName) namesById.set(doctorId, doctorName);
+  });
+
+  if (!namesById.size) return sessions;
+
+  return sessions.map((session) => {
+    if (session.doctorName || !session.doctorId) return session;
+    return {
+      ...session,
+      doctorName: namesById.get(session.doctorId) || null,
+    };
+  });
+}
 
 export function usePatientAppointments() {
   const { user } = useAuth();
@@ -47,7 +87,9 @@ export function usePatientAppointments() {
 
     try {
       const patientSlots = await slotService.getPatientSlots(patientDetails);
-      setAppointments(patientSlots);
+      const patientSlotsWithDoctors =
+        await resolveMissingDoctorNames(patientSlots);
+      setAppointments(patientSlotsWithDoctors);
     } catch (loadError) {
       setAppointments([]);
       setError(

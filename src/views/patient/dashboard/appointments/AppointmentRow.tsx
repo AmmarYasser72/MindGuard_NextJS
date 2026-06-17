@@ -14,6 +14,7 @@ export default function AppointmentRow({
   onCancel,
   onReschedule,
 }: AppointmentRowProps) {
+  const doctorName = appointment.doctorName?.trim() || "Doctor unavailable";
   const doctorNote =
     appointment.notes ||
     String(appointment.raw?.doctorNote || appointment.raw?.notes || "").trim();
@@ -29,6 +30,9 @@ export default function AppointmentRow({
         </strong>
         <p className="mt-1 text-sm font-semibold text-slate-500">
           {appointment.duration || 60} min - {appointment.type || "video"}
+        </p>
+        <p className="mt-1 text-sm font-bold text-slate-700">
+          Doctor: {doctorName}
         </p>
         {doctorNote ? (
           <p className="mt-2 rounded-2xl bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-800">
