@@ -425,7 +425,7 @@ export function ExerciseDetail({ item, onClose }: ExerciseDetailProps) {
 }
 
 type NumberedPlanListProps = {
-  steps: string[];
+  steps: readonly string[];
 };
 
 function NumberedPlanList({ steps }: NumberedPlanListProps) {

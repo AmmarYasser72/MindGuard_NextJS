@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Icon from "../common/Icon";
 import { patientName, severityLabels } from "../../data/doctorData";
 import PatientCard from "./PatientCard";
@@ -38,7 +38,10 @@ export default function PatientsScreen({
   const [detailPatient, setDetailPatient] = useState<DoctorPatient | null>(
     null,
   );
-  const patientIds = patients.map((patient) => patient.id).join("|");
+  const patientIds = useMemo(
+    () => patients.map((patient) => patient.id),
+    [patients],
+  );
 
   const severityCounts = useMemo(
     () =>
@@ -82,18 +85,10 @@ export default function PatientsScreen({
   const currentFilterLabel =
     filter === "all" ? "All levels" : severityLabels[filter];
 
-  useEffect(() => {
-    const ids = patientIds.split("|").filter(Boolean);
-
-    if (!ids.length) {
-      setExpanded(null);
-      return;
-    }
-
-    setExpanded((current) =>
-      current && ids.includes(current) ? current : ids[0],
-    );
-  }, [patientIds]);
+  const activeExpanded =
+    expanded && patientIds.includes(expanded)
+      ? expanded
+      : patientIds[0] ?? null;
 
   return (
     <div className="grid w-full max-w-none gap-4 p-4 sm:p-6 lg:p-8">
@@ -228,7 +223,7 @@ export default function PatientsScreen({
               <PatientCard
                 key={patient.id}
                 patient={patient}
-                expanded={expanded === patient.id}
+                expanded={activeExpanded === patient.id}
                 onDelete={() => {
                   onDeletePatient(patient);
                   setDetailPatient((current) =>
