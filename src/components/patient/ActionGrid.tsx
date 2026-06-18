@@ -10,6 +10,7 @@ export default function ActionGrid({ actions, onAction }) {
           key={action.title}
           onClick={() => onAction(action)}
         >
+          
           <span
             className="grid h-11 w-11 place-items-center rounded-2xl border border-white/60"
             style={{ backgroundColor: `${action.color}1a` }}
