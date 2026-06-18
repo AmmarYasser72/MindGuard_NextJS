@@ -151,7 +151,7 @@
     }
   }
 
-  @keyframes nova-pulse {
+  @keyframes Neura-pulse {
     0%,
     100% {
       opacity: 0.42;
@@ -853,7 +853,7 @@
     background: var(--metric-bg);
   }
 
-  .patient-nova-label {
+  .patient-Neura-label {
     @apply border bg-[var(--patient-card)];
     border-color: var(--patient-line);
   }
@@ -1039,7 +1039,7 @@
     --tw-ring-color: rgba(94, 234, 212, 0.18) !important;
   }
 
-  html[data-theme="dark"] .patient-shell .patient-nova-button {
+  html[data-theme="dark"] .patient-shell .patient-Neura-button {
     box-shadow: 0 1rem 2.2rem rgba(0, 0, 0, 0.3);
     --tw-ring-color: var(--patient-card);
   }

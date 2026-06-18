@@ -46,19 +46,19 @@ export default function PatientDashboard() {
 
           <button
             type="button"
-            className="patient-nova-button group relative -mt-8 grid h-20 w-20 place-items-center rounded-full bg-[linear-gradient(135deg,#6366f1_0%,#7c3aed_100%)] text-white shadow-[0_16px_34px_rgba(99,102,241,0.34)] ring-4 ring-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_rgba(99,102,241,0.42)] focus:outline-none focus:ring-violet-200"
+            className="patient-Neura-button group relative -mt-8 grid h-20 w-20 place-items-center rounded-full bg-[linear-gradient(135deg,#6366f1_0%,#7c3aed_100%)] text-white shadow-[0_16px_34px_rgba(99,102,241,0.34)] ring-4 ring-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_rgba(99,102,241,0.42)] focus:outline-none focus:ring-violet-200"
             onClick={() => navigate(chatPath)}
-            aria-label="Chat with NOVA"
+            aria-label="Chat with Neura"
           >
             <span
-              className="absolute inset-0 rounded-full bg-violet-400/20 animate-[nova-pulse_2.4s_ease-in-out_infinite]"
+              className="absolute inset-0 rounded-full bg-violet-400/20 animate-[Neura-pulse_2.4s_ease-in-out_infinite]"
               aria-hidden="true"
             />
             <span className="relative grid h-12 w-12 place-items-center rounded-full bg-white/15 transition duration-300 group-hover:scale-105">
               <Icon name="message-circle" size={28} color="#fff" />
             </span>
-            <span className="patient-nova-label absolute -bottom-7 rounded-lg border border-violet-100 bg-white px-2.5 py-1 text-[11px] font-black text-[var(--primary)] shadow-sm shadow-violet-950/5">
-              NOVA
+            <span className="patient-Neura-label absolute -bottom-7 rounded-lg border border-violet-100 bg-white px-2.5 py-1 text-[11px] font-black text-[var(--primary)] shadow-sm shadow-violet-950/5">
+              Neura
             </span>
           </button>
 

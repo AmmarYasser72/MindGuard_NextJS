@@ -7,7 +7,7 @@ import type { ApiError, ApiRecord } from "../types/api";
 import type { ChatClient, ChatMessage, ChatState } from "../types/chat";
 
 const SOCKET_NAMESPACE = "/chats";
-export const WELCOME_MESSAGE_TEXT = "I'm NOVA. How may I help you today?";
+export const WELCOME_MESSAGE_TEXT = "I'm Neura. How may I help you today?";
 const SOCKET_EVENTS = {
   BOT_MESSAGE: "bot_message",
   CONNECT: "connect",

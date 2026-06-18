@@ -63,7 +63,11 @@ export default function NotificationPanel({
               notifications.map((notification) => (
                 <article
                   key={notification.id}
-                  className={`rounded-3xl border p-4 transition ${notification.unread ? "border-violet-200 bg-violet-50/60 shadow-sm shadow-violet-950/5" : "border-slate-200 bg-white"}`}
+                  className={`rounded-3xl border p-4 transition ${
+                    notification.unread
+                      ? "border-violet-200 bg-violet-50/60 shadow-sm shadow-violet-950/5 [html[data-theme='dark']_&]:border-[color-mix(in_srgb,var(--primary)_38%,var(--patient-line))] [html[data-theme='dark']_&]:bg-[linear-gradient(135deg,color-mix(in_srgb,var(--primary)_22%,var(--patient-card))_0%,color-mix(in_srgb,var(--primary)_10%,var(--patient-card-soft))_100%)] [html[data-theme='dark']_&]:shadow-[0_12px_34px_rgba(15,23,42,0.22)]"
+                      : "border-slate-200 bg-white"
+                  }`}
                 >
                   <div className="flex items-start gap-3">
                     <span
@@ -78,26 +82,56 @@ export default function NotificationPanel({
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <strong className="text-sm font-bold text-slate-950">
+                        <strong
+                          className={`text-sm font-bold ${
+                            notification.unread
+                              ? "text-slate-950 [html[data-theme='dark']_&]:text-white"
+                              : "text-slate-950"
+                          }`}
+                        >
                           {notification.title}
                         </strong>
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                            notification.unread
+                              ? "bg-slate-100 text-slate-600 [html[data-theme='dark']_&]:bg-white/10 [html[data-theme='dark']_&]:text-slate-200"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
                           {notification.category}
                         </span>
                         {notification.unread ? (
-                          <span className="rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+                          <span className="rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white [html[data-theme='dark']_&]:bg-violet-500 [html[data-theme='dark']_&]:text-white">
                             New
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                      <p
+                        className={`mt-2 text-sm leading-6 ${
+                          notification.unread
+                            ? "text-slate-700 [html[data-theme='dark']_&]:text-slate-100"
+                            : "text-slate-600"
+                        }`}
+                      >
                         {notification.message}
                       </p>
                       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
+                        <span
+                          className={`rounded-full px-2.5 py-1 ${
+                            notification.unread
+                              ? "bg-slate-100 text-slate-700 [html[data-theme='dark']_&]:bg-white/12 [html[data-theme='dark']_&]:text-slate-100"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
                           {notification.value}
                         </span>
-                        <span className="text-slate-400">
+                        <span
+                          className={`${
+                            notification.unread
+                              ? "text-slate-500 [html[data-theme='dark']_&]:text-slate-300"
+                              : "text-slate-400"
+                          }`}
+                        >
                           {notification.time}
                         </span>
                       </div>
