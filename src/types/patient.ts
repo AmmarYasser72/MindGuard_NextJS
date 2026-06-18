@@ -6,14 +6,17 @@ export type ToolAction = {
 };
 
 export type ToolItem = {
+  bedtime?: string;
   color?: string;
   date?: string;
   description?: string;
   duration?: string;
+  id?: string;
   icon?: string;
   label?: string;
   meta?: string;
   mood?: string;
+  note?: string;
   preview?: string;
   progress?: number;
   quality?: string;

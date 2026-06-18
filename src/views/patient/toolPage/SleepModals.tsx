@@ -27,8 +27,10 @@ export function SleepLogForm({ onClose, onSave }: SleepLogFormProps) {
 
   function save() {
     onSave({
-      date: "Just now",
+      date: "Today",
       duration,
+      id: `sleep-${Date.now()}`,
+      note: "",
       quality,
       bedtime: formatClock(bedtime),
       title: "Sleep entry",
@@ -152,10 +154,12 @@ export function SleepTips({ onClose, onFinish }: SleepTipsProps) {
 
 type SleepDetailProps = ModalControlProps & {
   item: ToolItem;
-  onFinish: () => void;
+  onSaveNote: (note: string) => void;
 };
 
-export function SleepDetail({ item, onClose, onFinish }: SleepDetailProps) {
+export function SleepDetail({ item, onClose, onSaveNote }: SleepDetailProps) {
+  const [note, setNote] = useState(item.note || "");
+
   return (
     <Modal
       title={`Sleep - ${item.date}`}
@@ -172,7 +176,7 @@ export function SleepDetail({ item, onClose, onFinish }: SleepDetailProps) {
           <button
             type="button"
             className={primaryButtonClass}
-            onClick={onFinish}
+            onClick={() => onSaveNote(note.trim())}
           >
             Save note
           </button>
@@ -187,10 +191,12 @@ export function SleepDetail({ item, onClose, onFinish }: SleepDetailProps) {
           <small className="text-xs font-black uppercase text-slate-400">
             Pattern note
           </small>
-          <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
-            This entry supports the weekly consistency score and helps connect
-            rest quality with mood and energy trends.
-          </p>
+          <textarea
+            className={`${inputClass} mt-2 min-h-32 resize-none py-3 leading-6`}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Write anything you want to remember about this night's sleep."
+          />
         </section>
       </div>
     </Modal>

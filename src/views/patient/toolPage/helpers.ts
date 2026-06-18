@@ -1,10 +1,26 @@
-import { exercisePlans } from "./constants";
+import { exerciseLibrary } from "./constants";
 import type { ToolItem } from "./types";
 
 export function hasExercisePlan(
   title: string,
-): title is keyof typeof exercisePlans {
-  return title in exercisePlans;
+): title is keyof typeof exerciseLibrary {
+  return title in exerciseLibrary;
+}
+
+export function getExercisesForCategory(title: string) {
+  if (!hasExercisePlan(title)) return exerciseLibrary.Walking;
+  return exerciseLibrary[title];
+}
+
+export function findExerciseById(id?: string | null) {
+  if (!id) return null;
+
+  for (const exercises of Object.values(exerciseLibrary)) {
+    const match = exercises.find((exercise) => exercise.id === id);
+    if (match) return match;
+  }
+
+  return null;
 }
 
 export function breathingPlan(title: string) {

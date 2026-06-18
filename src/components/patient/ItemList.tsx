@@ -5,7 +5,7 @@ export default function ItemList({ items, color = "#6366f1", onItem }) {
     <div className="grid gap-3">
       {items.map((item) => (
         <PatientListButton
-          key={item.title}
+          key={item.id || `${item.title}-${item.meta}-${item.subtitle}`}
           icon={item.icon || "circle"}
           iconBg={`${color}1a`}
           iconColor={color}

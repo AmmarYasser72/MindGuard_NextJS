@@ -1,8 +1,6 @@
 import type { ToolItem as BaseToolItem } from "../../../types/patient";
 
-export type ToolItem = BaseToolItem & {
-  bedtime?: string;
-};
+export type ToolItem = BaseToolItem;
 
 export type ToolAction = {
   color: string;

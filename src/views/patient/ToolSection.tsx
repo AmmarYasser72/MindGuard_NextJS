@@ -43,7 +43,7 @@ export default function ToolSection({ section, color, onAction }) {
         <div className="grid gap-3">
           {section.items.map((item) => (
             <PatientListButton
-              key={item.date}
+              key={item.id || `${item.date}-${item.bedtime}-${item.duration}`}
               eyebrow={item.date}
               icon="moon"
               iconBg="#fdf2f8"

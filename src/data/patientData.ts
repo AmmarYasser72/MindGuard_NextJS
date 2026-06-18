@@ -272,13 +272,13 @@ export const toolPages = {
           {
             title: "Cardio",
             subtitle: "Running, cycling, swimming",
-            meta: "5 exercises",
+            meta: "6 exercises",
             icon: "footprints",
           },
           {
             title: "Strength Training",
             subtitle: "Build muscle and strength",
-            meta: "8 exercises",
+            meta: "6 exercises",
             icon: "dumbbell",
           },
           {
@@ -290,7 +290,7 @@ export const toolPages = {
           {
             title: "Walking",
             subtitle: "Simple daily walks for mental clarity",
-            meta: "3 exercises",
+            meta: "5 exercises",
             icon: "person-standing",
           },
         ],

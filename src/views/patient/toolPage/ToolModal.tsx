@@ -18,8 +18,10 @@ type ToolModalProps = {
   color: string;
   onClose: () => void;
   onFinish: (message: string) => void;
+  onSaveActivity: (entry: ToolItem) => void;
   onSaveJournal: (entry: ToolItem) => void;
   onSaveSleep: (entry: ToolItem) => void;
+  onSaveSleepNote: (entryId: string, note: string) => void;
   toolTitle: string;
 };
 
@@ -28,8 +30,10 @@ export default function ToolModal({
   color,
   onClose,
   onFinish,
+  onSaveActivity,
   onSaveJournal,
   onSaveSleep,
+  onSaveSleepNote,
   toolTitle,
 }: ToolModalProps) {
   const item = activeModal.item as ToolItem;
@@ -70,12 +74,7 @@ export default function ToolModal({
   }
 
   if (activeModal.kind === "activity-form") {
-    return (
-      <ActivityLogForm
-        onClose={onClose}
-        onSave={() => onFinish("Activity logged.")}
-      />
-    );
+    return <ActivityLogForm onClose={onClose} onSave={onSaveActivity} />;
   }
 
   if (activeModal.kind === "sleep-form") {
@@ -92,13 +91,7 @@ export default function ToolModal({
   }
 
   if (activeModal.kind === "exercise-detail") {
-    return (
-      <ExerciseDetail
-        item={item}
-        onClose={onClose}
-        onStart={() => onFinish(`${itemTitle} plan started.`)}
-      />
-    );
+    return <ExerciseDetail item={item} onClose={onClose} />;
   }
 
   if (activeModal.kind === "journal-detail") {
@@ -116,7 +109,7 @@ export default function ToolModal({
       <SleepDetail
         item={item}
         onClose={onClose}
-        onFinish={() => onFinish("Sleep note saved.")}
+        onSaveNote={(note) => onSaveSleepNote(item.id || "", note)}
       />
     );
   }
