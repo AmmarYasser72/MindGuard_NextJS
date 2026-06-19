@@ -85,15 +85,15 @@ type HeroMetricProps = {
 
 function HeroMetric({ icon, label, value }: HeroMetricProps) {
   return (
-    <div className="patient-recommendation-metric flex min-h-14 items-center gap-2 rounded-2xl bg-[var(--patient-recommendation-metric-bg)] p-3 shadow-[inset_0_0_0_1px_var(--patient-line),0_0.75rem_1.9rem_rgba(15,23,42,0.06)] [html:not([data-theme='dark'])_&]:min-h-[3.75rem] [html:not([data-theme='dark'])_&]:rounded-[1.1rem] [html:not([data-theme='dark'])_&]:bg-white/70 [html:not([data-theme='dark'])_&]:p-[0.65rem] [html:not([data-theme='dark'])_&]:shadow-[inset_0_0_0_1px_rgba(226,232,240,0.78),0_0.45rem_1rem_rgba(67,56,202,0.035)]">
+    <div className="patient-recommendation-metric flex min-h-14 items-start gap-2 rounded-2xl bg-[var(--patient-recommendation-metric-bg)] p-3 shadow-[inset_0_0_0_1px_var(--patient-line),0_0.75rem_1.9rem_rgba(15,23,42,0.06)] [html[data-theme='dark']_&]:min-h-[6.1rem] [html:not([data-theme='dark'])_&]:min-h-[3.75rem] [html:not([data-theme='dark'])_&]:items-center [html:not([data-theme='dark'])_&]:rounded-[1.1rem] [html:not([data-theme='dark'])_&]:bg-white/70 [html:not([data-theme='dark'])_&]:p-[0.65rem] [html:not([data-theme='dark'])_&]:shadow-[inset_0_0_0_1px_rgba(226,232,240,0.78),0_0.45rem_1rem_rgba(67,56,202,0.035)]">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-[var(--patient-doctor-accent)] shadow-sm [html:not([data-theme='dark'])_&]:h-8 [html:not([data-theme='dark'])_&]:w-8 [html:not([data-theme='dark'])_&]:rounded-[0.8rem]">
         <Icon name={icon} size={17} />
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 flex-1 pt-0.5 [html:not([data-theme='dark'])_&]:pt-0">
         <span className="block text-[11px] font-black uppercase tracking-[0.12em] text-app-muted">
           {label}
         </span>
-        <strong className="mt-0.5 block break-words text-lg font-black leading-5 text-app-text [html:not([data-theme='dark'])_&]:text-[0.96rem] [html:not([data-theme='dark'])_&]:leading-[1.1rem]">
+        <strong className="mt-1 block text-lg font-black leading-tight text-app-text [text-wrap:balance] [html[data-theme='dark']_&]:max-w-[8ch] [html[data-theme='dark']_&]:text-[1.05rem] [html:not([data-theme='dark'])_&]:mt-0.5 [html:not([data-theme='dark'])_&]:text-[0.96rem] [html:not([data-theme='dark'])_&]:leading-[1.1rem]">
           {value}
         </strong>
       </span>
